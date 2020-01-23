@@ -10,6 +10,7 @@ namespace Loxone
 		_jsonDecoder = std::unique_ptr<BaseLib::Rpc::JsonDecoder>(new BaseLib::Rpc::JsonDecoder(GD::bl));
 	}
 
+	/*
 	int32_t LoxoneLoxApp3::saveNewStructFile(BaseLib::PVariable structFile)
 	{
 		try
@@ -30,13 +31,14 @@ namespace Loxone
 		}
 		return -1;
 	}
-
-	int32_t LoxoneLoxApp3::parseStructFile()
+    */
+	int32_t LoxoneLoxApp3::parseStructFile(BaseLib::PVariable structFile)
 	{
 		try
 		{
-			loadStructFile();
-			GD::out.printInfo("#########################################################################Datei gelesen");
+		    _structFile = structFile;
+			//loadStructFile();
+			//GD::out.printInfo("#########################################################################Datei gelesen");
 			
 			loadlastModified();
 			
@@ -73,7 +75,8 @@ namespace Loxone
 		
 		
 	}
-	
+
+	/*
 	void LoxoneLoxApp3::loadStructFile()
 	{
 		try
@@ -97,6 +100,7 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
+	*/
 
 	void LoxoneLoxApp3::loadlastModified()
 	{

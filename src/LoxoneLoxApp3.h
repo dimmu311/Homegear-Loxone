@@ -11,8 +11,8 @@ class LoxoneLoxApp3
 {
 public:
 	LoxoneLoxApp3();
-	int32_t saveNewStructFile(BaseLib::PVariable structFile);
-	int32_t parseStructFile();
+	//int32_t saveNewStructFile(BaseLib::PVariable structFile);
+	int32_t parseStructFile(BaseLib::PVariable structFile);
 
 	std::unordered_map<std::string, std::shared_ptr<LoxoneControl>> getControls() { return _controls; }
 	std::unordered_map<std::string, std::string> getUuidSerialPairs() { return _uuidSerialPairs; }
@@ -32,7 +32,7 @@ protected:
 
 	std::string _lastModified;
 
-	void loadStructFile();
+	//void loadStructFile();
 	void loadlastModified();
 	void loadCats();
 	void loadRooms();
