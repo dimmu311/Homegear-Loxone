@@ -1,0 +1,244 @@
+<homegearDevice version="1">
+  <supportedDevices>
+    <device id="Loxone Dimmer">
+      <description>Loxone Dimmer</description>
+      <typeNumber>0x0102</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function channel="1" type="DIMMER" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>switch_valueset--1</variables>
+    </function>
+  </functions>
+  <packets>
+    <packet id="on.stateSet">
+      <direction>toCentral</direction>
+      <function1>StateSet</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\position</keyPath>
+          <parameterId>POSITION</parameterId>
+        </element>
+        <element>
+          <keyPath>state\state</keyPath>
+          <parameterId>STATE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\min</keyPath>
+          <parameterId>MIN</parameterId>
+        </element>
+        <element>
+          <keyPath>state\max</keyPath>
+          <parameterId>MAX</parameterId>
+        </element>
+        <element>
+          <keyPath>state\step</keyPath>
+          <parameterId>STEP</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="valueSet">
+      <direction>fromCentral</direction>
+      <function1>ValueSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>POSITION</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="stateSet">
+      <direction>fromCentral</direction>
+      <function1>StateSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>STATE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setOn">
+      <direction>fromCentral</direction>
+      <function1>setOn</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>on</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setOff">
+      <direction>fromCentral</direction>
+      <function1>setOff</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>off</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1"/>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="switch_valueset--1">
+      <parameter id="POSITION">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="POSITION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+          <packet id="valueSet">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="STATE">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="STATE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+          <packet id="stateSet">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SET_ON">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SET_ON">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="setOn">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SET_OFF">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SET_OFF">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="setOff">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="MIN">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="MIN">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="MAX">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="MAX">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="STEP">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="STEP">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>

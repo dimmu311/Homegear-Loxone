@@ -1,0 +1,42 @@
+#ifndef LOXONELOXAPP3_H_
+#define LOXONELOXAPP3_H_
+
+#include <homegear-base/BaseLib.h>
+#include "GD.h"
+#include "LoxoneControl.h"
+
+namespace Loxone
+{
+class LoxoneLoxApp3
+{
+public:
+	LoxoneLoxApp3();
+	int32_t saveNewStructFile(BaseLib::PVariable structFile);
+	int32_t parseStructFile();
+
+	std::unordered_map<std::string, std::shared_ptr<LoxoneControl>> getControls() { return _controls; }
+	std::unordered_map<std::string, std::string> getUuidSerialPairs() { return _uuidSerialPairs; }
+	std::string getlastModified() { return _lastModified; }
+
+protected:
+	std::string _filePath = "/etc/homegear/families/LoxAPP3.json";
+	BaseLib::PVariable _structFile;
+
+	std::unique_ptr<BaseLib::Rpc::JsonEncoder> _jsonEncoder;
+	std::unique_ptr<BaseLib::Rpc::JsonDecoder> _jsonDecoder;
+
+	std::unordered_map<std::string, std::string> _cats;
+	std::unordered_map<std::string, std::string> _rooms;
+	std::unordered_map<std::string, std::shared_ptr<LoxoneControl>> _controls;
+	std::unordered_map<std::string, std::string> _uuidSerialPairs;
+
+	std::string _lastModified;
+
+	void loadStructFile();
+	void loadlastModified();
+	void loadCats();
+	void loadRooms();
+	void loadControls();
+};
+}
+#endif

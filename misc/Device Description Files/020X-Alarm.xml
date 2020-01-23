@@ -1,0 +1,321 @@
+<homegearDevice version="1">
+  <supportedDevices>
+    <device id="Loxone Alarm">
+      <description>Loxone Alarm</description>
+      <typeNumber>0x0200</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function channel="1" type="ALARM" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>switch_valueset--1</variables>
+    </function>
+  </functions>
+  <packets>
+    <packet id="on.stateSet">
+      <direction>toCentral</direction>
+      <function1>StateSet</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\armed</keyPath>
+          <parameterId>ARMED</parameterId>
+        </element>
+        <element>
+          <keyPath>state\nextLevel</keyPath>
+          <parameterId>NEXT_LEVEL</parameterId>
+        </element>
+        <element>
+          <keyPath>state\nextLevelDelay</keyPath>
+          <parameterId>NEXT_LEVEL_DELAY</parameterId>
+        </element>
+        <element>
+          <keyPath>state\nextLevelDelayTotal</keyPath>
+          <parameterId>NEXT_LEVEL_DELAY_TOTAL</parameterId>
+        </element>
+        <element>
+          <keyPath>state\level</keyPath>
+          <parameterId>LEVEL</parameterId>
+        </element>
+        <element>
+          <keyPath>state\startTime</keyPath>
+          <parameterId>START_TIME</parameterId>
+        </element>
+        <element>
+          <keyPath>state\armedDelay</keyPath>
+          <parameterId>ARMED_DELAY</parameterId>
+        </element>
+        <element>
+          <keyPath>state\armedDelayTotal</keyPath>
+          <parameterId>ARMED_DELAY_TOTAL</parameterId>
+        </element>
+        <element>
+          <keyPath>state\sensors</keyPath>
+          <parameterId>SENSORS</parameterId>
+        </element>
+        <element>
+          <keyPath>state\disabledMove</keyPath>
+          <parameterId>DISABLED_MOVE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="stateSet">
+      <direction>fromCentral</direction>
+      <function1>Arm</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>ARM</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1"/>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="switch_valueset--1">
+      <parameter id="ARMED">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="ARMED">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="NEXT_LEVEL">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="NEXT_LEVEL">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="NEXT_LEVEL_DELAY">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="NEXT_LEVEL_DELAY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="NEXT_LEVEL_DELAY_TOTAL">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="NEXT_LEVEL_DELAY_TOTOAL">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="LEVEL">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="LEVEL">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets> 
+      </parameter>
+      <parameter id="START_TIME">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString>
+          <defaultValue></defaultValue>
+        </logicalString>
+        <physicalNone groupId="START_TIME">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ARMED_DELAY">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="ARMED_DELAY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ARMED_DELAY_TOTAL">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="ARMED_DELAY_TOTAL">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SENSORS">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString>
+          <defaultValue></defaultValue>
+        </logicalString>
+        <physicalNone groupId="SENSORS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="DISABLED_MOVE">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>0</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="DISABLED_MOVE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ARM">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>-1</defaultValue>
+          <value>
+            <id>none</id>
+            <index>-1</index>
+          </value>
+          <value>
+            <id>without movement</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>with movement</id>
+            <index>1</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="ARM">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="stateSet">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>
