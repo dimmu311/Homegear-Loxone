@@ -172,7 +172,9 @@ namespace Loxone
 			std::string toEncrypt = "salt/" + salt + "/" + command + "\0";
             std::vector<char> cstr(toEncrypt.begin(), toEncrypt.end());
 
-            while(cstr.size()%4 > 0)
+            uint32_t blocksize = gnutls_cipher_get_block_size(GNUTLS_CIPHER_AES_256_CBC);
+
+            while(cstr.size()%blocksize > 0)
             {
                 cstr.push_back(NULL);
             }
@@ -189,8 +191,6 @@ namespace Loxone
 
 			uint32_t toEncryptSize = toEncrypt.size();
 			unsigned char encrypted[cstr.size()];
-
-			uint32_t blocksize = gnutls_cipher_get_block_size(GNUTLS_CIPHER_AES_256_CBC);
 
             uint32_t padLength = ((toEncryptSize/ blocksize) + 1) * blocksize - toEncryptSize;
 			
