@@ -3,8 +3,6 @@
 #include <gnutls/abstract.h>
 #include <gnutls/crypto.h>
 
-#include <curl/curl.h>
-
 namespace Loxone
 {
 	GCRY_THREAD_OPTION_PTHREAD_IMPL;
@@ -204,26 +202,8 @@ namespace Loxone
 			
 			std::string Base64EncryptedString;
 			BaseLib::Base64::encode(encryptedString, Base64EncryptedString);
-            auto b = BaseLib::Http::encodeURL(Base64EncryptedString);
-
-
-			std::stringstream stream;
-			CURL* curl = curl_easy_init();
-			if (curl) {
-
-				char* output = curl_easy_escape(curl, Base64EncryptedString.c_str(), Base64EncryptedString.size()) ;
-				if (output) {
-
-					stream << output;
-
-					curl_free(output);
-				}
-			}
-			return stream.str();
-
-
-
-			//gnutls_cipher_deinit(handle);
+            return BaseLib::Http::encodeURL(Base64EncryptedString);
+            //gnutls_cipher_deinit(handle);
 		}
 		catch (const std::exception& ex)
 		{
