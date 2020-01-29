@@ -196,8 +196,7 @@ void Miniserver::init()
 				webSocketPacket = true;
 				
 				auto loxonePacket = LoxonePacket::_commands.at("keyexchange");
-		
-				_loxoneEncryption.makeAES256();
+
 				std::string RSA_encrypted;
 				_loxoneEncryption.buildSessionKey(RSA_encrypted);
 								

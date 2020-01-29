@@ -11,7 +11,7 @@ namespace Loxone
 	public:
 		LoxoneEncryption();
 
-		int makeAES256();
+
 		int buildSessionKey(std::string& RSA_encrypted);
 		void deInitGnuTls();
 		void initGnuTls();
@@ -27,12 +27,16 @@ namespace Loxone
 
 	private:
 		std::string _publicKey;
-		std::string _AES256_key;
-		std::string _AES256_iv;
+		std::string _myAes256key_iv;
+        std::string _myAes256key;
+        std::string _myAes256iv;
+        std::string _mySalt;
+        uint32_t _mySaltUsageCounter;
 
-		std::string salt;
-
-		
-	};
+        std::string getRandomHexString(uint32_t len);
+        std::string getNewSalt();
+        std::string getSalt();
+        std::string getNewAes256();
+    };
 }
 #endif

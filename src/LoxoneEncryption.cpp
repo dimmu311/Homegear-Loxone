@@ -11,11 +11,67 @@ namespace Loxone
 	{
 		initGnuTls();
 
-		int salt_len = 16;
-		unsigned char* salt_buffer = new unsigned char[salt_len];
-		gnutls_rnd(GNUTLS_RND_KEY, salt_buffer, salt_len);
-		salt = BaseLib::HelperFunctions::getHexString(salt_buffer, salt_len);
+		_mySaltUsageCounter = 0;
+		_mySalt = getNewSalt();
+		_myAes256key_iv = getNewAes256();
 	}
+
+	std::string LoxoneEncryption::getRandomHexString(uint32_t len)
+    {
+        unsigned char* buffer = new unsigned char[len];
+        gnutls_rnd(GNUTLS_RND_KEY, buffer, len);
+        return BaseLib::HelperFunctions::getHexString(buffer, len);
+    }
+
+	std::string LoxoneEncryption::getNewSalt()
+    {
+	    return getRandomHexString(16);
+
+        int salt_len = 16;
+        unsigned char* salt_buffer = new unsigned char[salt_len];
+        gnutls_rnd(GNUTLS_RND_KEY, salt_buffer, salt_len);
+        return BaseLib::HelperFunctions::getHexString(salt_buffer, salt_len);
+    }
+
+	std::string LoxoneEncryption::getSalt()
+    {
+        std::string salt = _mySalt;
+        if(_mySaltUsageCounter >= 10)
+        {
+            _mySalt = getNewSalt();
+            salt = "nextSalt/" + salt + "/" +_mySalt + "/";
+            _mySaltUsageCounter = 0;
+            return salt;
+        }
+        _mySaltUsageCounter++;
+        return "salt/"+salt+"/";
+    }
+
+    std::string LoxoneEncryption::getNewAes256()
+    {
+        try
+        {
+            _myAes256key = getRandomHexString(16);
+            _myAes256iv = getRandomHexString(8);
+
+            return _myAes256key + ":" + _myAes256iv;
+            /*
+            int AES256_key_len = 16;
+            unsigned char* AES256_key_buffer = new unsigned char[AES256_key_len];
+            gnutls_rnd(GNUTLS_RND_KEY, AES256_key_buffer, AES256_key_len);
+            _myAes256key = BaseLib::HelperFunctions::getHexString(AES256_key_buffer, AES256_key_len);
+
+            int AES256_iv_len = 8;
+            unsigned char* AES256_iv_buffer = new unsigned char[AES256_iv_len];
+            gnutls_rnd(GNUTLS_RND_KEY, AES256_iv_buffer, AES256_iv_len);
+            _myAes256iv = BaseLib::HelperFunctions::getHexString(AES256_iv_buffer, AES256_iv_len);
+            */
+        }
+        catch (const std::exception& ex)
+        {
+            GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+        }
+    }
 
 	void LoxoneEncryption::setPublicKey(std::string certificate)
 	{
@@ -28,41 +84,15 @@ namespace Loxone
 		_publicKey = certificate;
 	}
 
-	void LoxoneEncryption::setKey(std::string hexKey)
-	{
-		_key.clear();
+	void LoxoneEncryption::setKey(std::string hexKey) {
+        _key.clear();
 
-		for (uint32_t i = 0; i < hexKey.size(); i += 2)
-		{
-			std::string s = hexKey.substr(i, 2);
-			int value = std::stoi(s, nullptr, 16);
-			_key += (char)value;
-		}
-	}
-
-	int LoxoneEncryption::makeAES256()
-	{
-		try
-		{
-			int AES256_key_len = 16;
-			unsigned char* AES256_key_buffer = new unsigned char[AES256_key_len];
-			gnutls_rnd(GNUTLS_RND_KEY, AES256_key_buffer, AES256_key_len);
-			_AES256_key = BaseLib::HelperFunctions::getHexString(AES256_key_buffer, AES256_key_len);
-
-			int AES256_iv_len = 8;
-			unsigned char* AES256_iv_buffer = new unsigned char[AES256_iv_len];
-			gnutls_rnd(GNUTLS_RND_KEY, AES256_iv_buffer, AES256_iv_len);
-			_AES256_iv = BaseLib::HelperFunctions::getHexString(AES256_iv_buffer, AES256_iv_len);
-
-			return 0;
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-			return -1;
-		}
-		return 0;
-	}
+        for (uint32_t i = 0; i < hexKey.size(); i += 2) {
+            std::string s = hexKey.substr(i, 2);
+            int value = std::stoi(s, nullptr, 16);
+            _key += (char) value;
+        }
+    }
 
 	int LoxoneEncryption::buildSessionKey(std::string& RSA_encrypted)
 	{
@@ -91,11 +121,11 @@ namespace Loxone
 			return-1;
 		}
 
-		std::string plaintextString = _AES256_key + ":" + _AES256_iv;
+		//std::string plaintextString = _AES256_key + ":" + _AES256_iv;
 
 		gnutls_datum_t plaintext;
-		plaintext.data = (unsigned char*)plaintextString.data();
-		plaintext.size = plaintextString.size();
+		plaintext.data = (unsigned char*)_myAes256key_iv.c_str();
+		plaintext.size = _myAes256key_iv.size();
 
 		gnutls_datum_t ciphertext;
 
@@ -108,17 +138,11 @@ namespace Loxone
 			return-1;
 		}
 
-		std::stringstream RSA_encryptedStringStream;
-		for (uint32_t i = 0; i < ciphertext.size; i++)
-		{
-			RSA_encryptedStringStream << ciphertext.data[i];
-		}
-
 		std::string x(reinterpret_cast<const char *>(ciphertext.data), ciphertext.size);
+		//std::string y((char*)ciphertext.data);
 		std::string RSA_encrypted2 = "";
-		BaseLib::Base64::encode(x, RSA_encrypted2);
-
-		BaseLib::Base64::encode(RSA_encryptedStringStream.str(), RSA_encrypted);
+		BaseLib::Base64::encode(x, RSA_encrypted);
+		BaseLib::Base64::encode(std::string((char*)ciphertext.data), RSA_encrypted2);
 
 		return 0;
 	}
@@ -167,23 +191,38 @@ namespace Loxone
 	{
 		try
 		{
-			std::string toEncrypt = "salt/" + salt + "/" + command + "\0";
-            std::vector<char> cstr(toEncrypt.begin(), toEncrypt.end());
-
             uint32_t blocksize = gnutls_cipher_get_block_size(GNUTLS_CIPHER_AES_256_CBC);
 
+            /*
+            uint32_t plainTextLen = std::string("satlt/").size() + salt.size() + 1 + command.size();
+            plainTextLen += plainTextLen % blocksize;
+		    std::vector<uint8_t> plainText;
+		    plainText.reserve(plainTextLen);
+
+		    plainText.insert(plainText.end(),std::string("satlt/").begin(), std::string("satlt/").end());
+            plainText.insert(plainText.end(), salt.begin(), salt.end());
+            plainText.insert(plainText.end(), '/');
+            plainText.insert(plainText.end(), command.begin(), command.end());
+
+            for(auto i = plainText.end(); i != plainText.end(); ++i)
+            {
+
+            }
+*/
+			std::string toEncrypt = getSalt() +  command + "\0";
+            std::vector<char> cstr(toEncrypt.begin(), toEncrypt.end());
             while(cstr.size()%blocksize > 0)
             {
-                cstr.push_back(NULL);
+                cstr.push_back('\0');
             }
 			gnutls_cipher_hd_t handle;
 			gnutls_datum_t key;
-			key.data = (unsigned char*)_AES256_key.data();
-			key.size = _AES256_key.size();
+			key.data = (unsigned char*)_myAes256key.data();
+			key.size = _myAes256key.size();
 
 			gnutls_datum_t iv;
-			iv.data = (unsigned char*)_AES256_iv.data();
-			iv.size = _AES256_iv.size();
+			iv.data = (unsigned char*)_myAes256iv.data();
+			iv.size = _myAes256iv.size();
 
 			gnutls_cipher_init(&handle, GNUTLS_CIPHER_AES_256_CBC, &key, &iv);
 
