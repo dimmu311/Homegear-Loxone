@@ -3,40 +3,54 @@
 
 #include <string>
 #include "GD.h"
+#include <gnutls/gnutls.h>
+#include <gnutls/abstract.h>
+#include <gnutls/crypto.h>
 
 namespace Loxone
 {
 	class LoxoneEncryption
 	{
 	public:
-		LoxoneEncryption();
+		LoxoneEncryption(const std::string user, const std::string password);
+        ~LoxoneEncryption();
 
+		uint32_t buildSessionKey(std::string& rsaEncrypted);
 
-		int buildSessionKey(std::string& RSA_encrypted);
-		void deInitGnuTls();
-		void initGnuTls();
+		uint32_t encryptCommand(const std::string command, std::string& encryptedCommand);
+        uint32_t hashPassword(std::string& hashedPassword);
 
-		std::string encryptCommand(std::string command);
-		std::string hashPassword(std::string user, std::string password);
-
-		void setPublicKey(std::string certificate);
-		void setKey(std::string hexKey);
-		
-		std::string _key;
-		std::string _salt;
+		void setPublicKey(const std::string certificate);
+		void setKey(const std::string hexKey);
+		void setSalt(const std::string salt);
 
 	private:
-		std::string _publicKey;
-		std::string _myAes256key_iv;
-        std::string _myAes256key;
-        std::string _myAes256iv;
+        gnutls_datum_t* _publicKey;
+        gnutls_datum_t* _myAes256key;
+        gnutls_datum_t* _myAes256iv;
+        gnutls_datum_t* _myAes256key_iv;
+
+        std::string key;
+        std::string iv;
+        std::string aesKey_Iv;
+
+        std::string _user;
+        std::string _password;
+
+        std::string _loxKey;
+        std::string _loxSalt;
+
+        gnutls_cipher_hd_t _Aes256Handle;
         std::string _mySalt;
         uint32_t _mySaltUsageCounter;
 
         std::string getRandomHexString(uint32_t len);
         std::string getNewSalt();
         std::string getSalt();
-        std::string getNewAes256();
+        uint32_t getNewAes256();
+
+        void deInitGnuTls();
+        void initGnuTls();
     };
 }
 #endif

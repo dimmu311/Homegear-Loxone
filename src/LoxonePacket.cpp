@@ -217,8 +217,6 @@ namespace Loxone
 
 		if (responseCode == 200)// ok
 		{
-			//ToDO, z�hle die Zeilen solange bis 2 Leerzeilen kommen. Die Zeile danach ist dann der Json String.
-			//Das ist dann sicherer wie das Zeigen auf Zeile 7. Wer wei� wann Loxone den Header umbaut.
 			PVariable json = getJson(jsonString);
 			if (!json) return;
 
@@ -250,7 +248,7 @@ namespace Loxone
 		else
 		{
 			GD::out.printMessage("Received Http Command with Code not 200 and not 101" + jsonString, 0, true);//from TR
-			//TODO Handle Responses wike 404 and so
+			//TODO Handle Responses like 404 and so
 		}
 	}
 	LoxoneWsPacket::LoxoneWsPacket(std::string jsonString)

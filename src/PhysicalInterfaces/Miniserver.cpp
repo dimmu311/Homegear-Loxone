@@ -27,6 +27,8 @@ Miniserver::Miniserver(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettin
 
 	_user = settings->user;
 	_password = settings->password;
+
+    _loxoneEncryption = std::make_shared<LoxoneEncryption>(_user, _password);
 }
 
 Miniserver::~Miniserver()
@@ -47,8 +49,15 @@ void Miniserver::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
     {
         PLoxonePacket loxonePacket(std::dynamic_pointer_cast<LoxonePacket>(packet));
         if(!loxonePacket) return;
-		
-		std::string command = "jdev/sys/enc/" + _loxoneEncryption.encryptCommand(loxonePacket->getCommand());
+
+        std::string command;
+        if(_loxoneEncryption->encryptCommand(loxonePacket->getCommand(),command)<0)
+        {
+            _out.printError("Error: Could not encrypt Command.");
+            _stopped = true;
+            return;
+        }
+		command = "jdev/sys/enc/" + command;
 		try
 		{
             if(GD::bl->debugLevel >= 5) GD::out.printInfo("Info: Sending packet " + command);
@@ -170,7 +179,7 @@ void Miniserver::init()
 					_stopped = true;
 					return;
 				}
-				_loxoneEncryption.setPublicKey(loxoneHttpPacket->getValue()->stringValue);
+				_loxoneEncryption->setPublicKey(loxoneHttpPacket->getValue()->stringValue);
 			}
 
 			{
@@ -198,7 +207,12 @@ void Miniserver::init()
 				auto loxonePacket = LoxonePacket::_commands.at("keyexchange");
 
 				std::string RSA_encrypted;
-				_loxoneEncryption.buildSessionKey(RSA_encrypted);
+				if(_loxoneEncryption->buildSessionKey(RSA_encrypted)< 0)
+                {
+                    _out.printError("Error: Could not encrypt AES Keys.");
+                    _stopped = true;
+                    return;
+                }
 								
 				loxonePacket._value = RSA_encrypted;
 				auto responsePacket = getResponse(loxonePacket);
@@ -218,7 +232,14 @@ void Miniserver::init()
 
                 auto loxonePacket = LoxonePacket::_commands.at("getkey2");
 
-				loxonePacket._value = _loxoneEncryption.encryptCommand(loxonePacket._command + _user);
+                std::string command;
+                if(_loxoneEncryption->encryptCommand(loxonePacket._command + _user, command)<0)
+                {
+                    _out.printError("Error: Could not encrypt command.");
+                    _stopped = true;
+                    return;
+                }
+				loxonePacket._value = command;
 				loxonePacket._command = "jdev/sys/enc/";
 
 				auto responsePacket = getResponse(loxonePacket);
@@ -232,15 +253,28 @@ void Miniserver::init()
 					return;
 				}
 
-				_loxoneEncryption.setKey(loxoneTextmessagePacket->getValue()->structValue->at("key")->stringValue);
-				_loxoneEncryption._salt = loxoneTextmessagePacket->getValue()->structValue->at("salt")->stringValue;
+				_loxoneEncryption->setKey(loxoneTextmessagePacket->getValue()->structValue->at("key")->stringValue);
+				_loxoneEncryption->setSalt(loxoneTextmessagePacket->getValue()->structValue->at("salt")->stringValue);
 			}
 			{
                 if (GD::bl->debugLevel >= 5) _out.printDebug("Step 5: getToken");
 
 				auto loxonePacket = LoxonePacket::_commands.at("getToken");
-				loxonePacket._value = _loxoneEncryption.hashPassword(_user, _password);
-				loxonePacket._value = _loxoneEncryption.encryptCommand("jdev/sys/gettoken/" + loxonePacket._value + "/"+ _user + "/2/edfc5f9a-df3f-4cad-9dddcdc42c732be2/homegearloxwsapi");
+				std::string hashedPassword;
+				if(_loxoneEncryption->hashPassword(hashedPassword)<0)
+                {
+                    _out.printError("Error: Could not hash password.");
+                    _stopped = true;
+                    return;
+                }
+				std::string command;
+                if(_loxoneEncryption->encryptCommand("jdev/sys/gettoken/" + hashedPassword + "/"+ _user + "/2/edfc5f9a-df3f-4cad-9dddcdc42c732be2/homegearloxwsapi", command)<0)
+                {
+                    _out.printError("Error: Could not encrypt command.");
+                    _stopped = true;
+                    return;
+                }
+				loxonePacket._value = command;
 				loxonePacket._command = "jdev/sys/enc/";
 
 				auto responsePacket = getResponse(loxonePacket);
