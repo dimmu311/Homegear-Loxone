@@ -2,7 +2,7 @@
 #define MINISERVER_H
 
 #include "../LoxonePacket.h"
-#include "../LoxoneEncryption.h"
+#include "LoxoneEncryption.h"
 
 namespace Loxone
 {

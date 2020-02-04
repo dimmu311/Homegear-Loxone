@@ -4,9 +4,14 @@ project(homegear_loxone_miniserver)
 set(CMAKE_CXX_STANDARD 14)
 
 set(SOURCE_FILES
+		src/PhysicalInterfaces/GnutlsData.cpp
+		src/PhysicalInterfaces/GnutlsData.h
         src/PhysicalInterfaces/Miniserver.cpp
         src/PhysicalInterfaces/Miniserver.h
-        src/Factory.cpp
+		src/PhysicalInterfaces/LoxoneEncryption.cpp
+		src/PhysicalInterfaces/LoxoneEncryption.h
+		src/PhysicalInterfaces/
+		src/Factory.cpp
         src/Factory.h
         src/GD.cpp
         src/GD.h
@@ -18,15 +23,13 @@ set(SOURCE_FILES
         src/LoxoneCentral.h
 		src/LoxoneControl.cpp
 		src/LoxoneControl.h
-		src/LoxoneEncryption.cpp
-		src/LoxoneEncryption.h
 		src/LoxoneLoxApp3.cpp
 		src/LoxoneLoxApp3.h
 		src/LoxonePacket.cpp
         src/LoxonePacket.h
         src/LoxonePeer.cpp
         src/LoxonePeer.h
-)
+		)
 add_custom_target(homegear COMMAND ../../makeAll.sh SOURCES ${SOURCE_FILES})
 
 add_library(homegear_loxone_miniserver ${SOURCE_FILES})

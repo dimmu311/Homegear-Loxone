@@ -1,7 +1,7 @@
 #include "Miniserver.h"
 #include "../Loxone.h"
 #include "../GD.h"
-#include "../LoxoneEncryption.h"
+#include "LoxoneEncryption.h"
 
 
 namespace Loxone
@@ -282,10 +282,18 @@ void Miniserver::init()
 
 				if (loxoneTextmessagePacket->getResponseCode() != 200)
 				{
-					_out.printError("Error: Could not get Tokens from Miniserver.");
+					_out.printError("Error: Could not get Token from Miniserver.");
 					_stopped = true;
 					return;
 				}
+
+				_loxoneEncryption->setToken(loxoneTextmessagePacket->getValue());
+                //if(_loxoneEncryption->setToken(loxoneTextmessagePacket->getValue())<0)
+                //{
+                //    _out.printError("Error: Could not import Token.");
+                //    _stopped = true;
+                //    return;
+                //}
 			}
 			{
                 if (GD::bl->debugLevel >= 5) _out.printDebug("Step 6: enableUpdates");
