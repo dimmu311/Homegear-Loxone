@@ -1,11 +1,13 @@
 #include "LoxoneEncryption.h"
+#include <ctime>
 
 namespace Loxone
 {
 	GCRY_THREAD_OPTION_PTHREAD_IMPL;
 	
-	LoxoneEncryption::LoxoneEncryption(const std::string user, const std::string password)
+	LoxoneEncryption::LoxoneEncryption(const std::string user, const std::string password, BaseLib::SharedObjects* bl)
 	{
+	    _bl = bl;
 	    _user = user;
 	    _password = password;
 
@@ -207,23 +209,71 @@ namespace Loxone
         }
     }
 
+    uint32_t LoxoneEncryption::hashToken(std::string &hashedToken)
+    {
+	    try
+        {
+            int hashedLen = gnutls_hmac_get_len(GNUTLS_MAC_SHA1);
+            unsigned char hashed[hashedLen];
+            std::string ptext = _loxToken;
+            if(gnutls_hmac_fast(GNUTLS_MAC_SHA1, _loxKey.c_str(), _loxKey.size(), ptext.c_str(), ptext.size(), &hashed)<0)
+            {
+                GD::out.printError("GNUTLS_MAC_SHA1 failed");
+                return -1;
+            }
+
+            hashedToken = BaseLib::HelperFunctions::getHexString(hashed, hashedLen);
+            hashedToken = BaseLib::HelperFunctions::toLower(hashedToken);
+            return 0;
+        }
+        catch (const std::exception &ex)
+        {
+            GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+            return -1;
+        }
+    }
+
     uint32_t LoxoneEncryption::setToken(const BaseLib::PVariable value)
     {
-        //try
-        //{
-            std::string token = value->structValue->at("token")->stringValue;
-            std::string key = value->structValue->at("key")->stringValue;
-            uint64_t validUntil = value->structValue->at("validUntil")->integerValue64;
+        try
+        {
+            _loxToken = value->structValue->at("token")->stringValue;
+            //Not sure if this is the right way. The loxone doku says that this key can be uses like a key from the /getkey2 request
+            //But later in the docu thay say to authenticate by token, the token has to be hashed bei the key from /getkey2 request.
+            //But they didn't say get key by /getkey2 request to hash the token.
+            //See section Authentication using Tokens.
+            setKey(value->structValue->at("key")->stringValue);
+            _tokenValidUntil = value->structValue->at("validUntil")->floatValue;
+            _tokenValidUntil += _loxoneTimeOffset;
+
+            /*
+            time_t time = std::time(nullptr);
+            std::string stime = std::to_string(time);
+            */
+            time_t timeTokenValidUntil = _tokenValidUntil;
+            std::string timeString(ctime(&timeTokenValidUntil));
+            if (GD::bl->debugLevel >= 5) GD::out.printDebug("This Token is valid until: " + timeString);
+
             uint32_t tokenRights = value->structValue->at("tokenRights")->integerValue;
             bool unsecurePass = value->structValue->at("unsecurePass")->booleanValue;
             return 0;
-        //}
-        //catch (const std::exception &ex)
-        //{
-         //   GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-         //   return -1;
-        //}
+        }
+        catch (const std::exception &ex)
+        {
+            GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+            return -1;
+        }
     }
+
+    uint32_t LoxoneEncryption::getToken(std::string& token, uint64_t& lifeTime)
+    {
+	    if(_loxToken.size() <= 0) return -1;
+	    if(_tokenValidUntil == 0) return -1;
+	    token = _loxToken;
+	    lifeTime = _tokenValidUntil;
+        return 0;
+    }
+
     void LoxoneEncryption::deInitGnuTls()
     {
         // {{{ DeInit gcrypt and GnuTLS

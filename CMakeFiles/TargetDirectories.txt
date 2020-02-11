@@ -1,0 +1,4 @@
+/root/Homegear-Loxone/CMakeFiles/rebuild_cache.dir
+/root/Homegear-Loxone/CMakeFiles/edit_cache.dir
+/root/Homegear-Loxone/CMakeFiles/homegear.dir
+/root/Homegear-Loxone/CMakeFiles/homegear_loxone_miniserver.dir

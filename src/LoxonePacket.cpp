@@ -13,6 +13,8 @@ namespace Loxone
 		"jdev/sys/getkey2/",
 		"jdev/sys/gettoken/",
 		"dev/sps/enablebinstatusupdate",
+
+		"jdev/sys/enc/",
 	};
 
 	const std::unordered_map<std::string, LoxoneHttpCommand> LoxonePacket::_commands =
@@ -72,6 +74,16 @@ namespace Loxone
 			commandType::ws,
 			}
 		},
+        {"getkey", LoxoneHttpCommand{
+            "jdev/sys/getkey/"
+            ,
+            "jdev/sys/enc/"
+            ,
+            ""
+            ,
+            commandType::ws,
+            }
+        },
 		{"getToken", LoxoneHttpCommand{
 			"jdev/sys/gettoken/"
 			,
@@ -122,6 +134,13 @@ namespace Loxone
 			commandType::ws,
 			}
 		},
+        {"refreshToken", LoxoneHttpCommand{
+            "jdev/sys/refreshtoken/",
+            "dev/sps/LoxAPPversion3",
+            "",
+            commandType::ws,
+            }
+        },
 	};
 
 	std::string LoxonePacket::getUuidFromPacket(char* packet)

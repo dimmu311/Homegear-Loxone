@@ -28,7 +28,23 @@ Miniserver::Miniserver(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettin
 	_user = settings->user;
 	_password = settings->password;
 
-    _loxoneEncryption = std::make_shared<LoxoneEncryption>(_user, _password);
+
+    std::string lifeTimeString;
+    std::string token;
+    {
+        std::string name = "token_life_time";
+        auto setting = GD::family->getFamilySetting(name);
+        lifeTimeString = setting->stringValue;
+    }
+    {
+        std::string name = "token";
+        auto setting = GD::family->getFamilySetting(name);
+        token = setting->stringValue;
+    }
+
+    _out.printInfo("loaded Token. Token is valide until" + lifeTimeString + ":::" + token);
+
+    _loxoneEncryption = std::make_shared<LoxoneEncryption>(_user, _password, _bl);
 }
 
 Miniserver::~Miniserver()
@@ -36,6 +52,7 @@ Miniserver::~Miniserver()
     stopListening();
     _bl->threadManager.join(_initThread);
 	_bl->threadManager.join(_keepAliveThread);
+	_bl->threadManager.join(_refreshTokenThread);
 }
 
 uint16_t Miniserver::getMessageCounter()
@@ -128,6 +145,8 @@ void Miniserver::stopListening()
         _stopCallbackThread = true;
         if(_tcpSocket) _tcpSocket->close();
         _bl->threadManager.join(_listenThread);
+        _bl->threadManager.join(_keepAliveThread);
+
         _stopped = true;
         IPhysicalInterface::stopListening();
     }
@@ -248,7 +267,7 @@ void Miniserver::init()
 				//if (!responsePacket || responsePacket->getPayload().at(0) == 1)
 				if (loxoneTextmessagePacket->getResponseCode() != 200)
 				{
-					_out.printError("Error: Could not get Tokens from Miniserver.");
+					_out.printError("Error: Could not get Key from Miniserver.");
 					_stopped = true;
 					return;
 				}
@@ -287,13 +306,13 @@ void Miniserver::init()
 					return;
 				}
 
-				_loxoneEncryption->setToken(loxoneTextmessagePacket->getValue());
-                //if(_loxoneEncryption->setToken(loxoneTextmessagePacket->getValue())<0)
-                //{
-                //    _out.printError("Error: Could not import Token.");
-                //    _stopped = true;
-                //    return;
-                //}
+				if(_loxoneEncryption->setToken(loxoneTextmessagePacket->getValue())<0)
+                {
+                    _out.printError("Error: Could not import Token.");
+                    _stopped = true;
+                    return;
+                }
+				saveToken();
 			}
 			{
                 if (GD::bl->debugLevel >= 5) _out.printDebug("Step 6: enableUpdates");
@@ -312,24 +331,124 @@ void Miniserver::init()
         _out.printInfo("Info: Initialization complete.");
 		_out.printInfo("Info: Starting Keep Alive Thread.");
 		_bl->threadManager.start(_keepAliveThread, true, &Miniserver::keepAlive, this);
+        _out.printInfo("Info: Starting Refresh Token Thread.");
+        _bl->threadManager.start(_refreshTokenThread, true, &Miniserver::refreshToken, this);
     }
     catch(const std::exception& ex)
     {
         _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
 }
+void Miniserver::saveToken()
+{
+    _out.printInfo("Info: Save Token.");
+    std::string token;
+    uint64_t lifeTime;
+    if(_loxoneEncryption->getToken(token, lifeTime)==0)
+    {
+        std::string name = "token_life_time";
+        std::string lifeTimeString = std::to_string(lifeTime);
+        GD::family->setFamilySetting(name, lifeTimeString);
+        name = "token";
+        GD::family->setFamilySetting(name, token);
+    }
+}
+void Miniserver::refreshToken()
+{/*
+    try
+    {
+        uint32_t refreshToken = 5000;
+        while (!_stopCallbackThread)
+            //_stopped
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //Sleep for 1sec
+            {
+                if (refreshToken >= 3600)
+                {
+                    refreshToken = 0;
+
+                    if (GD::bl->debugLevel >= 5) _out.printDebug("Step 1: getkey");
+                    {
+                        auto loxonePacket = LoxonePacket::_commands.at("getkey");
+
+                        std::string command;
+                        if (_loxoneEncryption->encryptCommand(loxonePacket._command + _user, command) < 0) {
+                            _out.printError("Error: Could not encrypt command.");
+                            _stopped = true;
+                            return;
+                        }
+                        loxonePacket._value = command;
+                        loxonePacket._command = "jdev/sys/enc/";
+
+                        auto responsePacket = getResponse(loxonePacket);
+                        auto loxoneTextmessagePacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+
+                        //if (!responsePacket || responsePacket->getPayload().at(0) == 1)
+                        if (loxoneTextmessagePacket->getResponseCode() != 200) {
+                            _out.printError("Error: Could not get Tokens from Miniserver.");
+                            _stopped = true;
+                            return;
+                        }
+
+                        _loxoneEncryption->setKey(loxoneTextmessagePacket->getValue()->structValue->at("key")->stringValue);
+                    }
+                    {
+                    auto loxonePacket = LoxonePacket::_commands.at("refreshToken");
+                    std::string hashedToken;
+                    if(_loxoneEncryption->hashToken(hashedToken)<0)
+                    {
+                        _out.printError("Error: Could not hash the Token.");
+                        _stopped = true;
+                        return;
+                    }
+                    std::string command;
+                    if(_loxoneEncryption->encryptCommand(loxonePacket._value + hashedToken + "/" + _user, command)<0)
+                    {
+                        _out.printError("Error: Could not encrypt command.");
+                        _stopped = true;
+                        return;
+                    }
+                    loxonePacket._value = command;
+
+                    _out.printInfo(loxonePacket._value);
+
+                    loxonePacket._command = "jdev/sys/enc/";
+                    auto responsePacket = getResponse(loxonePacket);
+
+                    auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+
+                    if (loxoneWsPacket->getResponseCode() != 200)
+                    {
+                        _out.printError("Error: Could not refresh token lifetime at the miniserver.");
+                        _stopped = true;
+                        return;
+                    }
+                    saveToken();
+                    }
+                }
+                refreshToken++;
+            }
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+*/}
 
 void Miniserver::keepAlive()
 {
 	try
 	{
-		while (!_stopCallbackThread)
+        uint32_t keepAliveCounter;
+        while (!_stopCallbackThread)
+		//_stopped
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //Sleep for 60sec
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //Sleep for 1sec
 			{
-				if (_keepAliveCounter >= 60)
+				if (keepAliveCounter >= 60)
 				{
-					_keepAliveCounter = 0;
+					keepAliveCounter = 0;
 
 					auto loxonePacket = LoxonePacket::_commands.at("keepalive");
 					auto responsePacket = getResponse(loxonePacket);
@@ -343,7 +462,7 @@ void Miniserver::keepAlive()
 						return;
 					}
 				}
-				_keepAliveCounter++;
+				keepAliveCounter++;
 			}
 		}
 	}

@@ -78,6 +78,7 @@ protected:
 
     std::thread _initThread;
     std::thread _keepAliveThread;
+    std::thread _refreshTokenThread;
 
     std::mutex _sendPacketMutex;
     std::mutex _getResponseMutex;
@@ -90,6 +91,8 @@ protected:
     void listen();
     void init();
 	void keepAlive();
+    void refreshToken();
+    void saveToken();
 
 	void processHttpPacket(const std::vector<char>& data, uint32_t responseCode);
 	void processWsPacket(std::vector<char>& data);
@@ -106,8 +109,6 @@ protected:
 	PLoxonePacket getResponse(const LoxoneHttpCommand& requestPacket, int32_t waitForSeconds = 15);
 
     std::shared_ptr<LoxoneEncryption> _loxoneEncryption;
-
-	uint32_t _keepAliveCounter;
 };
 
 
