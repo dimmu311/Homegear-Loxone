@@ -26,6 +26,7 @@ namespace Loxone
 		void setKey(const std::string hexKey);
 		void setSalt(const std::string salt);
         uint32_t setToken(const BaseLib::PVariable value);
+        uint32_t setToken(const std::string token, const uint64_t lifeTime);
         uint32_t getToken(std::string& token, uint64_t& lifeTime);
 
 	private:

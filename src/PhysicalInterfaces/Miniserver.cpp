@@ -29,12 +29,13 @@ Miniserver::Miniserver(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettin
 	_password = settings->password;
 
 
-    std::string lifeTimeString;
+    uint64_t lifeTime;
     std::string token;
     {
         std::string name = "token_life_time";
         auto setting = GD::family->getFamilySetting(name);
-        lifeTimeString = setting->stringValue;
+        std::string lifeTimeString = setting->stringValue;
+        lifeTime = std::stoi(lifeTimeString);
     }
     {
         std::string name = "token";
@@ -42,9 +43,8 @@ Miniserver::Miniserver(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettin
         token = setting->stringValue;
     }
 
-    _out.printInfo("loaded Token. Token is valide until" + lifeTimeString + ":::" + token);
-
     _loxoneEncryption = std::make_shared<LoxoneEncryption>(_user, _password, _bl);
+    _loxoneEncryption->setToken(token, lifeTime);
 }
 
 Miniserver::~Miniserver()

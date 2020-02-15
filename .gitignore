@@ -81,4 +81,5 @@ stamp-h?
 
 #CLion
 cmake-build-debug
+CMakeFiles
 .idea

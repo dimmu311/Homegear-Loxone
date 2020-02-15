@@ -265,13 +265,25 @@ namespace Loxone
         }
     }
 
+    uint32_t LoxoneEncryption::setToken(const std::string token, const uint64_t lifeTime)
+    {
+	    _loxToken = token;
+	    _tokenValidUntil = lifeTime;
+
+	    time_t timeTokenValidUntil = _tokenValidUntil;
+        std::string timeString(ctime(&timeTokenValidUntil));
+        if (GD::bl->debugLevel >= 5) GD::out.printDebug("This Token is valid until: " + timeString);
+
+        return 0;
+    }
+
     uint32_t LoxoneEncryption::getToken(std::string& token, uint64_t& lifeTime)
     {
 	    if(_loxToken.size() <= 0) return -1;
 	    if(_tokenValidUntil == 0) return -1;
 	    token = _loxToken;
 	    lifeTime = _tokenValidUntil;
-        return 0;
+	    return 0;
     }
 
     void LoxoneEncryption::deInitGnuTls()
