@@ -23,4 +23,4 @@ The next step is to configure the module
 ```console
 dimmu@homegearpi(rw):/home/pi/Homegear-Loxone# nano /etc/homegear/families/loxone.conf
 ````
-i recomend to generate extra username and passwort for Homegear on your Loxone Miniserver. By this way you don't need to chang anything in this configuratan after updating users/passworts that you use on the Loxone App. Also you can set lower access permisson for the Homegear user. The Homegear user only needs permison for lokal connection, no FTP or something else.
+i recomend to generate extra username and passwort for Homegear on your Loxone Miniserver. By this way you don't need to chang anything in this configuration after updating users/passwords that you use on the Loxone App. Also you can set lower access permission for the Homegear user. The Homegear user only needs permission for lokal connection, no FTP or something else.
