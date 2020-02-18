@@ -189,10 +189,14 @@ void Miniserver::init()
                 //auto loxonePacket = std::make_shared<LoxonePacket>(LoxonePacket::httpGetPublicKey());
 				auto loxonePacket = LoxonePacket::_commands.at("getPublicKey");
 				auto responsePacket = getResponse(loxonePacket);
+				if(!responsePacket)
+				{
+					_out.printError("Error: Could not get Public Key from Miniserver.");
+					_stopped = true;
+					return;
+				}
 				auto loxoneHttpPacket = std::dynamic_pointer_cast<LoxoneHttpPacket>(responsePacket);
-
-				//if (!responsePacket || responsePacket->getPayload().at(0) == 1)
-				if (loxoneHttpPacket->getResponseCode() != 200)
+				if (!loxoneHttpPacket || loxoneHttpPacket->getResponseCode() != 200)
 				{
 					_out.printError("Error: Could not get Public Key from Miniserver.");
 					_stopped = true;
@@ -206,10 +210,15 @@ void Miniserver::init()
 
 				auto loxonePacket = LoxonePacket::_commands.at("openWebsocket");
 				auto responsePacket = getResponse(loxonePacket);
-				auto loxoneHttpPacket = std::dynamic_pointer_cast<LoxoneHttpPacket>(responsePacket);
 
-				//if (!responsePacket || responsePacket->getPayload().at(0) == 1)
-				if (loxoneHttpPacket->getResponseCode() != 101)
+				if (!responsePacket)
+				{
+					_out.printError("Error: Could not open Websocket Connection to Miniserver.");
+					_stopped = true;
+					return;
+				}
+				auto loxoneHttpPacket = std::dynamic_pointer_cast<LoxoneHttpPacket>(responsePacket);
+				if (!loxoneHttpPacket || loxoneHttpPacket->getResponseCode() != 101)
 				{
 					_out.printError("Error: Could not open Websocket Connection to Miniserver.");
 					_stopped = true;
@@ -235,10 +244,14 @@ void Miniserver::init()
 								
 				loxonePacket._value = RSA_encrypted;
 				auto responsePacket = getResponse(loxonePacket);
+				if(!responsePacket)
+				{
+					_out.printError("Error: Could not exchange AES Keys with Miniserver.");
+					_stopped = true;
+					return;
+				}
 				auto loxoneTextmessagePacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-
-				//if (!responsePacket || responsePacket->getPayload().at(0) == 1)
-				if (loxoneTextmessagePacket->getResponseCode() != 200)
+				if (!loxoneTextmessagePacket || loxoneTextmessagePacket->getResponseCode() != 200)
 				{
 					_out.printError("Error: Could not exchange AES Keys with Miniserver.");
 					_stopped = true;
@@ -262,10 +275,14 @@ void Miniserver::init()
 				loxonePacket._command = "jdev/sys/enc/";
 
 				auto responsePacket = getResponse(loxonePacket);
+				if (!responsePacket)
+				{
+					_out.printError("Error: Could not get Key from Miniserver.");
+					_stopped = true;
+					return;
+				}
 				auto loxoneTextmessagePacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-
-				//if (!responsePacket || responsePacket->getPayload().at(0) == 1)
-				if (loxoneTextmessagePacket->getResponseCode() != 200)
+				if (!loxoneTextmessagePacket || loxoneTextmessagePacket->getResponseCode() != 200)
 				{
 					_out.printError("Error: Could not get Key from Miniserver.");
 					_stopped = true;
@@ -297,9 +314,15 @@ void Miniserver::init()
 				loxonePacket._command = "jdev/sys/enc/";
 
 				auto responsePacket = getResponse(loxonePacket);
-				auto loxoneTextmessagePacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+				if(!responsePacket)
+				{
+					_out.printError("Error: Could not get Token from Miniserver.");
+					_stopped = true;
+					return;
+				}
 
-				if (loxoneTextmessagePacket->getResponseCode() != 200)
+				auto loxoneTextmessagePacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+				if (!loxoneTextmessagePacket || loxoneTextmessagePacket->getResponseCode() != 200)
 				{
 					_out.printError("Error: Could not get Token from Miniserver.");
 					_stopped = true;
@@ -319,8 +342,14 @@ void Miniserver::init()
 
 				auto loxonePacket = LoxonePacket::_commands.at("enableUpdates");
 				auto responsePacket = getResponse(loxonePacket);
+				if(!responsePacket)
+				{
+					_out.printError("Error: Could not enable Updates from Miniserver.");
+					_stopped = true;
+					return;
+				}
 				auto loxoneTextmessagePacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-				if (loxoneTextmessagePacket->getResponseCode() != 200)
+				if (!loxoneTextmessagePacket || loxoneTextmessagePacket->getResponseCode() != 200)
 				{
 					_out.printError("Error: Could not enable Updates from Miniserver.");
 					_stopped = true;
@@ -452,10 +481,14 @@ void Miniserver::keepAlive()
 
 					auto loxonePacket = LoxonePacket::_commands.at("keepalive");
 					auto responsePacket = getResponse(loxonePacket);
-
+					if (!responsePacket)
+					{
+						_out.printError("Error: Could not keepalive the connection to the miniserver.");
+						_stopped = true;
+						return;
+					}
 					auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-
-					if (loxoneWsPacket->getResponseCode() != 200)
+					if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
 					{
 						_out.printError("Error: Could not keepalive the connection to the miniserver.");
 						_stopped = true;
@@ -525,6 +558,7 @@ void Miniserver::listen()
                 {
                     bytesRead = _tcpSocket->proofread((char*)buffer.data(), buffer.size());
                     if (GD::bl->debugLevel >= 5) _out.printDebug("listen -> " + std::string(buffer.begin(), buffer.begin()+ bytesRead));
+                    if (GD::bl->debugLevel >= 5) _out.printDebug("listen -> " + BaseLib::HelperFunctions::getHexString((char*)buffer.data(), bytesRead));
                 }
                 catch (BaseLib::SocketTimeOutException& ex)
                 {
@@ -574,6 +608,10 @@ void Miniserver::listen()
 									{
 										processKeepAlivePacket(loxoneHeader.identifier);
 									}
+									else if (loxoneHeader.identifier == Identifier::Out_Of_Service_Indicator)
+									{
+										processOutOfServiceIndicatorPacket(loxoneHeader.identifier);
+									}
 								}
 								else if (loxoneHeader.identifier == Identifier::Textmessage)
 								{
@@ -597,6 +635,10 @@ void Miniserver::listen()
 								}
 								else if (loxoneHeader.identifier == Identifier::Out_Of_Service_Indicator)
 								{
+									//this Condition would never get true;
+									//this is because the Out of Service Response is only a Loxone Header Telegramm.
+									//The normale way is to receive a Loxone Header and after a Message wich has to parse differently -> see the different identifiers
+									//So this means that we have to do a special check at the LoxoneHeader generation if the received header is a Out of Service header
 									processOutOfServiceIndicatorPacket(loxoneHeader.identifier);
 								}
 								else if (loxoneHeader.identifier == Identifier::Keepalive_Response)
@@ -615,6 +657,13 @@ void Miniserver::listen()
 							if (websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::text)
 							{
 								processWsPacket(content);
+							}
+							if(websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::close)
+							{
+								if (GD::bl->debugLevel >= 5) _out.printDebug("Opcode CLOSE -> " + std::string(content.begin(), content.end()));
+								_stopped = true;
+								websocket.reset();
+								break;
 							}
 
 							websocket.reset();
@@ -882,9 +931,15 @@ PVariable Miniserver::getNewStructfile()
 
 	auto loxonePacket = LoxonePacket::_commands.at("newStuctfile");
 	auto responsePacket = getResponse(loxonePacket);
+	if(!responsePacket)
+	{
+		_out.printError("Error: Could not get new Structfile from miniserver.");
+		_stopped = true;
+		return PVariable();
+	}
 	auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
 
-	if (loxoneWsPacket->getResponseCode() != 200)
+	if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
 	{
 		_out.printError("Error: Could not get new Structfile from miniserver.");
 		_stopped = true;
