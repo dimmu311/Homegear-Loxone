@@ -1,0 +1,121 @@
+<homegearDevice version="1">
+  <supportedDevices>
+    <device id="Loxone MediaClient">
+      <description>Loxone MediaClient</description>
+      <typeNumber>0x0201</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function channel="1" type="MEDIA_CLIENT" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>switch_valueset--1</variables>
+    </function>
+  </functions>
+  <packets>
+    <packet id="on.stateSet">
+      <direction>toCentral</direction>
+      <function1>StateSet</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\power</keyPath>
+          <parameterId>POWER</parameterId>
+        </element>
+        <element>
+         <keyPath>state\volume</keyPath>
+         <parameterId>VOLUME</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="stateSet">
+      <direction>fromCentral</direction>
+      <function1>StateSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>POWER</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="volumeSet">
+      <direction>fromCentral</direction>
+      <function1>VolumeSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>VOLUME</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1"/>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="switch_valueset--1">
+      <parameter id="POWER">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="POWER">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+          <packet id="stateSet">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="VOLUME">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="VOLUME">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+          <packet id="volumeSet">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>

@@ -184,5 +184,17 @@ namespace Loxone
 	protected:
 		
 	};
+
+	class MediaClient : public LoxoneControl
+	{
+		/*
+
+		*/
+	public:
+		MediaClient(PVariable control, std::string room, std::string cat);
+		bool processPacket(PLoxonePacket loxonePacket);
+		bool setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet);
+	protected:
+	};
 }
 #endif

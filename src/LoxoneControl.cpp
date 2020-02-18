@@ -10,6 +10,7 @@ namespace Loxone
 		{"Slider", &createInstance<Slider>},
 		{"Dimmer", &createInstance<Dimmer>},
 		{"Alarm", &createInstance<Alarm>},
+		{"MediaClient", &createInstance<MediaClient>},
 	};
     const std::unordered_map<uint32_t, LoxoneControl* (*)(PVariable, std::string, std::string)> LoxoneControl::_uintControlsMap =
     {
@@ -18,6 +19,7 @@ namespace Loxone
             {0x101, &createInstance<Slider>},
             {0x102, &createInstance<Dimmer>},
             {0x200, &createInstance<Alarm>},
+			{0x201, &createInstance<MediaClient>},
     };
 
 	LoxoneControl::LoxoneControl(PVariable control, std::string room, std::string cat, uint32_t typeNr)
@@ -82,6 +84,7 @@ namespace Loxone
 			PLoxoneValueStatesPacket loxoneValuePacket(std::dynamic_pointer_cast<LoxoneValueStatesPacket>(loxonePacket));
 			_json->structValue->at("state")->structValue->operator[](variable) = PVariable(new Variable(loxoneValuePacket->getDValue()));
 			addBooleanState(loxoneValuePacket->getDValue(), variable);
+			GD::out.printDebug("LoxoneControl::preProcessPacket " + loxonePacket->getUuid() + std::to_string(loxonePacket->getDValue()));
 			return true;
 		}
 		case LoxonePacketType::LoxoneTextStatesPacket:
@@ -330,6 +333,72 @@ namespace Loxone
 			return true;
 		}
 		catch (const std::exception & ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+		}
+		return false;
+	}
+
+	MediaClient::MediaClient(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x201)
+	{
+		try
+		{
+
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+		}
+	}
+	bool MediaClient::processPacket(PLoxonePacket loxonePacket)
+	{
+		try
+		{
+			GD::out.printDebug("MediaClient::processPacket " + loxonePacket->getUuid());
+
+			std::string variable;
+			if (LoxoneControl::preProcessPacket(loxonePacket, variable))
+			{
+				if (_json->structValue->at("state")->structValue->find("power") != _json->structValue->at("state")->structValue->end())
+				{
+					auto value = _json->structValue->at("state")->structValue->at("power")->floatValue;
+					_json->structValue->at("state")->structValue->at("power") = PVariable(new Variable((bool)value));
+				}
+				loxonePacket->setJsonString(_json);
+				return true;
+			}
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+		}
+		return false;
+	}
+
+	bool MediaClient::setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet)
+	{
+		try
+		{
+			std::string command;
+			if (method == "setConstString")
+			{
+				GD::out.printInfo("setValueTests: " + parameters->arrayValue->at(0)->stringValue);
+				command = "jdev/sps/io/" + _uuidAction + "/" + parameters->arrayValue->at(0)->stringValue;
+			}
+			else if (method == "StateSet")
+			{
+				auto value = parameters->arrayValue->at(0)->booleanValue;
+				command = "jdev/sps/io/" + _uuidAction + "/" + "off";
+				if (value)
+				{
+					command = "jdev/sps/io/" + _uuidAction + "/" + "on";
+				}
+			}
+
+			packet->setCommand(command);
+			return true;
+		}
+		catch (const std::exception& ex)
 		{
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
