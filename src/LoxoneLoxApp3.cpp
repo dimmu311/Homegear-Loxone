@@ -158,7 +158,6 @@ namespace Loxone
 		try
 		{
 			_controls.clear();
-			_uuidSerialPairs.clear();
 			if (_structFile->structValue->find("controls") == _structFile->structValue->end()) return;
 			PVariable controls = _structFile->structValue->find("controls")->second;
 
@@ -171,11 +170,6 @@ namespace Loxone
 
 				std::shared_ptr<LoxoneControl> control(LoxoneControl::_controlsMap.at(i->second->structValue->at("type")->stringValue)(i->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second));
 				_controls.insert({ serial, control });
-				std::list<std::string> uuids = control->getUuids();
-				for (std::list<std::string>::const_iterator j = uuids.begin(); j != uuids.end(); ++j)
-				{
-					_uuidSerialPairs[j->c_str()] = serial;
-				}
 			}
 		}
 		catch (const std::exception & ex)

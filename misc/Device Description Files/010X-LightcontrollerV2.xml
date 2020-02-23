@@ -1,0 +1,152 @@
+<homegearDevice version="1">
+  <supportedDevices>
+    <device id="Loxone LightControllerV2">
+      <description>Loxone LightControllerV2</description>
+      <typeNumber>0x0103</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function channel="1" type="LightControllerV2" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>switch_valueset--1</variables>
+    </function>
+  </functions>
+  <packets>
+    <packet id="on.stateSet">
+      <direction>toCentral</direction>
+      <function1>StateSet</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\activeMoods</keyPath>
+          <parameterId>"ACTIVE_MOODS"</parameterId>
+        </element>
+        <element>
+          <keyPath>state\moodList</keyPath>
+          <parameterId>MOOD_LIST</parameterId>
+        </element>
+        <element>
+          <keyPath>state\favoriteMoods</keyPath>
+          <parameterId>ADDITIONAL_MOODS</parameterId>
+        </element>
+        <element>
+          <keyPath>state\additionalMoods</keyPath>
+          <parameterId>ADDITIONAL_MOODS</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="valueSet">
+      <direction>fromCentral</direction>
+      <function1>ValueSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>VALUE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1"/>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="switch_valueset--1">
+      <parameter id="ACTIVE_MOODS">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="ACTIVE_MOODS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="MOOD_LIST">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="MOOD_LIST">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="FAVORITE_MOODS">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="FAVORITE_MOODS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ADDITIONAL_MOODS">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="ADDITIONAL_MOODS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>

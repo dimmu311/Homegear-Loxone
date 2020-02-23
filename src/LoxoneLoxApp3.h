@@ -15,11 +15,9 @@ public:
 	int32_t parseStructFile(BaseLib::PVariable structFile);
 
 	std::unordered_map<std::string, std::shared_ptr<LoxoneControl>> getControls() { return _controls; }
-	std::unordered_map<std::string, std::string> getUuidSerialPairs() { return _uuidSerialPairs; }
 	std::string getlastModified() { return _lastModified; }
 
 protected:
-	std::string _filePath = "/etc/homegear/families/LoxAPP3.json";
 	BaseLib::PVariable _structFile;
 
 	std::unique_ptr<BaseLib::Rpc::JsonEncoder> _jsonEncoder;
@@ -28,7 +26,6 @@ protected:
 	std::unordered_map<std::string, std::string> _cats;
 	std::unordered_map<std::string, std::string> _rooms;
 	std::unordered_map<std::string, std::shared_ptr<LoxoneControl>> _controls;
-	std::unordered_map<std::string, std::string> _uuidSerialPairs;
 
 	std::string _lastModified;
 

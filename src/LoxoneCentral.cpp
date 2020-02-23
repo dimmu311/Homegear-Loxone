@@ -1,10 +1,10 @@
+#include <LoxoneControl.h>
 #include "LoxoneCentral.h"
 #include "PhysicalInterfaces/Miniserver.h"
 #include "Loxone.h"
 #include "GD.h"
 
 #include <iomanip>
-#include "LoxoneControl.h"
 
 namespace Loxone
 {
@@ -65,11 +65,11 @@ bool LoxoneCentral::onPacketReceived(std::string& senderId, std::shared_ptr<Base
 
 		GD::out.printDebug("Loxone Central: onPacketReceived-> " + loxonePacket->getUuid());
 
-		if (_uuidVariablePeerMap.find(loxonePacket->getUuid()) == _uuidVariablePeerMap.end()) return false;
-		auto uuidVariablePeer = _uuidVariablePeerMap.find(loxonePacket->getUuid());
-		uint32_t peerId = uuidVariablePeer->second.peerId;
+		if (_uuidVariable_PeerIdMap.find(loxonePacket->getUuid()) == _uuidVariable_PeerIdMap.end()) return false;
+		auto variable_PeerId = _uuidVariable_PeerIdMap.find(loxonePacket->getUuid());
+		uint32_t peerId = variable_PeerId->second.peerId;
 
-		GD::out.printDebug("Loxone Central: Parse peermap -> has " + uuidVariablePeer->second.variable + " and id " + std::to_string(peerId));
+		GD::out.printDebug("Loxone Central: Parse peermap -> has " + variable_PeerId->second.variable + " and id " + std::to_string(peerId));
 
 		auto peer = getPeer(peerId);
 		if (peer)
@@ -105,7 +105,7 @@ void LoxoneCentral::loadPeers()
 			peer->loadUuuis();
 
 			auto variables = peer->getVariables();
-			_uuidVariablePeerMap.insert(variables.begin(), variables.end());
+			_uuidVariable_PeerIdMap.insert(variables.begin(), variables.end());
 		
 			if(!peer->getRpcDevice()) continue;
 			std::lock_guard<std::mutex> peersGuard(_peersMutex);
