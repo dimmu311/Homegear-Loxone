@@ -1,4 +1,3 @@
-#include <LoxoneControl.h>
 #include "LoxoneCentral.h"
 #include "PhysicalInterfaces/Miniserver.h"
 #include "Loxone.h"

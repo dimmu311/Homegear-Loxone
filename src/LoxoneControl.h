@@ -46,7 +46,6 @@ namespace Loxone
 
 		LoxoneControl(PVariable control, std::string room, std::string cat, uint32_t typeNr);
 		LoxoneControl(std::shared_ptr<BaseLib::Database::DataTable> rows, uint32_t typeNr);
-		virtual ~LoxoneControl();
 
 		std::string getName() { return _mandatoryFields->_name; };
 		std::string getRoom() { return _optionalFields->_room; };
