@@ -27,7 +27,6 @@ void LoxoneCentral::init()
 	{
 		_physicalInterfaceEventhandlers[physicalInterface.first] = physicalInterface.second->addEventHandler((BaseLib::Systems::IPhysicalInterface::IPhysicalInterfaceEventSink*)this);
 	}
-    //_LoxApp3.parseStructFile();
 }
 
 LoxoneCentral::~LoxoneCentral()
