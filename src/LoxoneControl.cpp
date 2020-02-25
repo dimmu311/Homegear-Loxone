@@ -34,6 +34,10 @@ namespace Loxone
 		_defaultRating = mandatoryFields->structValue->at("defaultRating")->integerValue;
 		_isSecured = mandatoryFields->structValue->at("isSecured")->booleanValue;
     }
+    void MandatoryFields::overrideName(std::string name)
+    {
+    	_name = name;
+    }
     MandatoryFields::MandatoryFields(std::shared_ptr<BaseLib::Database::DataTable>rows)
     {
     	for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
@@ -228,6 +232,11 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
+	void LoxoneControl::overrideName(std::string name)
+	{
+		if(!_mandatoryFields) return;
+		_mandatoryFields->overrideName(name);
+	}
 
 	void LoxoneControl::addBooleanState(double value, std::string& variable)
 	{
@@ -303,8 +312,8 @@ namespace Loxone
 	{
 		try
 		{
-			_isFavorite = control->structValue->at("isFavorite")->booleanValue;
-			_defaultIcon = control->structValue->at("defaultIcon")->stringValue;
+			if(control->structValue->find("isFavorite") != control->structValue->end())	_isFavorite = control->structValue->at("isFavorite")->booleanValue;
+			if(control->structValue->find("defaultIcon") != control->structValue->end()) _defaultIcon = control->structValue->at("defaultIcon")->stringValue;
 		}
 		catch (const std::exception& ex)
 		{
@@ -420,13 +429,16 @@ namespace Loxone
 	{
 		try
 		{
-			_isFavorite = control->structValue->at("isFavorite")->booleanValue;
-			_defaultIcon = control->structValue->at("defaultIcon")->stringValue;
+			if(control->structValue->find("isFavorite") != control->structValue->end())	_isFavorite = control->structValue->at("isFavorite")->booleanValue;
+			if(control->structValue->find("defaultIcon") != control->structValue->end()) _defaultIcon = control->structValue->at("defaultIcon")->stringValue;
 
-			_detFormat = control->structValue->at("details")->structValue->at("format")->stringValue;
-			_detMin = control->structValue->at("details")->structValue->at("min")->floatValue;
-			_detMax = control->structValue->at("details")->structValue->at("max")->floatValue;
-			_detStep = control->structValue->at("details")->structValue->at("step")->floatValue;
+			if(control->structValue->find("details") != control->structValue->end())
+			{
+				if(control->structValue->at("details")->structValue->find("format") != control->structValue->end())	_detFormat = control->structValue->at("details")->structValue->at("format")->stringValue;
+				if(control->structValue->at("details")->structValue->find("min") != control->structValue->end())	_detMin = control->structValue->at("details")->structValue->at("min")->floatValue;
+				if(control->structValue->at("details")->structValue->find("max") != control->structValue->end())	_detMax = control->structValue->at("details")->structValue->at("max")->floatValue;
+				if(control->structValue->at("details")->structValue->find("step") != control->structValue->end())	_detStep = control->structValue->at("details")->structValue->at("step")->floatValue;
+			}
 		}
 		catch (const std::exception& ex)
 		{
@@ -585,7 +597,7 @@ namespace Loxone
 	{
 		try
 		{
-			_isFavorite = control->structValue->at("isFavorite")->booleanValue;
+			if(control->structValue->find("isFavorite") != control->structValue->end())	_isFavorite = control->structValue->at("isFavorite")->booleanValue;
 		}
 		catch (const std::exception& ex)
 		{
@@ -687,11 +699,14 @@ namespace Loxone
 	{
 		try
 		{
-			_isFavorite = control->structValue->at("isFavorite")->booleanValue;
+			if(control->structValue->find("isFavorite") != control->structValue->end())	_isFavorite = control->structValue->at("isFavorite")->booleanValue;
 
-			_detMovementScene = control->structValue->at("details")->structValue->at("movementScene")->integerValue;
-			_detMasterValue = control->structValue->at("details")->structValue->at("masterValue")->stringValue;
-			_detMasterColor = control->structValue->at("details")->structValue->at("masterColor")->stringValue;
+			if(control->structValue->find("details") != control->structValue->end())
+			{
+				if(control->structValue->at("details")->structValue->find("movementScene") != control->structValue->end())	_detMovementScene = control->structValue->at("details")->structValue->at("movementScene")->integerValue;
+				if(control->structValue->at("details")->structValue->find("masterValue") != control->structValue->end())	_detMasterValue = control->structValue->at("details")->structValue->at("masterValue")->stringValue;
+				if(control->structValue->at("details")->structValue->find("masterColor") != control->structValue->end())	_detMasterColor = control->structValue->at("details")->structValue->at("masterColor")->stringValue;
+			}
 		}
 		catch (const std::exception& ex)
 		{
@@ -822,8 +837,11 @@ namespace Loxone
 	{
 		try
 		{
-			_detAlert = control->structValue->at("details")->structValue->at("alert")->booleanValue;
-			_detPresenceConnected = control->structValue->at("details")->structValue->at("presenceConnected")->booleanValue;
+			if(control->structValue->find("details") != control->structValue->end())
+			{
+				if(control->structValue->at("details")->structValue->find("alert") != control->structValue->end())	_detAlert = control->structValue->at("details")->structValue->at("alert")->booleanValue;
+				if(control->structValue->at("details")->structValue->find("presenceConnected") != control->structValue->end())	_detPresenceConnected = control->structValue->at("details")->structValue->at("presenceConnected")->booleanValue;
+			}
 		}
 		catch (const std::exception& ex)
 		{

@@ -148,6 +148,7 @@ namespace Loxone
 						if (LoxoneControl::_controlsMap.find(j->second->structValue->at("type")->stringValue) == LoxoneControl::_controlsMap.end()) continue;
 
 						std::shared_ptr<LoxoneControl> subControl(LoxoneControl::_controlsMap.at(j->second->structValue->at("type")->stringValue)(j->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second));
+						subControl->overrideName(i->second->structValue->at("name")->stringValue + " ||| " + j->second->structValue->at("name")->stringValue);
 						_controls.insert({ subSerial, subControl });
 					}
 				}

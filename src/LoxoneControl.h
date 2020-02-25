@@ -23,6 +23,7 @@ namespace Loxone
 		bool _isSecured;
 		MandatoryFields(PVariable mandatoryFields, std::string room, std::string cat);
 		MandatoryFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
+		void overrideName(std::string name);
 		uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 	};
 	class OptionalFields
@@ -52,6 +53,7 @@ namespace Loxone
 		std::string getCat() { return _optionalFields->_cat; };
 		uint32_t getType() { return _type; };
 		
+		void overrideName(std::string name);
 		std::string getUuidAction() { return _mandatoryFields->_uuidAction; };
 		std::unordered_map <std::string, variable_PeerId> getVariables() { return _uuidVariable_PeerIdMap; };
 		void addBooleanState(double value, std::string& variable);
