@@ -105,17 +105,52 @@ namespace Loxone
 	{
 		try
 		{
+			if (GD::bl->debugLevel >= 5) GD::out.printInfo("Loading Controls from Structfile");
 			_controls.clear();
 			if (_structFile->structValue->find("controls") == _structFile->structValue->end()) return;
 			PVariable controls = _structFile->structValue->find("controls")->second;
 
 			for (auto i = controls->structValue->begin(); i != controls->structValue->end(); ++i)
 			{
-				std::string serial = i->first.substr(0, 18);
+				std::string serial = i->first;
+				if(serial.length() > 18)
+				{
+					serial = serial.substr(0,18);
+					serial[17] = '.';
+					serial[16] = '.';
+				}
+
+				if (GD::bl->debugLevel >= 5) GD::out.printInfo("Loading Control " + i->second->structValue->at("name")->stringValue + " with serial " + serial);
 				if (LoxoneControl::_controlsMap.find(i->second->structValue->at("type")->stringValue) == LoxoneControl::_controlsMap.end()) continue;
 
 				std::shared_ptr<LoxoneControl> control(LoxoneControl::_controlsMap.at(i->second->structValue->at("type")->stringValue)(i->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second));
 				_controls.insert({ serial, control });
+
+				if (i->second->structValue->find("subControls") != i->second->structValue->end())
+				{
+					if (GD::bl->debugLevel >= 5) GD::out.printInfo("Control has subcontrol");
+					PVariable subControls = i->second->structValue->find("subControls")->second;
+					for (auto j = subControls->structValue->begin(); j != subControls->structValue->end(); ++j)
+					{
+						std::string subSerial = j->first;
+						if(subSerial.length() > 18)
+						{
+							if(subSerial.find("/"))
+							{
+								std::string sub = subSerial.substr(subSerial.find("/"));
+								subSerial = subSerial.substr(0, 18 -2 - sub.length());
+								subSerial.push_back('.');
+								subSerial.push_back('.');
+								subSerial.append(sub.begin(),sub.end());
+							}
+						}
+						if (GD::bl->debugLevel >= 5) GD::out.printInfo("Loading subControl " + j->second->structValue->at("name")->stringValue + " with serial " + subSerial);
+						if (LoxoneControl::_controlsMap.find(j->second->structValue->at("type")->stringValue) == LoxoneControl::_controlsMap.end()) continue;
+
+						std::shared_ptr<LoxoneControl> subControl(LoxoneControl::_controlsMap.at(j->second->structValue->at("type")->stringValue)(j->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second));
+						_controls.insert({ subSerial, subControl });
+					}
+				}
 			}
 		}
 		catch (const std::exception & ex)
