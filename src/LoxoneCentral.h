@@ -4,12 +4,13 @@
 #include <homegear-base/BaseLib.h>
 #include "LoxonePeer.h"
 #include "LoxonePacket.h"
-#include "LoxoneControl.h"
 #include "LoxoneLoxApp3.h"
 
 #include <memory>
 #include <mutex>
 #include <string>
+
+#include "LoxoneControl.h"
 
 namespace Loxone
 {
@@ -120,7 +121,7 @@ protected:
 	void init();
 
 	LoxoneLoxApp3 _LoxApp3;
-	std::unordered_map <std::string, UuidVariablePeer> _uuidVariablePeerMap;
+	std::unordered_map <std::string, variable_PeerId> _uuidVariable_PeerIdMap;
 };
 
 }

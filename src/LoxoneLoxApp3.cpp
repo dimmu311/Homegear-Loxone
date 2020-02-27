@@ -10,41 +10,17 @@ namespace Loxone
 		_jsonDecoder = std::unique_ptr<BaseLib::Rpc::JsonDecoder>(new BaseLib::Rpc::JsonDecoder(GD::bl));
 	}
 
-	/*
-	int32_t LoxoneLoxApp3::saveNewStructFile(BaseLib::PVariable structFile)
-	{
-		try
-		{
-			std::string jsonString;
-			_jsonEncoder->encode(structFile, jsonString);
-
-			std::ofstream file;
-			file.open(_filePath);
-			if (!file) return -1;
-			file << jsonString;
-			file.close();
-			return 0;
-		}
-		catch (const std::exception & ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return -1;
-	}
-    */
 	int32_t LoxoneLoxApp3::parseStructFile(BaseLib::PVariable structFile)
 	{
 		try
 		{
 		    _structFile = structFile;
-			//loadStructFile();
-			//GD::out.printInfo("#########################################################################Datei gelesen");
-			
 			loadlastModified();
 			
+			if (GD::bl->debugLevel >= 5) GD::out.printInfo("Parse Struct File");
 			for (auto i = _structFile->structValue->begin(); i != _structFile->structValue->end(); ++i)
 			{
-				GD::out.printInfo("######################################################" + i->first);
+				if (GD::bl->debugLevel >= 5) GD::out.printInfo("Struct File at: " + i->first);
 				/*
 				autopilot
 					cats
@@ -76,32 +52,6 @@ namespace Loxone
 		
 	}
 
-	/*
-	void LoxoneLoxApp3::loadStructFile()
-	{
-		try
-		{
-			std::ifstream file;
-			file.open(_filePath);
-			if (!file) return;
-
-			std::string jsonString;
-			std::string line;
-
-			while (getline(file, line, '\n'))
-			{
-				jsonString += line;
-			}
-			file.close();
-			_structFile = _jsonDecoder->decode(jsonString);
-		}
-		catch (const std::exception & ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-	}
-	*/
-
 	void LoxoneLoxApp3::loadlastModified()
 	{
 		try
@@ -124,7 +74,6 @@ namespace Loxone
 			auto cats = _structFile->structValue->find("cats")->second;
 			for (auto i = cats->structValue->begin(); i != cats->structValue->end(); ++i)
 			{
-				//if (_bl->debugLevel >= 4) _bl->out.printInfo("##########CATS" + i->first + i->second->structValue->at("name")->stringValue);
 				_cats[i->second->structValue->at("uuid")->stringValue] = i->second->structValue->at("name")->stringValue;
 			}
 		}
@@ -143,7 +92,6 @@ namespace Loxone
 			auto rooms = _structFile->structValue->find("rooms")->second;
 			for (auto i = rooms->structValue->begin(); i != rooms->structValue->end(); ++i)
 			{
-				//if (_bl->debugLevel >= 4) _bl->out.printInfo("##########ROOMS" + i->first+ i->second->structValue->at("name")->stringValue);
 				_rooms[i->second->structValue->at("uuid")->stringValue] = i->second->structValue->at("name")->stringValue;
 			}
 		}
@@ -157,24 +105,52 @@ namespace Loxone
 	{
 		try
 		{
+			if (GD::bl->debugLevel >= 5) GD::out.printInfo("Loading Controls from Structfile");
 			_controls.clear();
-			_uuidSerialPairs.clear();
 			if (_structFile->structValue->find("controls") == _structFile->structValue->end()) return;
 			PVariable controls = _structFile->structValue->find("controls")->second;
 
 			for (auto i = controls->structValue->begin(); i != controls->structValue->end(); ++i)
 			{
-				GD::out.printInfo("##########Controls" + i->first + "ist im Raum" + _rooms.find(i->second->structValue->at("room")->stringValue)->second + "und der cat" + _cats.find(i->second->structValue->at("cat")->stringValue)->second + "und hat den Namen" + i->second->structValue->at("name")->stringValue);
+				std::string serial = i->first;
+				if(serial.length() > 18)
+				{
+					serial = serial.substr(0,18);
+					serial[17] = '.';
+					serial[16] = '.';
+				}
 
-				std::string serial = i->first.substr(0, 18);
+				if (GD::bl->debugLevel >= 5) GD::out.printInfo("Loading Control " + i->second->structValue->at("name")->stringValue + " with serial " + serial);
 				if (LoxoneControl::_controlsMap.find(i->second->structValue->at("type")->stringValue) == LoxoneControl::_controlsMap.end()) continue;
 
 				std::shared_ptr<LoxoneControl> control(LoxoneControl::_controlsMap.at(i->second->structValue->at("type")->stringValue)(i->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second));
 				_controls.insert({ serial, control });
-				std::list<std::string> uuids = control->getUuids();
-				for (std::list<std::string>::const_iterator j = uuids.begin(); j != uuids.end(); ++j)
+
+				if (i->second->structValue->find("subControls") != i->second->structValue->end())
 				{
-					_uuidSerialPairs[j->c_str()] = serial;
+					if (GD::bl->debugLevel >= 5) GD::out.printInfo("Control has subcontrol");
+					PVariable subControls = i->second->structValue->find("subControls")->second;
+					for (auto j = subControls->structValue->begin(); j != subControls->structValue->end(); ++j)
+					{
+						std::string subSerial = j->first;
+						if(subSerial.length() > 18)
+						{
+							if(subSerial.find("/"))
+							{
+								std::string sub = subSerial.substr(subSerial.find("/"));
+								subSerial = subSerial.substr(0, 18 -2 - sub.length());
+								subSerial.push_back('.');
+								subSerial.push_back('.');
+								subSerial.append(sub.begin(),sub.end());
+							}
+						}
+						if (GD::bl->debugLevel >= 5) GD::out.printInfo("Loading subControl " + j->second->structValue->at("name")->stringValue + " with serial " + subSerial);
+						if (LoxoneControl::_controlsMap.find(j->second->structValue->at("type")->stringValue) == LoxoneControl::_controlsMap.end()) continue;
+
+						std::shared_ptr<LoxoneControl> subControl(LoxoneControl::_controlsMap.at(j->second->structValue->at("type")->stringValue)(j->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second));
+						subControl->overwriteName(i->second->structValue->at("name")->stringValue + " ||| " + j->second->structValue->at("name")->stringValue);
+						_controls.insert({ subSerial, subControl });
+					}
 				}
 			}
 		}

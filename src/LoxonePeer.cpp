@@ -78,31 +78,13 @@ void LoxonePeer::saveUuids()
 {
 	try
 	{
-		_uuidVariablePeerMap = _control->getVariables();
-		uint32_t variableId = 10000;
-		for (auto variable = _uuidVariablePeerMap.begin(); variable != _uuidVariablePeerMap.end(); ++variable)
+		std::list<Database::DataRow> list;
+		auto x = _control->getDataToSave(list, _peerID);
+		if(x < 0) return;
+
+		for(auto i = list.begin(); i != list.end(); ++i)
 		{
-			std::string name = variable->second.variable;
-
-
-			std::vector<char> uuid(variable->first.begin(), variable->first.end());
-			//saveVariable(variableId, name);
-			//saveVariable(variableId, *uuid);
-			variableId++;
-			
-			Database::DataRow data;
-			
-			if (_peerID == 0) return;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_peerID)));
-            if(name == "action")data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(10000)));
-            else
-                {
-                data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(variableId)));
-            }
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(name)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(uuid)));
-			_bl->db->savePeerVariableAsynchronous(data);
+			_bl->db->savePeerVariableAsynchronous(*i);
 		}
 	}
 	catch (const std::exception & ex)
@@ -116,80 +98,10 @@ void LoxonePeer::loadUuuis()
     try
     {
         std::shared_ptr<BaseLib::Database::DataTable> rows = _bl->db->getPeerVariables(_peerID);
-
-        /*
-		"0e3dca32-0006-e500-ffff1239b12ff514":{
-			"name":"Volume",
-			"type":"Slider",
-			"uuidAction":"0e3dca32-0006-e500-ffff1239b12ff514",
-			"room":"0df9e099-020c-03b2-ffff1239b12ff514",
-			"cat":"0df9e099-01dd-0320-ffff1239b12ff514",
-			"defaultRating":0,
-			"isFavorite":false,
-			"isSecured":false,
-			"defaultIcon":null,
-			"details":{
-				"format":"%.0f%%",
-				"min":0.000,
-				"max":100.000,
-				"step":1.000
-			},
-			"states":{
-				"value":"0e3dca32-0006-e500-ffff1239b12ff514",
-				"error":"0e3dca32-0006-e4ff-ffff2c564cfa6c10"
-			}
-		}
-        */
-        PVariable json;
-        json = std::make_shared<Variable>(VariableType::tStruct);
-        json->structValue->operator[]("name") = PVariable(new Variable("name"));
-        json->structValue->operator[]("type") = PVariable(new Variable("type"));
-
-        json->structValue->operator[]("defaultRating") = PVariable(new Variable("VariableType::tString"));
-        json->structValue->operator[]("isFavorite") = PVariable(new Variable("VariableType::tString"));
-        json->structValue->operator[]("isSecured") = PVariable(new Variable("VariableType::tString"));
-        json->structValue->operator[]("defaultIcon") = PVariable(new Variable("VariableType::tString"));
-
-        json->structValue->operator[]("details") = PVariable(new Variable(VariableType::tStruct));
-        json->structValue->at("details")->structValue->operator[]("format") = PVariable(new Variable(VariableType::tString));
-
-        json->structValue->operator[]("states") = PVariable(new Variable(VariableType::tStruct));
-
-        for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
-        {
-            switch(row->second.at(2)->intValue)
-            {
-                case 10000:
-                    {
-                        auto uuid = row->second.at(5)->binaryValue;
-                        std::string uuidString(uuid->begin(), uuid->end());
-
-                        json->structValue->operator[]("uuidAction") = PVariable(new Variable(uuidString));
-                    }
-                    break;
-                case 10001 ... 10010:
-                    {
-                        auto uuid = row->second.at(5)->binaryValue;
-                        std::string uuidString(uuid->begin(), uuid->end());
-
-                        UuidVariablePeer uuidVariablePeer;
-                        uuidVariablePeer.variable = row->second.at(4)->textValue;
-                        uuidVariablePeer.peerId = row->second.at(1)->intValue;
-
-                        _uuidVariablePeerMap.emplace(uuidString, uuidVariablePeer);
-
-                        json->structValue->at("states")->structValue->operator[](row->second.at(4)->textValue) = PVariable(new Variable(uuidString));
-                    }
-                    break;
-            }
-        }
-
-        std::string jsonString;
-        _jsonEncoder->encode(json, jsonString);
-
-        std::shared_ptr<LoxoneControl> control(LoxoneControl::_uintControlsMap.at(_deviceType)(json, "room", "cat"));
-        auto x = control->getUuids();
-        _control = control;
+        if(!rows) return;
+        _control = std::shared_ptr<LoxoneControl>(LoxoneControl::_uintControlsMap.at(_deviceType)(rows));
+        if(!_control)return ;
+        _uuidVariable_PeerIdMap = _control->getVariables();
     }
     catch(const std::exception& ex)
     {
@@ -450,7 +362,44 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
     {
 		GD::out.printDebug("Loxone Peer: packetReceived-> at peer " + std::to_string(_peerID));
 
-		_control->processPacket(packet);
+		switch(packet->getPacketType())
+		{
+			case LoxonePacketType::LoxoneValueStatesPacket:
+			{
+				auto cPacket = std::dynamic_pointer_cast<LoxoneValueStatesPacket>(packet);
+				if(!cPacket) return;
+				_control->processPacket(cPacket);
+				break;
+			}
+			case LoxonePacketType::LoxoneTextStatesPacket:
+			{
+				auto cPacket = std::dynamic_pointer_cast<LoxoneTextStatesPacket>(packet);
+				if(!cPacket) return;
+				_control->processPacket(cPacket);
+				break;
+			}/*
+			case LoxonePacketType::LoxoneBinaryFilePacket:
+			{
+				auto cPacket = std::dynamic_pointer_cast<LoxoneBinaryFilePacket>(packet);
+				if(!cPacket) return;
+				_control->processPacket(cPacket);
+				break;
+			}
+			case LoxonePacketType::LoxoneWeatherStatesPacket:
+			{
+				auto cPacket = std::dynamic_pointer_cast<LoxoneWeatherStatesPacket>(packet);
+				if(!cPacket) return;
+				_control->processPacket(cPacket);
+				break;
+			}
+			case LoxonePacketType::LoxoneDaytimerStatesPacket:
+			{
+				auto cPacket = std::dynamic_pointer_cast<LoxoneDaytimerStatesPacket>(packet);
+				if(!cPacket) return;
+				_control->processPacket(cPacket);
+				break;
+			}*/
+		}
 
         if(_disposing || !packet || !_rpcDevice) return;
         auto central = std::dynamic_pointer_cast<LoxoneCentral>(getCentral());
@@ -773,13 +722,6 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 			}
 		}
 
-		/*
-		std::string content;
-		_jsonEncoder->encode(json, content);
-		if (_bl->debugLevel >= 4) GD::out.printInfo("der neue gebaute json"+content);
-		*/
-		if (_bl->debugLevel >= 4) GD::out.printInfo("for dem senden: "+ frame->function1 + std::to_string(parameters->arrayValue->size()));
-		
 		std::shared_ptr<LoxonePacket> packet (new LoxonePacket());
 		if(!_control->setValue(frame->function1, parameters, packet )) return Variable::createError(-32500, "Unknown application error. See error log for more details.");
 

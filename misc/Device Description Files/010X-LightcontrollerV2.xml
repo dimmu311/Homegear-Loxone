@@ -1,0 +1,551 @@
+<homegearDevice version="1">
+  <supportedDevices>
+    <device id="Loxone LightControllerV2">
+      <description>Loxone LightControllerV2</description>
+      <typeNumber>0x0103</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function channel="1" type="LightControllerV2" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>switch_valueset--1</variables>
+    </function>
+  </functions>
+  <packets>
+    <packet id="on.stateSet">
+      <direction>toCentral</direction>
+      <function1>StateSet</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\activeMoods</keyPath>
+          <parameterId>"ACTIVE_MOODS"</parameterId>
+        </element>
+        <element>
+          <keyPath>state\moodList</keyPath>
+          <parameterId>MOOD_LIST</parameterId>
+        </element>
+        <element>
+          <keyPath>state\favoriteMoods</keyPath>
+          <parameterId>FAVORITE_MOODS</parameterId>
+        </element>
+        <element>
+          <keyPath>state\additionalMoods</keyPath>
+          <parameterId>ADDITIONAL_MOODS</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setPlus">
+      <direction>fromCentral</direction>
+      <function1>setConstString</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>plus</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setMinus">
+      <direction>fromCentral</direction>
+      <function1>setConstString</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>minus</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setMood">
+      <direction>fromCentral</direction>
+      <function1>setMood</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>changeTo</constValueString>
+        </element>
+        <element>
+          <parameterId>SET_MOOD</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="addMood">
+      <direction>fromCentral</direction>
+      <function1>addMood</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>addMood</constValueString>
+        </element>
+        <element>
+          <parameterId>ADD_MOOD</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="removeMood">
+      <direction>fromCentral</direction>
+      <function1>removeMood</function1>
+      <jsonPayload>
+      	<element>
+          <constValueString>removeMood</constValueString>
+        </element>
+        <element>
+          <parameterId>REMOVE_MOOD</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="moveFavoriteMood">
+      <direction>fromCentral</direction>
+      <function1>moveFavoriteMood</function1>
+      <jsonPayload>
+      	<element>
+          <constValueString>moveFavoriteMood</constValueString>
+        </element>
+        <element>
+          <parameterId>NEW_FAVORITE_MOOD_ID</parameterId>
+        </element>
+        <element>
+          <parameterId>MOOD_TO_MOVE_ID</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="moveAdditionalMood">
+      <direction>fromCentral</direction>
+      <function1>moveFavoriteMood</function1>
+      <jsonPayload>
+      	<element>
+          <constValueString>moveAdditionalMood</constValueString>
+        </element>
+        <element>
+          <parameterId>NEW_ADDITIONAL_MOOD_ID</parameterId>
+        </element>
+        <element>
+          <parameterId>MOOD_TO_MOVE_ID</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="moveMood">
+      <direction>fromCentral</direction>
+      <function1>moveMood</function1>
+      <jsonPayload>
+      	<element>
+          <constValueString>moveMood</constValueString>
+        </element>
+        <element>
+          <parameterId>NEW_MOOD_ID</parameterId>
+        </element>
+        <element>
+          <parameterId>MOOD_TO_MOVE_ID</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="addToFavoriteMood">
+      <direction>fromCentral</direction>
+      <function1>addToFavoriteMood</function1>
+      <jsonPayload>
+      	<element>
+          <constValueString>addToFavoriteMood</constValueString>
+        </element>
+        <element>
+          <parameterId>ADD_TO_FAVORITE_MOOD_ID</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="removeFromFavoriteMood">
+      <direction>fromCentral</direction>
+      <function1>removeFromFavoriteMood</function1>
+      <jsonPayload>
+      	<element>
+          <constValueString>removeFromFavoriteMood</constValueString>
+        </element>
+        <element>
+          <parameterId>REMOVE_FROM_FAVORITE_MOOD_ID</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="delete">
+      <direction>fromCentral</direction>
+      <function1>delete</function1>
+      <jsonPayload>
+      	<element>
+          <constValueString>delete</constValueString>
+        </element>
+        <element>
+          <parameterId>DELETE_MOOD_ID</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="learnMood">
+      <direction>fromCentral</direction>
+      <function1>learnMood</function1>
+      <jsonPayload>
+      	<element>
+          <constValueString>learn</constValueString>
+        </element>
+        <element>
+          <parameterId>LEARN_MOOD_ID</parameterId>
+        </element>
+        <element>
+          <parameterId>MOOD_NAME</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1"/>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="switch_valueset--1">
+      <parameter id="NEW_ADDITIONAL_MOOD_ID">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+        </logicalInteger>
+        <physicalNone groupId="NEW_ADDITIONAL_MOOD_ID">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="moveAdditionalMood">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="NEW_MOOD_ID">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+        </logicalInteger>
+        <physicalNone groupId="NEW_MOOD_ID">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="moveMood">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ADD_TO_FAVORITE_MOOD_ID">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+        </logicalInteger>
+        <physicalNone groupId="ADD_TO_FAVORITE_MOOD_ID">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="addToFavoriteMood">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="REMOVE_FROM_FAVORITE_MOOD_ID">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+        </logicalInteger>
+        <physicalNone groupId="REMOVE_FROM_FAVORITE_MOOD_ID">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="removeFromFavoriteMood">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+   	  <parameter id="DELETE_MOOD_ID">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+        </logicalInteger>
+        <physicalNone groupId="DELETE_MOOD_ID">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="delete">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+   	  <parameter id="LEARN_MOOD_ID">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+        </logicalInteger>
+        <physicalNone groupId="LEARN_MOOD_ID">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="learnMood">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+   	  <parameter id="MOOD_NAME">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString>
+          <defaultValue>0</defaultValue>
+        </logicalString>
+        <physicalNone groupId="MOOD_NAME">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+   	  <parameter id="MOOD_TO_MOVE_ID">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+        </logicalInteger>
+        <physicalNone groupId="MOOD_TO_MOVE_ID">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="NEW_FAVORITE_MOOD_ID">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+        </logicalInteger>
+        <physicalNone groupId="NEW_FAVORITE_MOOD_ID">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="moveFavoriteMood">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+   	  <parameter id="SET_MOOD">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+        </logicalInteger>
+        <physicalNone groupId="SET_MOOD">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="setMood">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ADD_MOOD">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+        </logicalInteger>
+        <physicalNone groupId="ADD_MOOD">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="addMood">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="REMOVE_MOOD">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+        </logicalInteger>
+        <physicalNone groupId="REMOVE_MOOD">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="removeMood">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+   	  <parameter id="SET_NEXT_MOOD">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SET_NEXT_MOOD">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="setPlus">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SET_PREVIOUS_MOOD">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SET_PREVIOUS_MOOD">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="setMinus">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ACTIVE_MOODS">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="ACTIVE_MOODS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="MOOD_LIST">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="MOOD_LIST">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="FAVORITE_MOODS">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="FAVORITE_MOODS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ADDITIONAL_MOODS">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="ADDITIONAL_MOODS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.stateSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>

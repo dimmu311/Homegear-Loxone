@@ -2,10 +2,11 @@
 #define LOXONEPEER_H_
 
 #include "LoxonePacket.h"
-#include "LoxoneControl.h"
 #include <homegear-base/BaseLib.h>
 
 #include <list>
+
+#include "LoxoneControl.h"
 
 using namespace BaseLib;
 using namespace BaseLib::DeviceDescription;
@@ -41,7 +42,7 @@ public:
 
 	void saveUuids();
     void loadUuuis();
-	std::unordered_map <std::string, UuidVariablePeer> getVariables() { return _uuidVariablePeerMap; };
+	std::unordered_map <std::string, variable_PeerId> getVariables() { return _uuidVariable_PeerIdMap; };
 
 	virtual void savePeers() {};
 	virtual int32_t getChannelGroupedWith(int32_t channel) { return -1; }
@@ -126,7 +127,7 @@ protected:
 		std::unique_ptr<BaseLib::Rpc::JsonDecoder> _jsonDecoder;
 
 		std::shared_ptr<LoxoneControl> _control;
-		std::unordered_map <std::string, UuidVariablePeer> _uuidVariablePeerMap;
+		std::unordered_map <std::string, variable_PeerId> _uuidVariable_PeerIdMap;
 };
 
 }
