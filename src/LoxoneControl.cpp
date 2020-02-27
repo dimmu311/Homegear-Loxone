@@ -34,7 +34,7 @@ namespace Loxone
 		_defaultRating = mandatoryFields->structValue->at("defaultRating")->integerValue;
 		_isSecured = mandatoryFields->structValue->at("isSecured")->booleanValue;
     }
-    void MandatoryFields::overrideName(std::string name)
+    void MandatoryFields::overwriteName(std::string name)
     {
     	_name = name;
     }
@@ -232,10 +232,10 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
-	void LoxoneControl::overrideName(std::string name)
+	void LoxoneControl::overwriteName(std::string name)
 	{
 		if(!_mandatoryFields) return;
-		_mandatoryFields->overrideName(name);
+		_mandatoryFields->overwriteName(name);
 	}
 
 	void LoxoneControl::addBooleanState(double value, std::string& variable)
@@ -246,39 +246,47 @@ namespace Loxone
 		else if (variable == "position") _json->structValue->at("state")->structValue->operator[]("state") = PVariable(new Variable((bool)value));
 	}
 
-	bool LoxoneControl::preProcessPacket(PLoxonePacket loxonePacket, std::string& variable)
+	bool LoxoneControl::processPacket(PLoxoneValueStatesPacket loxonePacket)
 	{
-		GD::out.printDebug("LoxoneControl::preProcessPacket " + loxonePacket->getUuid());
-
-		if (_uuidVariable_PeerIdMap.find(loxonePacket->getUuid()) == _uuidVariable_PeerIdMap.end()) return false;
-
-		auto variable_PeerId = _uuidVariable_PeerIdMap.find(loxonePacket->getUuid());
-		variable = (variable_PeerId->second.variable);
-
-		_json = std::make_shared<Variable>(VariableType::tStruct);
-		_json->structValue->operator[]("state") = PVariable(new Variable(VariableType::tStruct));
-
-		switch (loxonePacket->getPacketType())
+		try
 		{
-		case LoxonePacketType::LoxoneValueStatesPacket:
-		{
-			PLoxoneValueStatesPacket loxoneValuePacket(std::dynamic_pointer_cast<LoxoneValueStatesPacket>(loxonePacket));
-			_json->structValue->at("state")->structValue->operator[](variable) = PVariable(new Variable(loxoneValuePacket->getDValue()));
-			addBooleanState(loxoneValuePacket->getDValue(), variable);
-			GD::out.printDebug("LoxoneControl::preProcessPacket " + loxonePacket->getUuid() + std::to_string(loxonePacket->getDValue()));
+			if (_uuidVariable_PeerIdMap.find(loxonePacket->getUuid()) == _uuidVariable_PeerIdMap.end()) return false;
+			auto variable_PeerId = _uuidVariable_PeerIdMap.find(loxonePacket->getUuid());
+
+			GD::out.printDebug("LoxoneControl::LoxoneValueStatesPacket at " + variable_PeerId->second.variable + " of peer " + std::to_string(variable_PeerId->second.peerId) + " and value is " + std::to_string(loxonePacket->getDValue()));
+
+			_json = std::make_shared<Variable>(VariableType::tStruct);
+			_json->structValue->operator[]("state") = PVariable(new Variable(VariableType::tStruct));
+			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second.variable) = PVariable(new Variable(loxonePacket->getDValue()));
+			addBooleanState(loxonePacket->getDValue(), variable_PeerId->second.variable);
 			return true;
 		}
-		case LoxonePacketType::LoxoneTextStatesPacket:
+		catch (const std::exception& ex)
 		{
-			PLoxoneTextStatesPacket loxoneTextPacket(std::dynamic_pointer_cast<LoxoneTextStatesPacket>(loxonePacket));
-			_json->structValue->at("state")->structValue->operator[](variable) = PVariable(new Variable(loxoneTextPacket->getText()));
-			return true;
-		}
-		default:
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 			return false;
 		}
-		
-		return false;
+	}
+
+	bool LoxoneControl::processPacket(PLoxoneTextStatesPacket loxonePacket)
+	{
+		try
+		{
+			if (_uuidVariable_PeerIdMap.find(loxonePacket->getUuid()) == _uuidVariable_PeerIdMap.end()) return false;
+			auto variable_PeerId = _uuidVariable_PeerIdMap.find(loxonePacket->getUuid());
+
+			GD::out.printDebug("LoxoneControl::LoxoneTextStatesPacket at " + variable_PeerId->second.variable + " of peer " + std::to_string(variable_PeerId->second.peerId) + " and value is " + loxonePacket->getText());
+
+			_json = std::make_shared<Variable>(VariableType::tStruct);
+			_json->structValue->operator[]("state") = PVariable(new Variable(VariableType::tStruct));
+			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second.variable) = PVariable(new Variable(loxonePacket->getText()));
+			return true;
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+			return false;
+		}
 	}
 	uint32_t LoxoneControl::getStatesToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
@@ -347,14 +355,11 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
-	bool Pushbutton::processPacket(PLoxonePacket loxonePacket)
+	bool Pushbutton::processPacket(PLoxoneValueStatesPacket loxonePacket)
 	{
 		try
 		{
-			GD::out.printDebug("Pushbutton::processPacket " + loxonePacket->getUuid());
-
-			std::string variable;
-			if (LoxoneControl::preProcessPacket(loxonePacket, variable))
+			if (LoxoneControl::processPacket(loxonePacket))
 			{
 				if (_json->structValue->at("state")->structValue->find("active") != _json->structValue->at("state")->structValue->end())
 				{
@@ -493,14 +498,11 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
-	bool Slider::processPacket(PLoxonePacket loxonePacket)
+	bool Slider::processPacket(PLoxoneValueStatesPacket loxonePacket)
 	{
 		try
 		{
-			GD::out.printDebug("Slider::processPacket " + loxonePacket->getUuid());
-
-			std::string variable;
-			if (LoxoneControl::preProcessPacket(loxonePacket, variable))
+			if (LoxoneControl::processPacket(loxonePacket))
 			{
 				loxonePacket->setJsonString(_json);
 				return true;
@@ -625,14 +627,11 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
-	bool Dimmer::processPacket(PLoxonePacket loxonePacket)
+	bool Dimmer::processPacket(PLoxoneValueStatesPacket loxonePacket)
 	{
 		try
 		{
-			GD::out.printDebug("Dimmer::processPacket " + loxonePacket->getUuid());
-
-			std::string variable;
-			if (LoxoneControl::preProcessPacket(loxonePacket, variable))
+			if (LoxoneControl::processPacket(loxonePacket))
 			{
 				loxonePacket->setJsonString(_json);
 				return true;
@@ -751,14 +750,11 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
-	bool LightControllerV2::processPacket(PLoxonePacket loxonePacket)
+	bool LightControllerV2::processPacket(PLoxoneValueStatesPacket loxonePacket)
 	{
 		try
 		{
-			GD::out.printDebug("LightControllerV2::processPacket " + loxonePacket->getUuid());
-
-			std::string variable;
-			if (LoxoneControl::preProcessPacket(loxonePacket, variable))
+			if (LoxoneControl::processPacket(loxonePacket))
 			{
 				loxonePacket->setJsonString(_json);
 				return true;
@@ -770,16 +766,74 @@ namespace Loxone
 		}
 		return false;
 	}
+	bool LightControllerV2::processPacket(PLoxoneTextStatesPacket loxonePacket)
+		{
+			try
+			{
+				if (LoxoneControl::processPacket(loxonePacket))
+				{
+					loxonePacket->setJsonString(_json);
+					return true;
+				}
+			}
+			catch (const std::exception & ex)
+			{
+				GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+			}
+			return false;
+		}
 	bool LightControllerV2::setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet)
 	{
 		try
 		{
-			std::string command;
-			if (method == "ValueSet")
+			std::string command = "jdev/sps/io/" + _mandatoryFields->_uuidAction;
+			switch(parameters->type)
 			{
-				auto value = parameters->arrayValue->at(0)->floatValue;
-				command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/" + std::to_string(value);
+				case VariableType::tArray:
+				{
+					for(auto value1 = parameters->arrayValue->begin(); value1 != parameters->arrayValue->end(); ++value1)
+					{
+						switch(value1.operator *()->type)
+						{
+							case VariableType::tString:
+							{
+								command += "/";
+								command += value1.operator *()->stringValue;
+								break;
+							}
+							case VariableType::tInteger:
+							{
+								command += "/";
+								command += std::to_string(value1.operator *()->integerValue);
+								break;
+							}
+							default:
+								break;
+						}
+					}
+					break;
+				}
+				default:
+					break;
 			}
+			if (GD::bl->debugLevel >= 5) GD::out.printInfo("build command from packet: " + command);
+
+			/*
+			std::string command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/";
+			if (method == "setConstString")
+			{
+				GD::out.printInfo("setValueTests: " + parameters->arrayValue->at(0)->stringValue);
+				command += parameters->arrayValue->at(0)->stringValue;
+			}
+			else if(method == "moveFavoriteMood")
+			{
+				command += parameters->arrayValue->at(0)->stringValue + "/" + std::to_string(parameters->arrayValue->at(2)->integerValue)+ "/" + std::to_string(parameters->arrayValue->at(1)->integerValue);
+			}
+			else
+			{
+				command += parameters->arrayValue->at(0)->stringValue +"/" + std::to_string(parameters->arrayValue->at(1)->integerValue);
+			}
+			*/
 			packet->setCommand(command);
 			return true;
 		}
@@ -874,14 +928,11 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
-	bool Alarm::processPacket(PLoxonePacket loxonePacket)
+	bool Alarm::processPacket(PLoxoneValueStatesPacket loxonePacket)
 	{
 		try
 		{
-			GD::out.printDebug("Alarm::processPacket " + loxonePacket->getUuid());
-
-			std::string variable;
-			if (LoxoneControl::preProcessPacket(loxonePacket, variable))
+			if (LoxoneControl::processPacket(loxonePacket))
 			{
 				loxonePacket->setJsonString(_json);
 				return true;
@@ -945,20 +996,12 @@ namespace Loxone
 
 	MediaClient::MediaClient(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x201){}
 	MediaClient::MediaClient(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x201){}
-	bool MediaClient::processPacket(PLoxonePacket loxonePacket)
+	bool MediaClient::processPacket(PLoxoneValueStatesPacket loxonePacket)
 	{
 		try
 		{
-			GD::out.printDebug("MediaClient::processPacket " + loxonePacket->getUuid());
-
-			std::string variable;
-			if (LoxoneControl::preProcessPacket(loxonePacket, variable))
+			if (LoxoneControl::processPacket(loxonePacket))
 			{
-				if (_json->structValue->at("state")->structValue->find("power") != _json->structValue->at("state")->structValue->end())
-				{
-					auto value = _json->structValue->at("state")->structValue->at("power")->floatValue;
-					_json->structValue->at("state")->structValue->at("power") = PVariable(new Variable((bool)value));
-				}
 				loxonePacket->setJsonString(_json);
 				return true;
 			}

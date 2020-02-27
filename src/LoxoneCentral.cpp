@@ -962,7 +962,6 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo)
 
             _LoxApp3.parseStructFile(structfile);
             std::string lastModified = _LoxApp3.getlastModified();
-            saveVariable(0, lastModified);
 
             auto controls = _LoxApp3.getControls();
             int32_t newPeers = 0;
@@ -982,6 +981,7 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo)
 
                 GD::out.printMessage("Added peer " + std::to_string(peer->getID()) + ".");
             }
+            //saveVariable(0, lastModified);
             //raiseRPCNewDevices(newIds, deviceDescriptions);
             return std::make_shared<BaseLib::Variable>(newPeers);
 		}

@@ -557,8 +557,8 @@ void Miniserver::listen()
                 try
                 {
                     bytesRead = _tcpSocket->proofread((char*)buffer.data(), buffer.size());
-                    if (GD::bl->debugLevel >= 5) _out.printDebug("listen -> " + std::string(buffer.begin(), buffer.begin()+ bytesRead));
-                    if (GD::bl->debugLevel >= 5) _out.printDebug("listen -> " + BaseLib::HelperFunctions::getHexString((char*)buffer.data(), bytesRead));
+                    //if (GD::bl->debugLevel >= 5) _out.printDebug("listen -> " + std::string(buffer.begin(), buffer.begin()+ bytesRead));
+                    //if (GD::bl->debugLevel >= 5) _out.printDebug("listen -> " + BaseLib::HelperFunctions::getHexString((char*)buffer.data(), bytesRead));
                 }
                 catch (BaseLib::SocketTimeOutException& ex)
                 {
@@ -627,7 +627,7 @@ void Miniserver::listen()
 								}
 								else if (loxoneHeader.identifier == Identifier::EventTable_of_Text_States)
 								{
-									//processEventTableOfTextStatesPacket(content);
+									processEventTableOfTextStatesPacket(content);
 								}
 								else if (loxoneHeader.identifier == Identifier::EventTable_of_Daytimer_States)
 								{
@@ -746,38 +746,55 @@ void Miniserver::processBinaryFilePacket(std::vector<char>& data)
 void Miniserver::processEventTableOfValueStatesPacket(std::vector<char>& data)
 {
     if (GD::bl->debugLevel >= 5) _out.printDebug("processEventTableOfValueStatesPacket");
-	uint32_t processed = 0;
-	do
-	{ 
-		std::vector<char> packet(data.begin() + processed, data.begin() + processed + 24);
-		
-		processed += packet.size();
-		auto loxonePacket = std::make_shared<LoxoneValueStatesPacket>(packet.data());
-		raisePacketReceived(loxonePacket);
-	} while (processed < data.size());
+	try
+	{
+		uint32_t processed = 0;
+		do
+		{
+			std::vector<char> packet(data.begin() + processed, data.begin() + processed + 24);
+
+			processed += packet.size();
+			auto loxonePacket = std::make_shared<LoxoneValueStatesPacket>(packet.data());
+			raisePacketReceived(loxonePacket);
+		} while (processed < data.size());
+	}
+	catch(const std::exception& ex)
+	{
+		_out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+	}
 }
 void Miniserver::processEventTableOfTextStatesPacket(std::vector<char>& data)
 {
     if (GD::bl->debugLevel >= 5) _out.printDebug("processEventTableOfTextStatesPacket");
-	uint32_t processed = 0;
-	do
+    try
 	{
-		std::vector<char> packet(data.begin() + processed, data.begin() + processed + 36); //insert the UUID, UUID_ICON and the TEXTLENGTH
-		processed += packet.size();
-
-		uint32_t strLength = packet.at(32) | packet.at(33) << 8 | packet.at(34) << 16 | packet.at(35) << 24;
-		packet.reserve(packet.size() + strLength);
-		packet.insert(packet.end(), data.begin() + processed, data.begin() + processed + strLength); 
-		auto loxonePacket = std::make_shared<LoxoneTextStatesPacket>((char*)packet.data(), strLength);
-		uint32_t padds = strLength % 4;
-		if (padds != 0)
+		uint32_t processed = 0;
+		do
 		{
-			padds = 4 - padds;
-			strLength += padds;
-		}
-		processed += strLength;
-		raisePacketReceived(loxonePacket);
-	} while (processed < data.size());
+			std::vector<uint8_t> packet(data.begin() + processed, data.begin() + processed + 36); //insert the UUID, UUID_ICON and the TEXTLENGTH
+			processed += 36;
+
+			uint32_t strLength = packet.at(32) | packet.at(33) << 8 | packet.at(34) << 16 | packet.at(35) << 24;
+			packet.reserve(packet.size() + strLength);
+			packet.insert(packet.end(), data.begin() + processed, data.begin() + processed + strLength);
+
+			auto loxonePacket = std::make_shared<LoxoneTextStatesPacket>((char*)packet.data(), strLength + 36);
+
+			uint32_t padds = strLength % 4;
+			if (padds != 0)
+			{
+				padds = 4 - padds;
+				strLength += padds;
+			}
+
+			processed += strLength;
+			raisePacketReceived(loxonePacket);
+		} while (processed < data.size());
+	}
+	catch(const std::exception& ex)
+	{
+		_out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+	}
 }
 void Miniserver::processEventTableOfDaytimerStatesPacket(std::vector<char>& data)
 {

@@ -16,6 +16,9 @@ namespace Loxone
 		LoxoneWsPacket,
 		LoxoneValueStatesPacket,
 		LoxoneTextStatesPacket,
+		LoxoneBinaryFilePacket,
+		LoxoneDaytimerStatesPacket,
+		LoxoneWeatherStatesPacket,
 	};
 
 class InvalidLoxonePacketException : public BaseLib::Exception
@@ -178,10 +181,24 @@ protected:
 	std::string _text;
 };
 
+class LoxoneBinaryFilePacket : public LoxonePacket
+{
+};
+class LoxoneDaytimerStatesPacket : public LoxonePacket
+{
+};
+class LoxoneWeatherStatesPacket : public LoxonePacket
+{
+};
+
+
 typedef std::shared_ptr<LoxonePacket> PLoxonePacket;
 typedef std::shared_ptr<LoxoneHttpPacket> PLoxoneHttpPacket;
 typedef std::shared_ptr<LoxoneWsPacket> PLoxoneWsPacket;
 typedef std::shared_ptr<LoxoneValueStatesPacket> PLoxoneValueStatesPacket;
 typedef std::shared_ptr<LoxoneTextStatesPacket> PLoxoneTextStatesPacket;
+typedef std::shared_ptr<LoxoneBinaryFilePacket> PLoxoneBinaryFilePacket;
+typedef std::shared_ptr<LoxoneDaytimerStatesPacket> PLoxoneDaytimerStatesPacket;
+typedef std::shared_ptr<LoxoneWeatherStatesPacket> PLoxoneWeatherStatesPacket;
 }
 #endif

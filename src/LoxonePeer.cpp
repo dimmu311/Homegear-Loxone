@@ -362,7 +362,44 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
     {
 		GD::out.printDebug("Loxone Peer: packetReceived-> at peer " + std::to_string(_peerID));
 
-		_control->processPacket(packet);
+		switch(packet->getPacketType())
+		{
+			case LoxonePacketType::LoxoneValueStatesPacket:
+			{
+				auto cPacket = std::dynamic_pointer_cast<LoxoneValueStatesPacket>(packet);
+				if(!cPacket) return;
+				_control->processPacket(cPacket);
+				break;
+			}
+			case LoxonePacketType::LoxoneTextStatesPacket:
+			{
+				auto cPacket = std::dynamic_pointer_cast<LoxoneTextStatesPacket>(packet);
+				if(!cPacket) return;
+				_control->processPacket(cPacket);
+				break;
+			}/*
+			case LoxonePacketType::LoxoneBinaryFilePacket:
+			{
+				auto cPacket = std::dynamic_pointer_cast<LoxoneBinaryFilePacket>(packet);
+				if(!cPacket) return;
+				_control->processPacket(cPacket);
+				break;
+			}
+			case LoxonePacketType::LoxoneWeatherStatesPacket:
+			{
+				auto cPacket = std::dynamic_pointer_cast<LoxoneWeatherStatesPacket>(packet);
+				if(!cPacket) return;
+				_control->processPacket(cPacket);
+				break;
+			}
+			case LoxonePacketType::LoxoneDaytimerStatesPacket:
+			{
+				auto cPacket = std::dynamic_pointer_cast<LoxoneDaytimerStatesPacket>(packet);
+				if(!cPacket) return;
+				_control->processPacket(cPacket);
+				break;
+			}*/
+		}
 
         if(_disposing || !packet || !_rpcDevice) return;
         auto central = std::dynamic_pointer_cast<LoxoneCentral>(getCentral());
@@ -685,13 +722,6 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 			}
 		}
 
-		/*
-		std::string content;
-		_jsonEncoder->encode(json, content);
-		if (_bl->debugLevel >= 4) GD::out.printInfo("der neue gebaute json"+content);
-		*/
-		if (_bl->debugLevel >= 4) GD::out.printInfo("for dem senden: "+ frame->function1 + std::to_string(parameters->arrayValue->size()));
-		
 		std::shared_ptr<LoxonePacket> packet (new LoxonePacket());
 		if(!_control->setValue(frame->function1, parameters, packet )) return Variable::createError(-32500, "Unknown application error. See error log for more details.");
 
