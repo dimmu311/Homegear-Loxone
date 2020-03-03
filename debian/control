@@ -1,14 +1,14 @@
-Source: homegear-velux-klf200
-Maintainer: Sathya Laufer <sathya@laufers.net>
+Source: homegear-loxone
+Maintainer: Timo Renner <timo@renner.solutions>
 Section: misc
 Priority: optional
 Standards-Version: 3.9.6
 Build-Depends: debhelper (>= 8), libhomegear-base (= <BASELIBVER>), libgcrypt20-dev, libgpg-error-dev (>= 1.10), libgnutls28-dev
-Homepage: https://homegear.eu
+Homepage: https://github.com/dimmu311/Homegear-Loxone
 
-Package: homegear-velux-klf200
+Package: homegear-loxone
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libhomegear-base (= <BASELIBVER>), homegear (= <BASELIBVER>), libgcrypt20, libgnutlsxx28, libgpg-error0 (>= 1.10)
-Description: Philips Hue module for Homegear
+Description: Loxone Modul for Homegear
  Homegear is a program to interface your home automation software 
  with your smart home devices.

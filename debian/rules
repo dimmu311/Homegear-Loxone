@@ -3,18 +3,18 @@
 override_dh_auto_install:
 	dh_auto_install
 
-	mkdir -p $(CURDIR)/debian/homegear-velux-klf200/etc/homegear/families
-	cp -R $(CURDIR)/misc/Config\ Directory/* $(CURDIR)/debian/homegear-velux-klf200/etc/homegear/families
-	chmod 755 $(CURDIR)/debian/homegear-velux-klf200/etc/homegear/families
-	chmod 644 $(CURDIR)/debian/homegear-velux-klf200/etc/homegear/families/*
+	mkdir -p $(CURDIR)/debian/homegear-loxone-miniserver/etc/homegear/families
+	cp -R $(CURDIR)/misc/Config\ Directory/* $(CURDIR)/debian/homegear-loxone-miniserver/etc/homegear/families
+	chmod 755 $(CURDIR)/debian/homegear-loxone-miniserver/etc/homegear/families
+	chmod 644 $(CURDIR)/debian/homegear-loxone-miniserver/etc/homegear/families/*
 
-	mkdir -p $(CURDIR)/debian/homegear-velux-klf200/etc/homegear/devices/27
-	cp -R $(CURDIR)/misc/Device\ Description\ Files/* $(CURDIR)/debian/homegear-velux-klf200/etc/homegear/devices/27
-	chmod 755 $(CURDIR)/debian/homegear-velux-klf200/etc/homegear/devices/27
-	chmod 644 $(CURDIR)/debian/homegear-velux-klf200/etc/homegear/devices/27/*
+	mkdir -p $(CURDIR)/debian/homegear-loxone-miniserver/etc/homegear/devices/65
+	cp -R $(CURDIR)/misc/Device\ Description\ Files/* $(CURDIR)/debian/homegear-loxone-miniserver/etc/homegear/devices/65
+	chmod 755 $(CURDIR)/debian/homegear-loxone-miniserver/etc/homegear/devices/65
+	chmod 644 $(CURDIR)/debian/homegear-loxone-miniserver/etc/homegear/devices/65/*
 
 override_dh_strip:
-	dh_strip --dbg-package=homegear-velux-klf200
+	dh_strip --dbg-package=homegear-loxone-miniserver
 
 %:
 	dh $@ --parallel
