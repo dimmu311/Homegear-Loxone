@@ -34,17 +34,21 @@ Miniserver::Miniserver(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettin
     {
         std::string name = "token_life_time";
         auto setting = GD::family->getFamilySetting(name);
-        std::string lifeTimeString = setting->stringValue;
-        lifeTime = std::stoi(lifeTimeString);
+        std::string lifeTimeString = "";
+	if(setting)
+	{
+		lifeTimeString = setting->stringValue;
+        	lifeTime = std::stoi(lifeTimeString);
+	}
     }
     {
         std::string name = "token";
         auto setting = GD::family->getFamilySetting(name);
-        token = setting->stringValue;
+        if(setting) token = setting->stringValue;
     }
 
     _loxoneEncryption = std::make_shared<LoxoneEncryption>(_user, _password, _bl);
-    _loxoneEncryption->setToken(token, lifeTime);
+    if(lifeTime >0 && token != "")_loxoneEncryption->setToken(token, lifeTime);
 }
 
 Miniserver::~Miniserver()
