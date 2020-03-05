@@ -32,10 +32,6 @@ namespace Loxone
 			"\r\n"
 			,
 			"dev/sys/getPublicKey"
-			,
-			""
-			,
-			commandType::http,
 			}
 		},
 		{"openWebsocket", LoxoneHttpCommand{
@@ -48,104 +44,66 @@ namespace Loxone
 			"\r\n"
 			,
 			"Web Socket Protocol Handshake"
-			,
-			""
-			,
-			commandType::http,
 			}
 		},
 		{"keyexchange", LoxoneHttpCommand{
 			"jdev/sys/keyexchange/"
 			,
 			"jdev/sys/keyexchange/" 
-			,
-			""
-			,
-			commandType::ws,
 			}
 		},
 		{"getkey2", LoxoneHttpCommand{
 			"jdev/sys/getkey2/"
 			,
 			"jdev/sys/getkey2/"
-			,
-			""
-			,
-			commandType::ws,
 			}
 		},
         {"getkey", LoxoneHttpCommand{
             "jdev/sys/getkey/"
             ,
             "jdev/sys/enc/"
-            ,
-            ""
-            ,
-            commandType::ws,
             }
         },
 		{"getToken", LoxoneHttpCommand{
 			"jdev/sys/gettoken/"
 			,
 			"jdev/sys/gettoken/"
-			,
-			""
-			,
-			commandType::ws,
 			}
 		},
 		{"enableUpdates", LoxoneHttpCommand{
 			"jdev/sps/enablebinstatusupdate"
 			,
 			"dev/sps/enablebinstatusupdate"
-			,
-			""
-			,
-			commandType::ws,
 			}
 		},
 		{"keepalive", LoxoneHttpCommand{
 			"keepalive"
 			,
 			"keepalive"
-			,
-			""
-			,
-			commandType::ws,
 			}
 		},
 		{"newStuctfile", LoxoneHttpCommand{
 			"data/LoxAPP3.json"
 			,
 			"newStuctfile"
-			,
-			""
-			,
-			commandType::ws,
 			}
 		},
 		{"LoxApp3Version", LoxoneHttpCommand{
 			"jdev/sps/LoxAPPversion3"
 			,
 			"dev/sps/LoxAPPversion3"
-			,
-			""
-			,
-			commandType::ws,
 			}
 		},
         {"refreshToken", LoxoneHttpCommand{
             "jdev/sys/refreshtoken/",
             "dev/sps/LoxAPPversion3",
-            "",
-            commandType::ws,
             }
         },
 	};
 
 	std::string LoxonePacket::getUuidFromPacket(char* packet)
 	{
-		std::vector<char> data;
+		std::vector<uint8_t> data;
 		data.reserve(26);
 		data.insert(data.end(), packet, packet + 16);
 		
@@ -177,8 +135,8 @@ namespace Loxone
 			uuid += "-";
 		}
 		{
-			std::vector<char>::const_iterator first = data.begin() + 8;
-			std::vector<char>::const_iterator last = data.begin() + 16;
+			std::vector<uint8_t>::const_iterator first = data.begin() + 8;
+			std::vector<uint8_t>::const_iterator last = data.begin() + 16;
 			std::vector<uint8_t> uuidPart(first, last);
 
 			uuid += BaseLib::HelperFunctions::getHexString(uuidPart.data(), uuidPart.size());
@@ -189,7 +147,7 @@ namespace Loxone
 
 	double LoxonePacket::getValueFromPacket(char* packet)
 	{
-		std::vector<char> data;
+		std::vector<uint8_t> data;
 		data.reserve(8);
 		data.insert(data.end(), packet, packet + 8);
 
@@ -266,9 +224,13 @@ namespace Loxone
 		}
 		else
 		{
-			GD::out.printMessage("Received Http Command with Code not 200 and not 101" + jsonString, 0, true);//from TR
+			GD::out.printMessage("Received Http Command with Code not 200 and not 101" + jsonString, 0, true);
 			//TODO Handle Responses like 404 and so
 		}
+	}
+	LoxoneWsPacket::LoxoneWsPacket()
+	{
+		_responseCode = 0;
 	}
 	LoxoneWsPacket::LoxoneWsPacket(std::string jsonString)
 	{
@@ -308,7 +270,7 @@ namespace Loxone
 		}
 		else
 		{
-			GD::out.printMessage("LoxoneWsPacket with not LL at the beginning" + jsonString, 0, true);//from TR
+			GD::out.printMessage("LoxoneWsPacket with not LL at the beginning" + jsonString, 0, true);
 			//ToDo, make a better solution to detect that this response is a new Structfile
 			_responseCode = 200;
 			_control = "newStuctfile";

@@ -33,13 +33,7 @@ struct LoxoneHttpCommand
 	public:
 		std::string _command;
 		std::string _responseCommand;
-		
-		std::string _value;
-		commandType _type;
-		
 		int32_t _code;
-		std::string _key;
-		std::string _salt;
 };
 struct LoxoneTimeEntry
 {
@@ -53,33 +47,21 @@ struct LoxoneTimeEntry
 class LoxonePacket : public BaseLib::Systems::Packet
 {
 public:
-    LoxonePacket() = default;
-	//explicit LoxonePacket(const std::vector<uint8_t>& binaryPacket, const Identifier2& identifier);
-	//LoxonePacket(LoxoneCommand command, std::vector<uint8_t>  payload);
-	//LoxonePacket(const std::vector<uint8_t>& binaryPacket, const Identifier2& identifier);
-    virtual ~LoxonePacket() = default;
+	virtual ~LoxonePacket() = default;
 	static const std::unordered_map<std::string, LoxoneHttpCommand> _commands;
 	static const std::list<std::string> _responseCommands;
 	
-    //LoxoneCommand getResponseCommand();
-	std::string getResponseCommand() { return _command; };
-
-    //LoxoneCommand getCommand() { return _command; }
-	
+    std::string getResponseCommand() { return _command; };
 	std::string getMessageType() { return "StateSet"; }
 
 	void setCommand(std::string command) { _command = command; };
-
 	std::string getCommand() { return _command; };
-    
    	
 	virtual PVariable getJsonString() { return _jsonString; }
 	void setJsonString(PVariable setJsonString) { _jsonString = setJsonString; }
 
-	//////////////////////
 	LoxonePacketType getPacketType() { return _packetType; };
 	std::string getUuid() { return _uuid; };
-	virtual double getDValue() { return 0; };
 
 protected:
 	std::string _command;
@@ -93,7 +75,6 @@ protected:
 	BaseLib::PVariable _parameters;
 	BaseLib::PVariable _result;
 
-	/////////
 	std::string _uuid;
 	LoxonePacketType _packetType;
 
@@ -105,7 +86,6 @@ protected:
 class LoxoneHttpPacket : public LoxonePacket
 {
 public: 
-	LoxoneHttpPacket() = default;
 	LoxoneHttpPacket(std::string jsonString, uint32_t responseCode);
 	uint32_t getResponseCode() { return _responseCode; };
 	std::string getControl() { return _control; };
@@ -119,7 +99,7 @@ protected:
 class LoxoneWsPacket : public LoxonePacket
 {
 public:
-	LoxoneWsPacket() = default;
+	LoxoneWsPacket();
 	LoxoneWsPacket(std::string jsonString);
 	uint32_t getResponseCode() { return _responseCode; };
 	void setResponseCode(uint32_t responseCode) { _responseCode = responseCode; };
@@ -134,14 +114,10 @@ protected:
 class LoxoneTextmessagePacket : public LoxonePacket
 {
 public:
-	LoxoneTextmessagePacket() = default;
 	LoxoneTextmessagePacket(std::string jsonString);
-	uint32_t getResponseCode() { return _responseCode; };
-	void setResponseCode(uint32_t responseCode) { _responseCode = responseCode; };
 	std::string getControl() { return _control; };
 	BaseLib::PVariable getValue() { return _value; };
 protected:
-	uint32_t _responseCode;
 	std::string _control;
 	BaseLib::PVariable  _value;
 };
@@ -154,10 +130,8 @@ class LoxoneValueStatesPacket : public LoxonePacket
 		} PACKED EvData;
 	*/
 public:
-	LoxoneValueStatesPacket() = default;
 	LoxoneValueStatesPacket(char* packet);
 	double getDValue() { return _value; };
-	bool getBooleanValue() { return (bool)_value; };
 protected:
 	double _value;
 };

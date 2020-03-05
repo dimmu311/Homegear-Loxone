@@ -28,27 +28,26 @@ Miniserver::Miniserver(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettin
 	_user = settings->user;
 	_password = settings->password;
 
+	_loxoneEncryption = std::make_shared<LoxoneEncryption>(_user, _password, _bl);
 
-    uint64_t lifeTime;
+    uint64_t lifeTime = 0;
     std::string token;
     {
         std::string name = "token_life_time";
         auto setting = GD::family->getFamilySetting(name);
         std::string lifeTimeString = "";
-	if(setting)
-	{
-		lifeTimeString = setting->stringValue;
+		if(setting)
+		{
+			lifeTimeString = setting->stringValue;
         	lifeTime = std::stoi(lifeTimeString);
-	}
+		}
     }
     {
         std::string name = "token";
         auto setting = GD::family->getFamilySetting(name);
         if(setting) token = setting->stringValue;
     }
-
-    _loxoneEncryption = std::make_shared<LoxoneEncryption>(_user, _password, _bl);
-    if(lifeTime >0 && token != "")_loxoneEncryption->setToken(token, lifeTime);
+    if(lifeTime >0 && token.size() >0)_loxoneEncryption->setToken(token, lifeTime);
 }
 
 Miniserver::~Miniserver()
@@ -78,7 +77,6 @@ void Miniserver::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
             _stopped = true;
             return;
         }
-		command = "jdev/sys/enc/" + command;
 		try
 		{
             if(GD::bl->debugLevel >= 5) GD::out.printInfo("Info: Sending packet " + command);
@@ -245,8 +243,13 @@ void Miniserver::init()
                     _stopped = true;
                     return;
                 }
-								
-				loxonePacket._value = RSA_encrypted;
+
+				std::string command = loxonePacket._command + RSA_encrypted;
+				std::vector<char> output;
+				std::vector<char> input(command.begin(), command.end());
+				BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
+				loxonePacket._command = std::string(output.begin(), output.end());
+
 				auto responsePacket = getResponse(loxonePacket);
 				if(!responsePacket)
 				{
@@ -275,8 +278,11 @@ void Miniserver::init()
                     _stopped = true;
                     return;
                 }
-				loxonePacket._value = command;
-				loxonePacket._command = "jdev/sys/enc/";
+
+				std::vector<char> output;
+				std::vector<char> input(command.begin(), command.end());
+				BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
+				loxonePacket._command = std::string(output.begin(), output.end());
 
 				auto responsePacket = getResponse(loxonePacket);
 				if (!responsePacket)
@@ -314,8 +320,11 @@ void Miniserver::init()
                     _stopped = true;
                     return;
                 }
-				loxonePacket._value = command;
-				loxonePacket._command = "jdev/sys/enc/";
+
+				std::vector<char> output;
+				std::vector<char> input(command.begin(), command.end());
+				BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
+				loxonePacket._command = std::string(output.begin(), output.end());
 
 				auto responsePacket = getResponse(loxonePacket);
 				if(!responsePacket)
@@ -345,6 +354,13 @@ void Miniserver::init()
                 if (GD::bl->debugLevel >= 5) _out.printDebug("Step 6: enableUpdates");
 
 				auto loxonePacket = LoxonePacket::_commands.at("enableUpdates");
+
+				std::string command = loxonePacket._command;
+				std::vector<char> output;
+				std::vector<char> input(command.begin(), command.end());
+				BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
+				loxonePacket._command = std::string(output.begin(), output.end());
+
 				auto responsePacket = getResponse(loxonePacket);
 				if(!responsePacket)
 				{
@@ -473,7 +489,7 @@ void Miniserver::keepAlive()
 {
 	try
 	{
-        uint32_t keepAliveCounter;
+        uint32_t keepAliveCounter = 0;
         while (!_stopCallbackThread)
 		//_stopped
 		{
@@ -484,6 +500,13 @@ void Miniserver::keepAlive()
 					keepAliveCounter = 0;
 
 					auto loxonePacket = LoxonePacket::_commands.at("keepalive");
+
+					std::string command = loxonePacket._command;
+					std::vector<char> output;
+					std::vector<char> input(command.begin(), command.end());
+					BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
+					loxonePacket._command = std::string(output.begin(), output.end());
+
 					auto responsePacket = getResponse(loxonePacket);
 					if (!responsePacket)
 					{
@@ -510,7 +533,7 @@ void Miniserver::keepAlive()
 }
 void Miniserver::listen()
 {
-	LoxoneHeader loxoneHeader;
+	auto loxoneHeader = std::make_shared<LoxoneHeader>();
 	BaseLib::Http http;
 	BaseLib::WebSocket websocket;
     try
@@ -557,7 +580,7 @@ void Miniserver::listen()
                 }
 
                 std::vector<uint8_t> buffer(1024);
-                int32_t bytesRead = 0;
+                uint32_t bytesRead = 0;
                 try
                 {
                     bytesRead = _tcpSocket->proofread((char*)buffer.data(), buffer.size());
@@ -605,57 +628,57 @@ void Miniserver::listen()
 							{
 								if (content.at(0) == 3 && content.size() == 8)//Loxone Header
 								{
-									loxoneHeader.identifier = (Identifier)content.at(1);
-									loxoneHeader.loxonePayloadLength = content.at(4) | content.at(5) << 8 | content.at(6) << 16 | content.at(7) << 24;
+									loxoneHeader->identifier = (LoxoneHeader::Identifier)content.at(1);
+									loxoneHeader->loxonePayloadLength = content.at(4) | content.at(5) << 8 | content.at(6) << 16 | content.at(7) << 24;
 								
-									if (loxoneHeader.identifier == Identifier::Keepalive_Response)
+									if (loxoneHeader->identifier == LoxoneHeader::Identifier::Keepalive_Response)
 									{
-										processKeepAlivePacket(loxoneHeader.identifier);
+										processKeepAlivePacket();
 									}
-									else if (loxoneHeader.identifier == Identifier::Out_Of_Service_Indicator)
+									else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Out_Of_Service_Indicator)
 									{
-										processOutOfServiceIndicatorPacket(loxoneHeader.identifier);
+										processOutOfServiceIndicatorPacket();
 									}
 								}
-								else if (loxoneHeader.identifier == Identifier::Textmessage)
+								else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Textmessage)
 								{
 									processTextmessagePacket(content);
 								}
-								else if (loxoneHeader.identifier == Identifier::Binary_File)
+								else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Binary_File)
 								{
 									processBinaryFilePacket(content);
 								}
-								else if (loxoneHeader.identifier == Identifier::EventTable_of_Value_States)
+								else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Value_States)
 								{
 									processEventTableOfValueStatesPacket(content);
 								}
-								else if (loxoneHeader.identifier == Identifier::EventTable_of_Text_States)
+								else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Text_States)
 								{
 									processEventTableOfTextStatesPacket(content);
 								}
-								else if (loxoneHeader.identifier == Identifier::EventTable_of_Daytimer_States)
+								else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Daytimer_States)
 								{
 									processEventTableOfDaytimerStatesPacket(content);
 								}
-								else if (loxoneHeader.identifier == Identifier::Out_Of_Service_Indicator)
+								else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Weather_States)
+								{
+									processEventTableOfWeatherStatesPacket(content);
+								}
+								else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Out_Of_Service_Indicator)
 								{
 									//this Condition would never get true;
 									//this is because the Out of Service Response is only a Loxone Header Telegramm.
 									//The normale way is to receive a Loxone Header and after a Message wich has to parse differently -> see the different identifiers
 									//So this means that we have to do a special check at the LoxoneHeader generation if the received header is a Out of Service header
-									processOutOfServiceIndicatorPacket(loxoneHeader.identifier);
+									processOutOfServiceIndicatorPacket();
 								}
-								else if (loxoneHeader.identifier == Identifier::Keepalive_Response)
+								else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Keepalive_Response)
 								{
 									//this Condition would never get true;
 									//this is because the Keepalive Response is only a Loxone Header Telegramm.
 									//The normale way is to receive a Loxone Header and after a Message wich has to parse differently -> see the different identifiers
 									//So this means that we have to do a special check at the LoxoneHeader generation if the received header is a keepalive header
-									processKeepAlivePacket(loxoneHeader.identifier);
-								}
-								else if (loxoneHeader.identifier == Identifier::EventTable_of_Weather_States)
-								{
-									processEventTableOfWeatherStatesPacket(content);
+									processKeepAlivePacket();
 								}
 							}
 							if (websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::text)
@@ -837,11 +860,11 @@ void Miniserver::processEventTableOfDaytimerStatesPacket(std::vector<char>& data
 	*/
 }
 
-void Miniserver::processOutOfServiceIndicatorPacket(Identifier identifier)
+void Miniserver::processOutOfServiceIndicatorPacket()
 {
     if (GD::bl->debugLevel >= 5) _out.printDebug("processOutOfServiceIndicatorPacket");
 }
-void Miniserver::processKeepAlivePacket(Identifier identifier)
+void Miniserver::processKeepAlivePacket()
 {
     if (GD::bl->debugLevel >= 5) _out.printDebug("processKeepAlivePacket");
 
@@ -884,31 +907,10 @@ PLoxonePacket Miniserver::getResponse(const LoxoneHttpCommand& requestPacket, in
 		requestsGuard.unlock();
         std::unique_lock<std::mutex> lock(request->mutex);
 
-		std::string sendCommand = "";
-		std::string command ="";
-		if (requestPacket._type == commandType::http)
-		{
-			command = requestPacket._command;
-			sendCommand = command;
-		}
-		else if (requestPacket._type == commandType::ws)
-		{
-			command = requestPacket._command + requestPacket._value;
-
-			std::vector<char> output;
-			std::vector<char> input(command.begin(), command.end());
-			BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
-
-			std::string sendCommand2(output.begin(), output.end());
-			sendCommand = sendCommand2;
-		}
-		else if (requestPacket._type == commandType::header) {}
-		else {}
-
-        try
+		try
         {
-            GD::out.printInfo("Info: Sending packet " + command);
-            _tcpSocket->proofwrite(sendCommand);
+            GD::out.printInfo("Info: Sending packet " + requestPacket._command);
+            _tcpSocket->proofwrite(requestPacket._command);
 
 			_lastPacketSent = BaseLib::HelperFunctions::getTime();
         }
@@ -919,14 +921,13 @@ PLoxonePacket Miniserver::getResponse(const LoxoneHttpCommand& requestPacket, in
         }
 
 		int32_t i = 0;
-        while(!request->conditionVariable.wait_for(lock, std::chrono::milliseconds(1000), [&]
-        {
+		while(!request->conditionVariable.wait_for(lock, std::chrono::milliseconds(1000), [&]
+		{
 			i++;
-            return request->mutexReady || _stopped || i == waitForSeconds;
-        }));
+			return request->mutexReady || _stopped || i == waitForSeconds;
+		}));
 
 		if (i == waitForSeconds || !request->response)
-		//if (i == waitForSeconds || (request->response._code != 200 && request->_httpCommand._code != 101))
 		{
 			_out.printError("Error: No response received to packet: " + requestPacket._command);
 			return PLoxonePacket();

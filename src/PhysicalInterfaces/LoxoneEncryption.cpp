@@ -163,7 +163,7 @@ namespace Loxone
             std::string encryptedString(reinterpret_cast<const char *>(encrypted), plaintext.size());
 			std::string Base64EncryptedString;
 			BaseLib::Base64::encode(encryptedString, Base64EncryptedString);
-            encryptedCommand = BaseLib::Http::encodeURL(Base64EncryptedString);
+            encryptedCommand = "jdev/sys/enc/" + BaseLib::Http::encodeURL(Base64EncryptedString);
             return 0;
 		}
 		catch (const std::exception& ex)

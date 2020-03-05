@@ -6,19 +6,38 @@
 
 namespace Loxone
 {
-
-	enum class Identifier
+	class LoxoneHeader
 	{
-		Textmessage,
-		Binary_File,
-		EventTable_of_Value_States,
-		EventTable_of_Text_States,
-		EventTable_of_Daytimer_States,
-		Out_Of_Service_Indicator,
-		Keepalive_Response,
-		EventTable_of_Weather_States,
+	public:
+		enum class Identifier
+		{
+			Textmessage,
+			Binary_File,
+			EventTable_of_Value_States,
+			EventTable_of_Text_States,
+			EventTable_of_Daytimer_States,
+			Out_Of_Service_Indicator,
+			Keepalive_Response,
+			EventTable_of_Weather_States,
+		};
+		/*
+		1. Byte = fixed 0x03
+		2. Byte = Identifier	0 = Textmessage
+								1 = Binary File
+								2 = Event-Table of Value-States
+								3 = Event-Table of Text-States
+								4 = Event-Table of Daytimer-States
+								5 = Out-Of_Service Indicator (eg. during Firmwareupdate)
+								6 = Keepalive Response
+								7 = Event-Table of Wether-States
+		3. Byte = Info
+		4. Byte = Reserved for Future
+		5.-8.Byte = Length of the Payload from the next Telegramm
+		*/
+		LoxoneHeader(){};
+		Identifier identifier = Identifier::Out_Of_Service_Indicator;
+		int32_t loxonePayloadLength = 0;
 	};
-
 
 class Miniserver : public BaseLib::Systems::IPhysicalInterface
 {
@@ -44,27 +63,6 @@ protected:
         bool mutexReady = false;
         PLoxonePacket response;
     };
-
-	struct LoxoneHeader
-	{
-		/*
-		1. Byte = fixed 0x03
-		2. Byte = Identifier	0 = Textmessage
-								1 = Binary File
-								2 = Event-Table of Value-States
-								3 = Event-Table of Text-States
-								4 = Event-Table of Daytimer-States
-								5 = Out-Of_Service Indicator (eg. during Firmwareupdate)
-								6 = Keepalive Response
-								7 = Event-Table of Wether-States
-		3. Byte = Info
-		4. Byte = Reserved for Future
-		5.-8.Byte = Length of the Payload from the next Telegramm
-		*/
-		Identifier identifier;
-		int32_t loxonePayloadLength = 0;
-		bool nextIsHeader = true;
-	};
 
     BaseLib::Output _out;
     int32_t _port = 80;
@@ -101,12 +99,11 @@ protected:
 	void processEventTableOfValueStatesPacket(std::vector<char>& data);
 	void processEventTableOfTextStatesPacket(std::vector<char>& data);
 	void processEventTableOfDaytimerStatesPacket(std::vector<char>& data);
-	void processOutOfServiceIndicatorPacket(Identifier identifier);
-	void processKeepAlivePacket(Identifier identifier);
+	void processOutOfServiceIndicatorPacket();
+	void processKeepAlivePacket();
 	void processEventTableOfWeatherStatesPacket(std::vector<char>& data);
 
-    //PLoxonePacket getResponse(LoxoneCommand responseCommand, const PLoxonePacket& requestPacket, int32_t waitForSeconds = 15);
-	PLoxonePacket getResponse(const LoxoneHttpCommand& requestPacket, int32_t waitForSeconds = 15);
+    PLoxonePacket getResponse(const LoxoneHttpCommand& requestPacket, int32_t waitForSeconds = 15);
 
     std::shared_ptr<LoxoneEncryption> _loxoneEncryption;
 };
