@@ -29,7 +29,7 @@
       <jsonPayload>
         <element>
           <keyPath>state\activeMoods</keyPath>
-          <parameterId>"ACTIVE_MOODS"</parameterId>
+          <parameterId>ACTIVE_MOODS</parameterId>
         </element>
         <element>
           <keyPath>state\moodList</keyPath>
