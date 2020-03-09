@@ -58,13 +58,14 @@ namespace Loxone
 		std::unordered_map <std::string, variable_PeerId> getVariables() { return _uuidVariable_PeerIdMap; };
 		void addBooleanState(double value, std::string& variable);
 
-		//virtual bool processPacket(PLoxoneBinaryFilePacket loxonePacket);
+		virtual bool processPacket(PLoxoneBinaryFilePacket loxonePacket);
+		virtual bool processPacket(PLoxoneTextmessagePacket loxonePacket);
 		virtual bool processPacket(PLoxoneValueStatesPacket loxonePacket);
 		virtual bool processPacket(PLoxoneTextStatesPacket loxonePacket);
-		//virtual bool processPacket(PLoxoneDaytimerStatesPacket loxonePacket);
-		//virtual bool processPacket(PLoxoneWeatherStatesPacket loxonePacket);
+		virtual bool processPacket(PLoxoneDaytimerStatesPacket loxonePacket);
+		virtual bool processPacket(PLoxoneWeatherStatesPacket loxonePacket);
 
-		virtual bool setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet) { return false; };
+		virtual bool setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet);
 		virtual uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 	protected:
 		std::shared_ptr<MandatoryFields> _mandatoryFields;
@@ -98,12 +99,7 @@ namespace Loxone
 	public:
 		Pushbutton(PVariable control, std::string room, std::string cat);
 		Pushbutton(std::shared_ptr<BaseLib::Database::DataTable> rows);
-		//bool processPacket(PLoxoneBinaryFilePacket loxonePacket) { return false; }
 		bool processPacket(PLoxoneValueStatesPacket loxonePacket);
-		//bool processPacket(PLoxoneTextStatesPacket loxonePacket) { return false; }
-		//bool processPacket(PLoxoneDaytimerStatesPacket loxonePacket) { return false; }
-		//bool processPacket(PLoxoneWeatherStatesPacket loxonePacket) { return false; }
-		bool setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet);
 		uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 	protected:
 		bool _isFavorite;
@@ -137,12 +133,6 @@ namespace Loxone
 	public:
 		Slider(PVariable control, std::string room, std::string cat);
 		Slider(std::shared_ptr<BaseLib::Database::DataTable> rows);
-		//bool processPacket(PLoxoneBinaryFilePacket loxonePacket) { return false; }
-		bool processPacket(PLoxoneValueStatesPacket loxonePacket);
-		//bool processPacket(PLoxoneTextStatesPacket loxonePacket) { return false; }
-		//bool processPacket(PLoxoneDaytimerStatesPacket loxonePacket) { return false; }
-		//bool processPacket(PLoxoneWeatherStatesPacket loxonePacket) { return false; }
-		bool setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet);
 		uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 	protected:
 		bool _isFavorite;
@@ -177,12 +167,6 @@ namespace Loxone
 	public:
 		Dimmer(PVariable control, std::string room, std::string cat);
 		Dimmer(std::shared_ptr<BaseLib::Database::DataTable> rows);
-		//bool processPacket(PLoxoneBinaryFilePacket loxonePacket) { return false; }
-		bool processPacket(PLoxoneValueStatesPacket loxonePacket);
-		//bool processPacket(PLoxoneTextStatesPacket loxonePacket) { return false; }
-		//bool processPacket(PLoxoneDaytimerStatesPacket loxonePacket) { return false; }
-		//bool processPacket(PLoxoneWeatherStatesPacket loxonePacket) { return false; }
-		bool setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet);
 		uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 	protected:
 		bool _isFavorite;
@@ -320,12 +304,6 @@ namespace Loxone
 	public:
 		LightControllerV2(PVariable control, std::string room, std::string cat);
 		LightControllerV2(std::shared_ptr<BaseLib::Database::DataTable> rows);
-		//bool processPacket(PLoxoneBinaryFilePacket loxonePacket) { return false; }
-		bool processPacket(PLoxoneValueStatesPacket loxonePacket);
-		bool processPacket(PLoxoneTextStatesPacket loxonePacket);
-		//bool processPacket(PLoxoneDaytimerStatesPacket loxonePacket) { return false; }
-		//bool processPacket(PLoxoneWeatherStatesPacket loxonePacket) { return false; }
-		bool setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet);
 		uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 	protected:
 		bool _isFavorite;
@@ -379,12 +357,6 @@ namespace Loxone
 	public:
 		Alarm(PVariable control, std::string room, std::string cat);
 		Alarm(std::shared_ptr<BaseLib::Database::DataTable> rows);
-		//bool processPacket(PLoxoneBinaryFilePacket loxonePacket) { return false; }
-		bool processPacket(PLoxoneValueStatesPacket loxonePacket);
-		//bool processPacket(PLoxoneTextStatesPacket loxonePacket) { return false; }
-		//bool processPacket(PLoxoneDaytimerStatesPacket loxonePacket) { return false; }
-		//bool processPacket(PLoxoneWeatherStatesPacket loxonePacket) { return false; }
-		bool setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet);
 		uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 	protected:
 		bool _detAlert;
@@ -401,12 +373,6 @@ namespace Loxone
 	public:
 		MediaClient(PVariable control, std::string room, std::string cat);
 		MediaClient(std::shared_ptr<BaseLib::Database::DataTable> rows);
-		//bool processPacket(PLoxoneBinaryFilePacket loxonePacket) { return false; }
-		bool processPacket(PLoxoneValueStatesPacket loxonePacket);
-		//bool processPacket(PLoxoneTextStatesPacket loxonePacket) { return false; }
-		//bool processPacket(PLoxoneDaytimerStatesPacket loxonePacket) { return false; }
-		//bool processPacket(PLoxoneWeatherStatesPacket loxonePacket) { return false; }
-		bool setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet);
 		uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 	protected:
 	};

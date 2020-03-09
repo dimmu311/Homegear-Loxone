@@ -259,6 +259,8 @@ namespace Loxone
 			_json->structValue->operator[]("state") = PVariable(new Variable(VariableType::tStruct));
 			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second.variable) = PVariable(new Variable(loxonePacket->getDValue()));
 			addBooleanState(loxonePacket->getDValue(), variable_PeerId->second.variable);
+
+			loxonePacket->setJsonString(_json);
 			return true;
 		}
 		catch (const std::exception& ex)
@@ -280,6 +282,8 @@ namespace Loxone
 			_json = std::make_shared<Variable>(VariableType::tStruct);
 			_json->structValue->operator[]("state") = PVariable(new Variable(VariableType::tStruct));
 			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second.variable) = PVariable(new Variable(loxonePacket->getText()));
+
+			loxonePacket->setJsonString(_json);
 			return true;
 		}
 		catch (const std::exception& ex)
@@ -288,6 +292,54 @@ namespace Loxone
 			return false;
 		}
 	}
+	bool LoxoneControl::processPacket(PLoxoneBinaryFilePacket loxonePacket)
+	{
+		try
+		{
+			return false;
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+			return false;
+		}
+	}
+	bool LoxoneControl::processPacket(PLoxoneTextmessagePacket loxonePacket)
+	{
+		try
+		{
+			return false;
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+			return false;
+		}
+	}
+	bool LoxoneControl::processPacket(PLoxoneDaytimerStatesPacket loxonePacket)
+	{
+		try
+		{
+			return false;
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+			return false;
+		}
+	}
+	bool LoxoneControl::processPacket(PLoxoneWeatherStatesPacket loxonePacket)
+		{
+			try
+			{
+				return false;
+			}
+			catch (const std::exception& ex)
+			{
+				GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+				return false;
+			}
+		}
 	uint32_t LoxoneControl::getStatesToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
 		uint32_t variableID = 201;
@@ -307,6 +359,57 @@ namespace Loxone
 		}
 		return 0;
 	}
+	bool LoxoneControl::setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet)
+	{
+		try
+		{
+			std::string command = "jdev/sps/io/" + _mandatoryFields->_uuidAction;
+			switch(parameters->type)
+			{
+				case VariableType::tArray:
+				{
+					for(auto value1 = parameters->arrayValue->begin(); value1 != parameters->arrayValue->end(); ++value1)
+					{
+						switch(value1.operator *()->type)
+						{
+							case VariableType::tString:
+							{
+								command += "/";
+								command += value1.operator *()->stringValue;
+								break;
+							}
+							case VariableType::tInteger:
+							{
+								command += "/";
+								command += std::to_string(value1.operator *()->integerValue);
+								break;
+							}
+							case VariableType::tBoolean:
+							{
+								std::string doCommand = "off";
+								if(value1.operator *()->booleanValue) doCommand = "on";
+								command += "/";
+								command += doCommand;
+							}
+							default:
+								break;
+						}
+					}
+					break;
+				}
+				default:
+					break;
+			}
+			if (GD::bl->debugLevel >= 5) GD::out.printInfo("build command from packet: " + command);
+			packet->setCommand(command);
+			return true;
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+		}
+		return false;
+		}
 	uint32_t LoxoneControl::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
 		if(peerID == 0)return 0;
@@ -369,36 +472,6 @@ namespace Loxone
 				loxonePacket->setJsonString(_json);
 				return true;
 			}
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
-
-	bool Pushbutton::setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet)
-	{
-		try
-		{
-			std::string command;
-			if (method == "setConstString")
-			{
-				GD::out.printInfo("setValueTests: " + parameters->arrayValue->at(0)->stringValue);
-				command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/" + parameters->arrayValue->at(0)->stringValue;
-			}
-			else if (method == "StateSet")
-			{
-				auto value = parameters->arrayValue->at(0)->booleanValue;
-				command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/" + "off";
-				if (value)
-				{
-					command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/" + "on";
-				}
-			}
-
-			packet->setCommand(command);
-			return true;
 		}
 		catch (const std::exception& ex)
 		{
@@ -498,41 +571,6 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
-	bool Slider::processPacket(PLoxoneValueStatesPacket loxonePacket)
-	{
-		try
-		{
-			if (LoxoneControl::processPacket(loxonePacket))
-			{
-				loxonePacket->setJsonString(_json);
-				return true;
-			}
-		}
-		catch (const std::exception & ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
-	bool Slider::setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet)
-	{
-		try
-		{
-			std::string command;
-			if (method == "ValueSet")
-			{
-				auto value = parameters->arrayValue->at(0)->floatValue;
-				command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/" + std::to_string(value);
-			}
-			packet->setCommand(command);
-			return true;
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
 	uint32_t Slider::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
 		LoxoneControl::getDataToSave(list, peerID);
@@ -627,58 +665,6 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
-	bool Dimmer::processPacket(PLoxoneValueStatesPacket loxonePacket)
-	{
-		try
-		{
-			if (LoxoneControl::processPacket(loxonePacket))
-			{
-				loxonePacket->setJsonString(_json);
-				return true;
-			}
-		}
-		catch (const std::exception & ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
-	bool Dimmer::setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet)
-	{
-		try
-		{
-			std::string command;
-			if (method == "ValueSet")
-			{
-				auto value = parameters->arrayValue->at(0)->floatValue;
-				command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/" + std::to_string(value);
-			}
-			else if (method == "setOn")
-			{
-				command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/" + "on";
-			}
-			else if (method == "setOff")
-			{
-				command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/" + "off";
-			}
-			else if (method == "StateSet")
-			{
-				auto value = parameters->arrayValue->at(0)->booleanValue;
-				command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/" + "off";
-				if (value)
-				{
-					command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/" + "on";
-				}
-			}
-			packet->setCommand(command);
-			return true;
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
 	uint32_t Dimmer::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
 		LoxoneControl::getDataToSave(list, peerID);
@@ -750,99 +736,7 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
-	bool LightControllerV2::processPacket(PLoxoneValueStatesPacket loxonePacket)
-	{
-		try
-		{
-			if (LoxoneControl::processPacket(loxonePacket))
-			{
-				loxonePacket->setJsonString(_json);
-				return true;
-			}
-		}
-		catch (const std::exception & ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
-	bool LightControllerV2::processPacket(PLoxoneTextStatesPacket loxonePacket)
-		{
-			try
-			{
-				if (LoxoneControl::processPacket(loxonePacket))
-				{
-					loxonePacket->setJsonString(_json);
-					return true;
-				}
-			}
-			catch (const std::exception & ex)
-			{
-				GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-			}
-			return false;
-		}
-	bool LightControllerV2::setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet)
-	{
-		try
-		{
-			std::string command = "jdev/sps/io/" + _mandatoryFields->_uuidAction;
-			switch(parameters->type)
-			{
-				case VariableType::tArray:
-				{
-					for(auto value1 = parameters->arrayValue->begin(); value1 != parameters->arrayValue->end(); ++value1)
-					{
-						switch(value1.operator *()->type)
-						{
-							case VariableType::tString:
-							{
-								command += "/";
-								command += value1.operator *()->stringValue;
-								break;
-							}
-							case VariableType::tInteger:
-							{
-								command += "/";
-								command += std::to_string(value1.operator *()->integerValue);
-								break;
-							}
-							default:
-								break;
-						}
-					}
-					break;
-				}
-				default:
-					break;
-			}
-			if (GD::bl->debugLevel >= 5) GD::out.printInfo("build command from packet: " + command);
 
-			/*
-			std::string command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/";
-			if (method == "setConstString")
-			{
-				GD::out.printInfo("setValueTests: " + parameters->arrayValue->at(0)->stringValue);
-				command += parameters->arrayValue->at(0)->stringValue;
-			}
-			else if(method == "moveFavoriteMood")
-			{
-				command += parameters->arrayValue->at(0)->stringValue + "/" + std::to_string(parameters->arrayValue->at(2)->integerValue)+ "/" + std::to_string(parameters->arrayValue->at(1)->integerValue);
-			}
-			else
-			{
-				command += parameters->arrayValue->at(0)->stringValue +"/" + std::to_string(parameters->arrayValue->at(1)->integerValue);
-			}
-			*/
-			packet->setCommand(command);
-			return true;
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
 	uint32_t LightControllerV2::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
 		LoxoneControl::getDataToSave(list, peerID);
@@ -928,47 +822,6 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
-	bool Alarm::processPacket(PLoxoneValueStatesPacket loxonePacket)
-	{
-		try
-		{
-			if (LoxoneControl::processPacket(loxonePacket))
-			{
-				loxonePacket->setJsonString(_json);
-				return true;
-			}
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
-	bool Alarm::setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet)
-	{
-		try
-		{
-			std::string command;
-			if (method == "Arm")
-			{
-				auto value = parameters->arrayValue->at(0)->integerValue;
-				if(value != -1)	command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/on/" + std::to_string(value);
-				else command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/on";
-			}
-			else if (method == "setOn")
-			{
-				command = "jdev/sps/io/" + _mandatoryFields->_uuidAction + "/" + "on";
-			}
-			
-			packet->setCommand(command);
-			return true;
-		}
-		catch (const std::exception & ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
 	uint32_t Alarm::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
 		LoxoneControl::getDataToSave(list, peerID);
@@ -996,54 +849,6 @@ namespace Loxone
 
 	MediaClient::MediaClient(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x201){}
 	MediaClient::MediaClient(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x201){}
-	bool MediaClient::processPacket(PLoxoneValueStatesPacket loxonePacket)
-	{
-		try
-		{
-			if (LoxoneControl::processPacket(loxonePacket))
-			{
-				loxonePacket->setJsonString(_json);
-				return true;
-			}
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
-
-	bool MediaClient::setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet)
-	{
-		try
-		{
-			/*
-			std::string command;
-			if (method == "setConstString")
-			{
-				GD::out.printInfo("setValueTests: " + parameters->arrayValue->at(0)->stringValue);
-				command = "jdev/sps/io/" + _mandatoryFields._uuidAction + "/" + parameters->arrayValue->at(0)->stringValue;
-			}
-			else if (method == "StateSet")
-			{
-				auto value = parameters->arrayValue->at(0)->booleanValue;
-				command = "jdev/sps/io/" + _mandatoryFields._uuidAction + "/" + "off";
-				if (value)
-				{
-					command = "jdev/sps/io/" + _mandatoryFields._uuidAction + "/" + "on";
-				}
-			}
-
-			packet->setCommand(command);
-			*/
-			return true;
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
 	uint32_t MediaClient::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
 		LoxoneControl::getDataToSave(list, peerID);
