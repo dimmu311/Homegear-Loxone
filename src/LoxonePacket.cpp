@@ -291,7 +291,6 @@ namespace Loxone
 		_uuid = getUuidFromPacket(packet);
 		_value = getValueFromPacket(packet+16);
 	}
-
 	LoxoneTextStatesPacket::LoxoneTextStatesPacket(char* packet, uint32_t len)
 	{
 		_packetType = LoxonePacketType::LoxoneTextStatesPacket;
@@ -306,6 +305,85 @@ namespace Loxone
 			ss << packet[i];
 		}
 		_text = ss.str();
+	}
+	LoxoneDaytimerStatesPacket::LoxoneTimeEntry::LoxoneTimeEntry(std::vector<uint8_t> data)
+	{
+		_mode = data.at(0) | data.at(1) << 8 | data.at(2) << 16 | data.at(3) << 24;
+		_from = data.at(4) | data.at(5) << 8 | data.at(6) << 16 | data.at(7) << 24;
+		_to = data.at(8) | data.at(9) << 8 | data.at(10) << 16 | data.at(11) << 24;
+		_needActivate = data.at(12) | data.at(13) << 8 | data.at(14) << 16 | data.at(15) << 24;
+		unsigned char ptr[]{ data.at(16), data.at(17), data.at(18), data.at(19), data.at(20) , data.at(21) , data.at(22) , data.at(23) };
+		_value = *reinterpret_cast<double*>(ptr);
+	}
+	LoxoneDaytimerStatesPacket::LoxoneDaytimerStatesPacket(char* packet, uint32_t nrEntrys)
+	{
+		_packetType = LoxonePacketType::LoxoneDaytimerStatesPacket;
+		_uuid = getUuidFromPacket(packet);
+		_devValue = getValueFromPacket(packet + 16);
+
+		for(uint32_t i = 0; i<nrEntrys; i++)
+		{
+			std::vector<uint8_t> entry;
+			entry.reserve(24);
+			entry.insert(entry.begin(), packet + 28 + i*24, packet + 28 + 24 + i*24);
+			_entrys.insert(std::pair<uint32_t, LoxoneTimeEntry>(i, LoxoneTimeEntry(entry)));
+		}
+	}
+	LoxoneWeatherStatesPacket::LoxoneWeatherEntry::LoxoneWeatherEntry(std::vector<uint8_t> data)
+	{
+		_timestamp = data.at(0) | data.at(1) << 8 | data.at(2) << 16 | data.at(3) << 24;
+		_weatherType = data.at(4) | data.at(5) << 8 | data.at(6) << 16 | data.at(7) << 24;
+		_windDirection = data.at(8) | data.at(9) << 8 | data.at(10) << 16 | data.at(11) << 24;
+		_solarRadiation = data.at(12) | data.at(13) << 8 | data.at(14) << 16 | data.at(15) << 24;
+		_relativeHumidity = data.at(16) | data.at(17) << 8 | data.at(18) << 16 | data.at(19) << 24;
+		{
+			uint32_t offset = 0;
+			unsigned char ptr[]{ data.at(20 + offset), data.at(21 + offset), data.at(22 + offset), data.at(23 + offset), data.at(24 + offset) , data.at(25 + offset) , data.at(26 + offset) , data.at(27 + offset) };
+			_temperature = *reinterpret_cast<double*>(ptr);
+		}
+		{
+			uint32_t offset = 8;
+			unsigned char ptr[]{ data.at(20 + offset), data.at(21 + offset), data.at(22 + offset), data.at(23 + offset), data.at(24 + offset) , data.at(25 + offset) , data.at(26 + offset) , data.at(27 + offset) };
+			_perceivedTemperature = *reinterpret_cast<double*>(ptr);
+		}
+		{
+			uint32_t offset = 16;
+			unsigned char ptr[]{ data.at(20 + offset), data.at(21 + offset), data.at(22 + offset), data.at(23 + offset), data.at(24 + offset) , data.at(25 + offset) , data.at(26 + offset) , data.at(27 + offset) };
+			_dewPoint = *reinterpret_cast<double*>(ptr);
+		}
+		{
+			uint32_t offset = 24;
+			unsigned char ptr[]{ data.at(20 + offset), data.at(21 + offset), data.at(22 + offset), data.at(23 + offset), data.at(24 + offset) , data.at(25 + offset) , data.at(26 + offset) , data.at(27 + offset) };
+			_precipitation = *reinterpret_cast<double*>(ptr);
+		}
+		{
+			uint32_t offset = 32;
+			unsigned char ptr[]{ data.at(20 + offset), data.at(21 + offset), data.at(22 + offset), data.at(23 + offset), data.at(24 + offset) , data.at(25 + offset) , data.at(26 + offset) , data.at(27 + offset) };
+			_windSpeed = *reinterpret_cast<double*>(ptr);
+		}
+		{
+			uint32_t offset = 40;
+			unsigned char ptr[]{ data.at(20 + offset), data.at(21 + offset), data.at(22 + offset), data.at(23 + offset), data.at(24 + offset) , data.at(25 + offset) , data.at(26 + offset) , data.at(27 + offset) };
+			_barometicPressure = *reinterpret_cast<double*>(ptr);
+		}
+	}
+	LoxoneWeatherStatesPacket::LoxoneWeatherStatesPacket(char* packet, uint32_t nrEntrys)
+	{
+		_packetType = LoxonePacketType::LoxoneWeatherStatesPacket;
+		_uuid = getUuidFromPacket(packet);
+		{
+			std::vector<uint8_t> value;
+			value.reserve(4);
+			value.insert(value.begin(), packet + 16, packet + 20);
+			_lastUpdate = value.at(0) | value.at(1) << 8 | value.at(2) << 16 | value.at(3) << 24;
+		}
+		for(uint32_t i = 0; i<nrEntrys; i++)
+		{
+			std::vector<uint8_t> entry;
+			entry.reserve(68);
+			entry.insert(entry.begin(), packet + 24 + i*68, packet + 24 + 24 + i*68);
+			_entrys.insert(std::pair<uint32_t, LoxoneWeatherEntry>(i, LoxoneWeatherEntry(entry)));
+		}
 	}
 }
 

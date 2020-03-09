@@ -584,8 +584,8 @@ void Miniserver::listen()
                 try
                 {
                     bytesRead = _tcpSocket->proofread((char*)buffer.data(), buffer.size());
-                    //if (GD::bl->debugLevel >= 5) _out.printDebug("listen -> " + std::string(buffer.begin(), buffer.begin()+ bytesRead));
-                    //if (GD::bl->debugLevel >= 5) _out.printDebug("listen -> " + BaseLib::HelperFunctions::getHexString((char*)buffer.data(), bytesRead));
+                    if (GD::bl->debugLevel >= 6) _out.printDebug("listen -> " + std::string(buffer.begin(), buffer.begin()+ bytesRead));
+                    if (GD::bl->debugLevel >= 6) _out.printDebug("listen -> " + BaseLib::HelperFunctions::getHexString((char*)buffer.data(), bytesRead));
                 }
                 catch (BaseLib::SocketTimeOutException& ex)
                 {
@@ -826,38 +826,32 @@ void Miniserver::processEventTableOfTextStatesPacket(std::vector<char>& data)
 void Miniserver::processEventTableOfDaytimerStatesPacket(std::vector<char>& data)
 {
     if (GD::bl->debugLevel >= 5) _out.printDebug("processEventTableOfDaytimerStatesPacket");
-	/*
-	else if (loxoneHeader.identifier == Identifier::EventTable_of_Daytimer_States)
-	{
-	while (buffer2.size() > 0)
-	{
-		if (buffer2.size() >= 28)
+    try
+    {
+		uint32_t processed = 0;
+		do
 		{
-			std::vector<uint8_t> packet(buffer2.begin(), buffer2.begin() + 24);
-			buffer2.erase(buffer2.begin(), buffer2.begin() + 24);
+			std::vector<uint8_t> packet(data.begin() + processed, data.begin() + processed + 28); //insert the UUID, defValue and nrEntrys
+			processed += 28;
 
-			uint32_t numEntrys = buffer2.at(0) | buffer2.at(1) << 8 | buffer2.at(2) << 16 | buffer2.at(3) << 24;
-			GD::out.printMessage("die Anzahl der Zeiteintr�ge" + std::to_string(numEntrys), 0, true);//from TR
-
-			packet.insert(packet.end(), buffer2.begin(), buffer2.begin() + 4);
-			buffer2.erase(buffer2.begin(), buffer2.begin() + 4);
-
-			if (buffer2.size() >= numEntrys * 24)
+			uint32_t nrEntrys = packet.at(24) | packet.at(25) << 8 | packet.at(26) << 16 | packet.at(27) << 24;
+			if(nrEntrys >0)
 			{
-				packet.insert(packet.end(), buffer2.begin(), buffer2.begin() + numEntrys * 24);
-				buffer2.erase(buffer2.begin(), buffer2.begin() + numEntrys * 24);
+				uint32_t lenEntrys = 24*nrEntrys;
 
-				auto loxonePacket = std::make_shared<LoxonePacket>(packet, (Identifier2)(int)loxoneHeader.identifier);
-				raisePacketReceived(loxonePacket);
+				packet.reserve(packet.size() + lenEntrys);
+				packet.insert(packet.end(), data.begin() + processed, data.begin() + processed + lenEntrys);
+
+				processed += lenEntrys;
 			}
-			else
-				if (GD::bl->debugLevel >= 5) _out.printDebug("Debug: Problem Parcing EventTable_of_Daytimer_States Packet: Size is to short");
-		}
-		else
-			if (GD::bl->debugLevel >= 5) _out.printDebug("Debug: Problem Parcing EventTable_of_Daytimer_States Packet: Size is to short");
+			auto loxonePacket = std::make_shared<LoxoneDaytimerStatesPacket>((char*)packet.data(), nrEntrys);
+			raisePacketReceived(loxonePacket);
+		} while (processed < data.size());
 	}
+	catch(const std::exception& ex)
+	{
+		_out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 	}
-	*/
 }
 
 void Miniserver::processOutOfServiceIndicatorPacket()
@@ -891,6 +885,32 @@ void Miniserver::processKeepAlivePacket()
 void Miniserver::processEventTableOfWeatherStatesPacket(std::vector<char>& data)
 {
     if (GD::bl->debugLevel >= 5) _out.printDebug("processEventTableOfWeatherStatesPacket");
+    try
+	{
+		uint32_t processed = 0;
+		do
+		{
+			std::vector<uint8_t> packet(data.begin() + processed, data.begin() + processed + 24); //insert the UUID, lastUpdate and nrEntrys
+			processed += 24;
+
+			uint32_t nrEntrys = packet.at(20) | packet.at(21) << 8 | packet.at(22) << 16 | packet.at(23) << 24;
+			if(nrEntrys >0)
+			{
+				uint32_t lenEntrys = 68*nrEntrys;
+
+				packet.reserve(packet.size() + lenEntrys);
+				packet.insert(packet.end(), data.begin() + processed, data.begin() + processed + lenEntrys);
+
+				processed += lenEntrys;
+			}
+			auto loxonePacket = std::make_shared<LoxoneWeatherStatesPacket>((char*)packet.data(), nrEntrys);
+			raisePacketReceived(loxonePacket);
+		} while (processed < data.size());
+	}
+	catch(const std::exception& ex)
+	{
+		_out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+	}
 }
 
 PLoxonePacket Miniserver::getResponse(const LoxoneHttpCommand& requestPacket, int32_t waitForSeconds)

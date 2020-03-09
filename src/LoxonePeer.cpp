@@ -377,10 +377,17 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
 				if(!cPacket) return;
 				_control->processPacket(cPacket);
 				break;
-			}/*
+			}
 			case LoxonePacketType::LoxoneBinaryFilePacket:
 			{
 				auto cPacket = std::dynamic_pointer_cast<LoxoneBinaryFilePacket>(packet);
+				if(!cPacket) return;
+				_control->processPacket(cPacket);
+				break;
+			}
+			case LoxonePacketType::LoxoneTextMessage:
+			{
+				auto cPacket = std::dynamic_pointer_cast<LoxoneTextmessagePacket>(packet);
 				if(!cPacket) return;
 				_control->processPacket(cPacket);
 				break;
@@ -398,7 +405,7 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
 				if(!cPacket) return;
 				_control->processPacket(cPacket);
 				break;
-			}*/
+			}
 		}
 
         if(_disposing || !packet || !_rpcDevice) return;

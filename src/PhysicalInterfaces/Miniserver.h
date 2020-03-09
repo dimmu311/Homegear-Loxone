@@ -82,7 +82,6 @@ protected:
     std::mutex _getResponseMutex;
     std::mutex _responsesMutex;
     std::unordered_map<std::string, std::shared_ptr<Request>> _responses;
-	//std::unordered_map<LoxoneCommand, std::shared_ptr<Request>> _responses;
 	std::unordered_map<std::string, std::list<PLoxonePacket>> _responseCollections;
 
 
