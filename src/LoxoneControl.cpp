@@ -29,7 +29,7 @@ namespace Loxone
     MandatoryFields::MandatoryFields(PVariable mandatoryFields, std::string room, std::string cat)
     {
     	_name = mandatoryFields->structValue->at("name")->stringValue;
-		_type = mandatoryFields->structValue->at("type")->stringValue;
+		_typeString = mandatoryFields->structValue->at("type")->stringValue;
 		_uuidAction = mandatoryFields->structValue->at("uuidAction")->stringValue;
 		_defaultRating = mandatoryFields->structValue->at("defaultRating")->integerValue;
 		_isSecured = mandatoryFields->structValue->at("isSecured")->booleanValue;
@@ -53,7 +53,7 @@ namespace Loxone
 				case 102:
 				{
 					auto type = row->second.at(5)->binaryValue;
-					_type = std::string (type->begin(), type->end());
+					_typeString = std::string (type->begin(), type->end());
 					break;
 				}
 				case 103:
@@ -93,7 +93,7 @@ namespace Loxone
 			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(102)));
 			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
 			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("type")));
-			std::vector<char> type(_type.begin(), _type.end());
+			std::vector<char> type(_typeString.begin(), _typeString.end());
 			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(type)));
 			list.push_back(data);
 		}
@@ -179,14 +179,12 @@ namespace Loxone
 		return 0;
     }
 
-	LoxoneControl::LoxoneControl(PVariable control, std::string room, std::string cat, uint32_t typeNr)
+	LoxoneControl::LoxoneControl(PVariable control, std::string room, std::string cat, uint32_t typeNr) : MandatoryFields(control, room, cat),	OptionalFields(control, room, cat)
 	{
 		try
 		{
 			_type = typeNr;
-
-			_mandatoryFields = std::make_shared<MandatoryFields>(control, room, cat);
-			_optionalFields = std::make_shared<OptionalFields>(control, room, cat);
+			_control = control;
 
 			for (auto i = control->structValue->at("states")->structValue->begin(); i != control->structValue->at("states")->structValue->end(); ++i)
 			{
@@ -200,13 +198,12 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 	}
-	LoxoneControl::LoxoneControl(std::shared_ptr<BaseLib::Database::DataTable> rows, uint32_t typeNr)
+	LoxoneControl::LoxoneControl(std::shared_ptr<BaseLib::Database::DataTable> rows, uint32_t typeNr) : MandatoryFields(rows),	OptionalFields(rows)
 	{
 		try
 		{
 			_type = typeNr;
-			_mandatoryFields = std::make_shared<MandatoryFields>(rows);
-			_optionalFields = std::make_shared<OptionalFields>(rows);
+			_rows = rows;
 
 			for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
 			{
@@ -231,11 +228,6 @@ namespace Loxone
 		{
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
-	}
-	void LoxoneControl::overwriteName(std::string name)
-	{
-		if(!_mandatoryFields) return;
-		_mandatoryFields->overwriteName(name);
 	}
 
 	void LoxoneControl::addBooleanState(double value, std::string& variable)
@@ -329,17 +321,17 @@ namespace Loxone
 		}
 	}
 	bool LoxoneControl::processPacket(PLoxoneWeatherStatesPacket loxonePacket)
+	{
+		try
 		{
-			try
-			{
-				return false;
-			}
-			catch (const std::exception& ex)
-			{
-				GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-				return false;
-			}
+			return false;
 		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+			return false;
+		}
+	}
 	uint32_t LoxoneControl::getStatesToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
 		uint32_t variableID = 201;
@@ -363,7 +355,7 @@ namespace Loxone
 	{
 		try
 		{
-			std::string command = "jdev/sps/io/" + _mandatoryFields->_uuidAction;
+			std::string command = "jdev/sps/io/" + _uuidAction;
 			switch(parameters->type)
 			{
 				case VariableType::tArray:
@@ -382,6 +374,12 @@ namespace Loxone
 							{
 								command += "/";
 								command += std::to_string(value1.operator *()->integerValue);
+								break;
+							}
+							case VariableType::tFloat:
+							{
+								command += "/";
+								command += std::to_string(value1.operator *()->floatValue);
 								break;
 							}
 							case VariableType::tBoolean:
@@ -409,47 +407,145 @@ namespace Loxone
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
 		return false;
-		}
+	}
 	uint32_t LoxoneControl::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
 		if(peerID == 0)return 0;
-		_mandatoryFields->getDataToSave(list, peerID);
-		_optionalFields->getDataToSave(list, peerID);
+		MandatoryFields::getDataToSave(list, peerID);
+		OptionalFields::getDataToSave(list, peerID);
 		getStatesToSave(list, peerID);
 		return 1;
 	}
-
-	Pushbutton::Pushbutton(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x100)
+	bool LoxoneControl::getValueFromStructFile(const std::string& variableId, const std::string& path, bool& value)
 	{
 		try
 		{
-			if(control->structValue->find("isFavorite") != control->structValue->end())	_isFavorite = control->structValue->at("isFavorite")->booleanValue;
-			if(control->structValue->find("defaultIcon") != control->structValue->end()) _defaultIcon = control->structValue->at("defaultIcon")->stringValue;
+			if(path != "")
+			{
+				if(_control->structValue->find(path) != _control->structValue->end())
+				{
+					if(_control->structValue->at(path)->structValue->find(variableId) != _control->structValue->end())
+					{
+						value = _control->structValue->at(path)->structValue->at(variableId)->booleanValue;
+						return true;
+					}
+				}
+			}
+
+			if(_control->structValue->find(variableId) != _control->structValue->end())
+			{
+				value = _control->structValue->at(variableId)->booleanValue;
+				return true;
+			}
 		}
 		catch (const std::exception& ex)
 		{
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
+		value = false;
+		if (GD::bl->debugLevel >= 5) GD::out.printInfo("could not get boolean variable from Struct File. variable id= " + variableId);
+		return false;
 	}
-	Pushbutton::Pushbutton(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x100)
+	bool LoxoneControl::getValueFromStructFile(const std::string& variableId, const std::string& path, uint32_t& value)
 	{
 		try
 		{
-			for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
+			if(path != "")
 			{
-				switch(row->second.at(2)->intValue)
+				if(_control->structValue->find(path) != _control->structValue->end())
 				{
-					case 107:
+					if(_control->structValue->at(path)->structValue->find(variableId) != _control->structValue->end())
 					{
-						_isFavorite = row->second.at(3)->intValue;
-						break;
+						value = _control->structValue->at(path)->structValue->at(variableId)->integerValue;
+						return true;
 					}
-					case 108:
+				}
+			}
+
+			if(_control->structValue->find(variableId) != _control->structValue->end())
+			{
+				value = _control->structValue->at(variableId)->integerValue;
+				return true;
+			}
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+		}
+		value = 0;
+		if (GD::bl->debugLevel >= 5) GD::out.printInfo("could not get int variable from Struct File. variable id= " + variableId);
+		return false;
+	}
+	bool LoxoneControl::getValueFromStructFile(const std::string& variableId, const std::string& path, float& value)
+	{
+		try
+		{
+			if(path != "")
+			{
+				if(_control->structValue->find(path) != _control->structValue->end())
+				{
+					if(_control->structValue->at(path)->structValue->find(variableId) != _control->structValue->end())
 					{
-						auto defaultIcon = row->second.at(5)->binaryValue;
-						_defaultIcon = std::string(defaultIcon->begin(), defaultIcon->end());
-						break;
+						value = _control->structValue->at(path)->structValue->at(variableId)->floatValue;
+						return true;
 					}
+				}
+			}
+
+			if(_control->structValue->find(variableId) != _control->structValue->end())
+			{
+				value = _control->structValue->at(variableId)->floatValue;
+				return true;
+			}
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+		}
+		value = 0;
+		if (GD::bl->debugLevel >= 5) GD::out.printInfo("could not get float variable from Struct File. variable id= " + variableId);
+		return false;
+	}
+	bool LoxoneControl::getValueFromStructFile(const std::string& variableId, const std::string& path, std::string& value)
+	{
+		try
+		{
+			if(path != "")
+			{
+				if(_control->structValue->find(path) != _control->structValue->end())
+				{
+					if(_control->structValue->at(path)->structValue->find(variableId) != _control->structValue->end())
+					{
+						value = _control->structValue->at(path)->structValue->at(variableId)->stringValue;
+						return true;
+					}
+				}
+			}
+
+			if(_control->structValue->find(variableId) != _control->structValue->end())
+			{
+				value = _control->structValue->at(variableId)->stringValue;
+				return true;
+			}
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+		}
+		value = "nA";
+		if (GD::bl->debugLevel >= 5) GD::out.printInfo("could not get string variable from Struct File. variable id= " + variableId);
+		return false;
+	}
+	bool LoxoneControl::getValueFromDataTable(const uint32_t& variableId, uint32_t& value)
+	{
+		try
+		{
+			for(BaseLib::Database::DataTable::iterator row = _rows->begin(); row != _rows->end(); ++row)
+			{
+				if(row->second.at(2)->intValue == variableId)
+				{
+					value = row->second.at(3)->intValue;
+					return true;
 				}
 			}
 		}
@@ -457,6 +553,105 @@ namespace Loxone
 		{
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
+		value = 0;
+		if (GD::bl->debugLevel >= 5) GD::out.printInfo("could not get int variable from database. variable id= " + std::to_string(variableId));
+		return false;
+	}
+	bool LoxoneControl::getValueFromDataTable(const uint32_t& variableId, bool& value)
+	{
+		try
+		{
+			for(BaseLib::Database::DataTable::iterator row = _rows->begin(); row != _rows->end(); ++row)
+			{
+				if(row->second.at(2)->intValue == variableId)
+				{
+					value = (bool)row->second.at(3)->intValue;
+					return true;
+				}
+			}
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+		}
+		value = false;
+		if (GD::bl->debugLevel >= 5) GD::out.printInfo("could not get boolean variable from database. variable id= " + std::to_string(variableId));
+		return false;
+	}
+	bool LoxoneControl::getValueFromDataTable(const uint32_t &variableId, float& value)
+	{
+		try
+		{
+			for(BaseLib::Database::DataTable::iterator row = _rows->begin(); row != _rows->end(); ++row)
+			{
+				if(row->second.at(2)->intValue == variableId)
+				{
+					value = row->second.at(3)->floatValue;
+					return true;
+				}
+			}
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+		}
+		value = 0;
+		if (GD::bl->debugLevel >= 5) GD::out.printInfo("could not get float variable from database. variable id= " + std::to_string(variableId));
+		return false;
+	}
+	bool LoxoneControl::getValueFromDataTable(const uint32_t& variableId, std::string& value)
+	{
+		try
+		{
+			for(BaseLib::Database::DataTable::iterator row = _rows->begin(); row != _rows->end(); ++row)
+			{
+				if(row->second.at(2)->intValue == variableId)
+				{
+					value = row->second.at(4)->textValue;
+					return true;
+				}
+			}
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+		}
+		value ="nA";
+		if (GD::bl->debugLevel >= 5) GD::out.printInfo("could not get string variable from database. variable id= " + std::to_string(variableId));
+		return false;
+	}
+	bool LoxoneControl::getBinaryValueFromDataTable(const uint32_t& variableId, std::string& value)
+	{
+		try
+		{
+			for(BaseLib::Database::DataTable::iterator row = _rows->begin(); row != _rows->end(); ++row)
+			{
+				if(row->second.at(2)->intValue == variableId)
+				{
+					auto temp = row->second.at(5)->binaryValue;
+					value = std::string(temp->begin(), temp->end());
+					return true;
+				}
+			}
+		}
+		catch (const std::exception& ex)
+		{
+			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+		}
+		value = "nA";
+		if (GD::bl->debugLevel >= 5) GD::out.printInfo("could not get binary variable from database. variable id= " + std::to_string(variableId));
+		return false;
+	}
+
+	Pushbutton::Pushbutton(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x100)
+	{
+		getValueFromStructFile("isFavorite","", _isFavorite);
+		getValueFromStructFile("defaultIcon","", _defaultIcon);
+	}
+	Pushbutton::Pushbutton(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x100)
+	{
+		getValueFromDataTable(107, _isFavorite);
+		getBinaryValueFromDataTable(108, _defaultIcon);
 	}
 	bool Pushbutton::processPacket(PLoxoneValueStatesPacket loxonePacket)
 	{
@@ -505,71 +700,22 @@ namespace Loxone
 	}
 	Slider::Slider(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x0101)
 	{
-		try
-		{
-			if(control->structValue->find("isFavorite") != control->structValue->end())	_isFavorite = control->structValue->at("isFavorite")->booleanValue;
-			if(control->structValue->find("defaultIcon") != control->structValue->end()) _defaultIcon = control->structValue->at("defaultIcon")->stringValue;
+		getValueFromStructFile("isFavorite", "", _isFavorite);
+		getValueFromStructFile("defaultIcon", "", _defaultIcon);
 
-			if(control->structValue->find("details") != control->structValue->end())
-			{
-				if(control->structValue->at("details")->structValue->find("format") != control->structValue->end())	_detFormat = control->structValue->at("details")->structValue->at("format")->stringValue;
-				if(control->structValue->at("details")->structValue->find("min") != control->structValue->end())	_detMin = control->structValue->at("details")->structValue->at("min")->floatValue;
-				if(control->structValue->at("details")->structValue->find("max") != control->structValue->end())	_detMax = control->structValue->at("details")->structValue->at("max")->floatValue;
-				if(control->structValue->at("details")->structValue->find("step") != control->structValue->end())	_detStep = control->structValue->at("details")->structValue->at("step")->floatValue;
-			}
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
+		getValueFromStructFile("format", "details", _detFormat);
+		getValueFromStructFile("min", "details", _detMin);
+		getValueFromStructFile("max", "details", _detMax);
+		getValueFromStructFile("step", "details", _detStep);
 	}
 	Slider::Slider(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x0101)
 	{
-		try
-		{
-			for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
-			{
-				switch(row->second.at(2)->intValue)
-				{
-					case 107:
-					{
-						_isFavorite = row->second.at(3)->intValue;
-						break;
-					}
-					case 108:
-					{
-						auto defaultIcon = row->second.at(5)->binaryValue;
-						_defaultIcon = std::string(defaultIcon->begin(), defaultIcon->end());
-						break;
-					}
-					case 111:
-					{
-						auto detFormat = row->second.at(5)->binaryValue;
-						_detFormat = std::string(detFormat->begin(), detFormat->end());
-						break;
-					}
-					case 112:
-					{
-						_detMin = row->second.at(3)->floatValue;
-						break;
-					}
-					case 113:
-					{
-						_detMax = row->second.at(3)->floatValue;
-						break;
-					}
-					case 114:
-					{
-						_detStep = row->second.at(3)->floatValue;
-						break;
-					}
-				}
-			}
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
+		getValueFromDataTable(107, _isFavorite);
+		getBinaryValueFromDataTable(108, _defaultIcon);
+		getBinaryValueFromDataTable(111, _detFormat);
+		getValueFromDataTable(112, _detMin);
+		getValueFromDataTable(113, _detMax);
+		getValueFromDataTable(114, _detStep);
 	}
 	uint32_t Slider::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
@@ -635,35 +781,11 @@ namespace Loxone
 
 	Dimmer::Dimmer(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x0102)
 	{
-		try
-		{
-			if(control->structValue->find("isFavorite") != control->structValue->end())	_isFavorite = control->structValue->at("isFavorite")->booleanValue;
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
+		getValueFromStructFile("isFavorite", "", _isFavorite);
 	}
 	Dimmer::Dimmer(std::shared_ptr<BaseLib::Database::DataTable> rows): LoxoneControl(rows, 0x0102)
 	{
-		try
-		{
-			for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
-			{
-				switch(row->second.at(2)->intValue)
-				{
-					case 107:
-					{
-						_isFavorite = row->second.at(3)->intValue;
-						break;
-					}
-				}
-			}
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
+		getValueFromDataTable(107, _isFavorite);
 	}
 	uint32_t Dimmer::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
@@ -682,59 +804,18 @@ namespace Loxone
 
 	LightControllerV2::LightControllerV2(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x0103)
 	{
-		try
-		{
-			if(control->structValue->find("isFavorite") != control->structValue->end())	_isFavorite = control->structValue->at("isFavorite")->booleanValue;
+		getValueFromStructFile("isFavorite", "", _isFavorite);
 
-			if(control->structValue->find("details") != control->structValue->end())
-			{
-				if(control->structValue->at("details")->structValue->find("movementScene") != control->structValue->end())	_detMovementScene = control->structValue->at("details")->structValue->at("movementScene")->integerValue;
-				if(control->structValue->at("details")->structValue->find("masterValue") != control->structValue->end())	_detMasterValue = control->structValue->at("details")->structValue->at("masterValue")->stringValue;
-				if(control->structValue->at("details")->structValue->find("masterColor") != control->structValue->end())	_detMasterColor = control->structValue->at("details")->structValue->at("masterColor")->stringValue;
-			}
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
+		getValueFromStructFile("movementScene", "details", _detMovementScene);
+		getValueFromStructFile("masterValue", "details", _detMasterValue);
+		getValueFromStructFile("masterColor", "details", _detMasterColor);
 	}
 	LightControllerV2::LightControllerV2(std::shared_ptr<BaseLib::Database::DataTable> rows): LoxoneControl(rows, 0x0103)
 	{
-		try
-		{
-			for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
-			{
-				switch(row->second.at(2)->intValue)
-				{
-					case 107:
-					{
-						_isFavorite = row->second.at(3)->intValue;
-						break;
-					}
-					case 111:
-					{
-						_detMovementScene = row->second.at(3)->intValue;
-						break;
-					}
-					case 112:
-					{
-						auto MasterValue = row->second.at(5)->binaryValue;
-						_detMasterValue = std::string(MasterValue->begin(), MasterValue->end());
-						break;
-					}
-					case 113:
-					{
-						auto MasterColor = row->second.at(5)->binaryValue;
-						_detMasterColor = std::string(MasterColor->begin(), MasterColor->end());
-						break;
-					}
-				}
-			}
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
+		getValueFromDataTable(107, _isFavorite);
+		getValueFromDataTable(111, _detMovementScene);
+		getBinaryValueFromDataTable(112, _detMasterValue);
+		getBinaryValueFromDataTable(113, _detMasterColor);
 	}
 
 	uint32_t LightControllerV2::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
@@ -783,44 +864,13 @@ namespace Loxone
 
 	Alarm::Alarm(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x0200)
 	{
-		try
-		{
-			if(control->structValue->find("details") != control->structValue->end())
-			{
-				if(control->structValue->at("details")->structValue->find("alert") != control->structValue->end())	_detAlert = control->structValue->at("details")->structValue->at("alert")->booleanValue;
-				if(control->structValue->at("details")->structValue->find("presenceConnected") != control->structValue->end())	_detPresenceConnected = control->structValue->at("details")->structValue->at("presenceConnected")->booleanValue;
-			}
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
+		getValueFromStructFile("alert", "details", _detAlert);
+		getValueFromStructFile("presenceConnected", "details", _detPresenceConnected);
 	}
 	Alarm::Alarm(std::shared_ptr<BaseLib::Database::DataTable> rows): LoxoneControl(rows, 0x0200)
 	{
-		try
-		{
-			for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
-			{
-				switch(row->second.at(2)->intValue)
-				{
-					case 111:
-					{
-						_detAlert = row->second.at(3)->intValue;
-						break;
-					}
-					case 112:
-					{
-						_detPresenceConnected = row->second.at(3)->intValue;
-						break;
-					}
-				}
-			}
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
+		getValueFromDataTable(111, _detAlert);
+		getValueFromDataTable(112, _detPresenceConnected);
 	}
 	uint32_t Alarm::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
