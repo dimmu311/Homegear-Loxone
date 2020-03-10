@@ -800,14 +800,7 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::createPeer(uint32_t deviceType, const
 		if(save) peer->save(true, true, false); //Save and create peerID
 		peer->saveUuids();
 		peer->setPhysicalInterfaceId(interface->getID());
-
-		{
-			std::lock_guard<std::mutex> peersGuard(_peersMutex);
-			_peersBySerial[serialNumber] = peer;
-			_peersById[peer->getID()] = peer;
-			_peersByInterface[interface->getID()][serialNumber] = peer;
-		}
-
+		peer->initializeCentralConfig();
 		return peer;
 	}
     catch(const std::exception& ex)
@@ -964,8 +957,7 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo)
             std::string lastModified = _LoxApp3.getlastModified();
 
             auto controls = _LoxApp3.getControls();
-            int32_t newPeers = 0;
-
+            std::vector<std::shared_ptr<LoxonePeer>>newPeers;
             for (auto control = controls.begin(); control != controls.end(); ++control)
             {
                 if (_peersBySerial.find(control->first) != _peersBySerial.end()) continue;
@@ -974,16 +966,51 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo)
                 auto serial = control->first;
 
                 std::shared_ptr<LoxonePeer> peer = createPeer(deviceType, serial, interface.second, control->second, true);
-                newPeers++;
                 if (!peer || !peer->getRpcDevice()) continue;
-
                 peer->setName(control->second->getName());
 
+                {
+					std::lock_guard<std::mutex> peersGuard(_peersMutex);
+					_peersBySerial[control->first] = peer;
+					_peersById[peer->getID()] = peer;
+					_peersByInterface[interface.first][control->first] = peer;
+				}
+
+                newPeers.push_back(peer);
                 GD::out.printMessage("Added peer " + std::to_string(peer->getID()) + ".");
             }
             //saveVariable(0, lastModified);
-            //raiseRPCNewDevices(newIds, deviceDescriptions);
-            return std::make_shared<BaseLib::Variable>(newPeers);
+
+            if(newPeers.size() >0)
+            {
+				std::vector<uint64_t> newIds;
+				newIds.reserve(newPeers.size());
+				PVariable deviceDescriptions = std::make_shared<BaseLib::Variable>(BaseLib::VariableType::tArray);
+				deviceDescriptions->arrayValue->reserve(100);
+
+				for(auto& newPeer: newPeers)
+				{
+					newIds.push_back(newPeer->getID());
+					std::shared_ptr<std::vector<PVariable>> descriptions =  newPeer->getDeviceDescriptions(nullptr, true, std::map<std::string,bool>());
+					if(!descriptions) continue;
+
+					for(auto& description : *descriptions)
+					{
+						if(deviceDescriptions->arrayValue->size()+1 > deviceDescriptions->arrayValue->capacity()) deviceDescriptions->arrayValue->reserve(deviceDescriptions->arrayValue->size()+100);
+						deviceDescriptions->arrayValue->push_back(description);
+					}
+					{
+						auto pairingState = std::make_shared<PairingState>();
+						pairingState->peerId = newPeer->getID();
+						pairingState->state = "success";
+						std::lock_guard<std::mutex> newPeersGuard(_newPeersMutex);
+						_newPeers[BaseLib::HelperFunctions::getTime()].emplace_back(std::move(pairingState));
+					}
+				}
+
+				raiseRPCNewDevices(newIds, deviceDescriptions);
+            }
+            return std::make_shared<BaseLib::Variable>(newPeers.size());
 		}
 	}
 	catch(const std::exception& ex)

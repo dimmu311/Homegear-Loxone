@@ -175,7 +175,6 @@ bool LoxonePeer::load(BaseLib::Systems::ICentral* central)
 			return false;
 		}
 		initializeTypeString();
-		std::string entry;
 		loadConfig();
 		initializeCentralConfig();
 
