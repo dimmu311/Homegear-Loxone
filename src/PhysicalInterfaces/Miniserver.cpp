@@ -972,6 +972,13 @@ PVariable Miniserver::getNewStructfile()
     if (GD::bl->debugLevel >= 5) _out.printDebug("getNewStructfile");
 
 	auto loxonePacket = LoxonePacket::_commands.at("newStuctfile");
+
+	std::string command = loxonePacket._command;
+	std::vector<char> output;
+	std::vector<char> input(command.begin(), command.end());
+	BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
+	loxonePacket._command = std::string(output.begin(), output.end());
+
 	auto responsePacket = getResponse(loxonePacket);
 	if(!responsePacket)
 	{
@@ -995,6 +1002,13 @@ PVariable Miniserver::getLoxApp3Version()
     if (GD::bl->debugLevel >= 5) _out.printDebug("getLoxApp3Version");
 
 	auto loxonePacket = LoxonePacket::_commands.at("LoxApp3Version");
+
+	std::string command = loxonePacket._command;
+	std::vector<char> output;
+	std::vector<char> input(command.begin(), command.end());
+	BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
+	loxonePacket._command = std::string(output.begin(), output.end());
+
 	auto responsePacket = getResponse(loxonePacket);
 	auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
 
