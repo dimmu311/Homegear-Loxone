@@ -230,11 +230,12 @@ bool LoxonePeer::getAllValuesHook2(PRpcClientInfo clientInfo, PParameter paramet
 	{
 		if(channel == 1)
 		{
-			if(parameter->id == "PEER_ID")
+			if (parameter->id == "PEER_ID")
 			{
 				std::vector<uint8_t> parameterData;
-				parameter->convertToPacket(PVariable(new Variable((int32_t)_peerID)), parameterData);
-				valuesCentral[channel][parameter->id].setBinaryData(parameterData);
+				auto& rpcConfigurationParameter = valuesCentral[channel][parameter->id];
+				parameter->convertToPacket(PVariable(new Variable((int32_t)_peerID)), rpcConfigurationParameter.mainRole(), parameterData);
+				rpcConfigurationParameter.setBinaryData(parameterData);
 			}
 		}
 	}
@@ -341,8 +342,8 @@ void LoxonePeer::getValuesFromPacket(PLoxonePacket packet, std::vector<FrameValu
 						//This is a little nasty and costs a lot of resources, but we need to run the data through the packet converter
 						std::vector<uint8_t> encodedData;
 						_binaryEncoder->encodeResponse(value, encodedData);
-						PVariable data = (*k)->convertFromPacket(encodedData, true);
-						(*k)->convertToPacket(data, currentFrameValues.values[(*k)->id].value);
+						PVariable data = (*k)->convertFromPacket(encodedData, Role(), true);
+						(*k)->convertToPacket(data, Role(), currentFrameValues.values[(*k)->id].value);
 					}
 				}
 			}
@@ -455,13 +456,13 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
                             }
                             else if(parameter.rpcParameter->logical->type == ILogical::Type::Enum::tBoolean)
                             {
-                                serviceMessages->set(i->first, parameter.rpcParameter->convertFromPacket(i->second.value, true)->booleanValue);
-                            }
+								serviceMessages->set(i->first, parameter.rpcParameter->convertFromPacket(i->second.value, parameter.mainRole(), true)->booleanValue);
+							}
                         }
 
                         valueKeys[*j]->push_back(i->first);
-                        rpcValues[*j]->push_back(parameter.rpcParameter->convertFromPacket(i->second.value, true));
-                    }
+						rpcValues[*j]->push_back(parameter.rpcParameter->convertFromPacket(i->second.value, parameter.mainRole(), true));
+					}
                 }
             }
         }
@@ -606,8 +607,9 @@ PVariable LoxonePeer::getParamset(BaseLib::PRpcClientInfo clientInfo, int32_t ch
 				if(!i->second->readable) continue;
 				if(valuesCentral.find(channel) == valuesCentral.end()) continue;
 				if(valuesCentral[channel].find(i->second->id) == valuesCentral[channel].end()) continue;
+				auto& parameter = valuesCentral[channel][i->second->id];
 				std::vector<uint8_t> parameterData = valuesCentral[channel][i->second->id].getBinaryData();
-				element = i->second->convertFromPacket(parameterData);
+				element = i->second->convertFromPacket(parameterData, parameter.mainRole(), false);
 			}
 
 			if(!element) continue;
@@ -645,12 +647,12 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 		if (rpcParameter->physical->operationType == IPhysical::OperationType::Enum::store)
 		{
 			std::vector<uint8_t> parameterData;
-			rpcParameter->convertToPacket(value, parameterData);
+			rpcParameter->convertToPacket(value, parameter.mainRole() ,parameterData);
 			parameter.setBinaryData(parameterData);
 			if (parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
 			else saveParameter(0, ParameterGroup::Type::Enum::variables, channel, valueKey, parameterData);
 
-			value = rpcParameter->convertFromPacket(parameterData, false);
+			value = rpcParameter->convertFromPacket(parameterData, parameter.mainRole(), false);
 			if (rpcParameter->readable)
 			{
 				valueKeys->push_back(valueKey);
@@ -671,13 +673,13 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 		if (packetIterator == _rpcDevice->packetsById.end()) return Variable::createError(-6, "No frame was found for parameter " + valueKey);
 		PPacket frame = packetIterator->second;
 		std::vector<uint8_t> parameterData;
-		rpcParameter->convertToPacket(value, parameterData);
+		rpcParameter->convertToPacket(value, parameter.mainRole(), parameterData);
 		parameter.setBinaryData(parameterData);
 		if (parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
 		else saveParameter(0, ParameterGroup::Type::Enum::variables, channel, valueKey, parameterData);
 		if (_bl->debugLevel > 4) GD::out.printDebug("Debug: " + valueKey + " of peer " + std::to_string(_peerID) + " with serial number " + _serialNumber + ":" + std::to_string(channel) + " was set to " + BaseLib::HelperFunctions::getHexString(parameterData) + ", " + value->print(false, false, true) + ".");
 
-		value = rpcParameter->convertFromPacket(parameterData, false);
+		value = rpcParameter->convertFromPacket(parameterData, parameter.mainRole(), false);
 
 		if (rpcParameter->readable)
 		{

@@ -29,6 +29,7 @@ set(SOURCE_FILES
         src/LoxonePacket.h
         src/LoxonePeer.cpp
         src/LoxonePeer.h
+		config.h
 		)
 add_custom_target(homegear COMMAND ../../makeAll.sh SOURCES ${SOURCE_FILES})
 

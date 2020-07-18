@@ -159,7 +159,11 @@ namespace Loxone
 	{
 		try
 		{
-			return _jsonDecoder->decode(jsonString);
+		    _jsonDecoder.reset(new BaseLib::Rpc::JsonDecoder(GD::bl));
+
+            GD::out.printError("test message." + jsonString);
+
+            return _jsonDecoder->decode(jsonString);
 		}
 		catch (const BaseLib::Rpc::JsonDecoderException& ex)
 		{
