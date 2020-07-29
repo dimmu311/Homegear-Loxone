@@ -30,7 +30,20 @@ set(SOURCE_FILES
         src/LoxonePeer.cpp
         src/LoxonePeer.h
 		config.h
-		)
+        src/controls/Pushbutton.cpp
+		src/controls/Pushbutton.h
+		src/controls/createInstance.cpp
+		src/controls/createInstance.h
+		src/controls/Slider.cpp
+		src/controls/Slider.h
+		src/controls/Dimmer.cpp
+		src/controls/Dimmer.h
+		src/controls/LightControllerV2.cpp
+		src/controls/LightControllerV2.h
+		src/controls/Alarm.cpp
+		src/controls/Alarm.h
+		src/controls/MediaClient.cpp
+		src/controls/MediaClient.h)
 add_custom_target(homegear COMMAND ../../makeAll.sh SOURCES ${SOURCE_FILES})
 
 add_library(homegear_loxone_miniserver ${SOURCE_FILES})

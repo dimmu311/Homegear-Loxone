@@ -51,6 +51,18 @@ namespace Loxone
         return "salt/"+salt+"/";
     }
 
+    void LoxoneEncryption::removeSalt(std::string& command)
+    {
+	    //check if need to remove nextSalt?
+        if (command.compare(0, 9, "nextSalt/") == 0)
+        {
+            //remove "nextSalt/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/" at the beginning
+            command.erase(0,42);
+        }
+        //remove "salt/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/" at the beginning
+        command.erase(0,38);
+    }
+
     uint32_t LoxoneEncryption::getNewAes256()
     {
         try
@@ -66,6 +78,8 @@ namespace Loxone
                 GD::out.printError("gnutls_cipher_init failed");
                 return -1;
             }
+
+            //gnutls_cipher_set_iv(_Aes256Handle, _myAes256iv->getData()->data, _myAes256iv->getData()->size);
 
             _myAes256key_iv = std::make_shared<GnutlsData>(key + ":"+ iv);
             return 0;
@@ -92,17 +106,34 @@ namespace Loxone
 	void LoxoneEncryption::setKey(std::string hexKey)
 	{
         _loxKey.clear();
-
-        for (uint32_t i = 0; i < hexKey.size(); i += 2) {
-            std::string s = hexKey.substr(i, 2);
-            int value = std::stoi(s, nullptr, 16);
-            _loxKey += (char) value;
-        }
-    }
+        std::vector<uint8_t> x = BaseLib::HelperFunctions::hexToBin(hexKey);
+        _loxKey = std::string(x.begin(), x.end());
+	}
 
     void LoxoneEncryption::setSalt(const std::string salt)
     {
 	    _loxSalt = salt;
+    }
+
+    uint32_t LoxoneEncryption::setHashAlgorithm(std::string algorithm)
+    {
+	    if(algorithm == "SHA1")
+        {
+            _digestAlgorithm = GNUTLS_DIG_SHA1;
+            _macAlgorithm = GNUTLS_MAC_SHA1;
+            return 0;
+        }
+	    else if(algorithm == "SHA256")
+	    {
+            _digestAlgorithm = GNUTLS_DIG_SHA256;
+            _macAlgorithm = GNUTLS_MAC_SHA256;
+            return 0;
+	    }
+	    else
+        {
+            GD::out.printError("given Hash Algorithm not support.");
+            return -1;
+        }
     }
 
 	uint32_t LoxoneEncryption::buildSessionKey(std::string& rsaEncrypted)
@@ -152,8 +183,8 @@ namespace Loxone
                 plaintext.push_back('\0');
             }
 
-            gnutls_cipher_set_iv(_Aes256Handle, _myAes256iv->getData()->data, _myAes256iv->getData()->size);
             unsigned char encrypted[plaintext.size()];
+            gnutls_cipher_set_iv(_Aes256Handle, _myAes256iv->getData()->data, _myAes256iv->getData()->size);
             if(gnutls_cipher_encrypt2(_Aes256Handle, plaintext.data(), plaintext.size(), encrypted, plaintext.size())< 0)
             {
                 GD::out.printError("gnutls_cipher_encrypt2 failed");
@@ -172,29 +203,55 @@ namespace Loxone
 			return -1;
 		}
 	}
-	
-	uint32_t LoxoneEncryption::hashPassword(std::string& hashedPassword)
-	{
+
+    uint32_t LoxoneEncryption::decryptCommand(const std::string encryptedCommand, std::string& command)
+    {
         try
         {
+            std::string Base64DecryptedString;
+            BaseLib::Base64::decode(encryptedCommand, Base64DecryptedString);
+
+            unsigned char decrypted[encryptedCommand.size()];
+            gnutls_cipher_set_iv(_Aes256Handle, _myAes256iv->getData()->data, _myAes256iv->getData()->size);
+            if(gnutls_cipher_decrypt2(_Aes256Handle, Base64DecryptedString.data(), Base64DecryptedString.size(),decrypted,Base64DecryptedString.size()) <0)
             {
-                int hashedLen = gnutls_hash_get_len(GNUTLS_DIG_SHA1);
+                GD::out.printError("gnutls_cipher_decrypt2 failed");
+                return -1;
+            }
+            command = std::string(reinterpret_cast<const char *>(decrypted), Base64DecryptedString.size());
+            command.erase(std::find(command.begin(), command.end(), '\0'), command.end());
+            removeSalt(command);
+            return 0;
+        }
+        catch (const std::exception& ex)
+        {
+            GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+            return -1;
+        }
+    }
+
+	uint32_t LoxoneEncryption::hashPassword(std::string& hashedPassword)
+	{
+         try
+        {
+            {
+                int hashedLen = gnutls_hash_get_len(_digestAlgorithm);
                 unsigned char hashed[hashedLen];
                 std::string ptext = _password + ":" + _loxSalt;
-                if(gnutls_hash_fast(GNUTLS_DIG_SHA1, ptext.c_str(), ptext.size(), &hashed)<0)
+                if(gnutls_hash_fast(_digestAlgorithm, ptext.c_str(), ptext.size(), &hashed)<0)
                 {
-                    GD::out.printError("GNUTLS_DIG_SHA1 failed");
+                    GD::out.printError("GNUTLS_DIG_xxx failed");
                     return -1;
                 }
                 hashedPassword = BaseLib::HelperFunctions::getHexString(hashed, hashedLen);
             }
             {
-                int hashedLen = gnutls_hmac_get_len(GNUTLS_MAC_SHA1);
+                int hashedLen = gnutls_hmac_get_len(_macAlgorithm);
                 unsigned char hashed[hashedLen];
                 std::string ptext = _user + ":" + hashedPassword;
-                if(gnutls_hmac_fast(GNUTLS_MAC_SHA1, _loxKey.c_str(), _loxKey.size(), ptext.c_str(), ptext.size(), &hashed)<0)
+                if(gnutls_hmac_fast(_macAlgorithm, _loxKey.c_str(), _loxKey.size(), ptext.c_str(), ptext.size(), &hashed)<0)
                 {
-                    GD::out.printError("GNUTLS_MAC_SHA1 failed");
+                    GD::out.printError("GNUTLS_MAC_xxx failed");
                     return -1;
                 }
 
@@ -213,15 +270,13 @@ namespace Loxone
     {
 	    try
         {
-            int hashedLen = gnutls_hmac_get_len(GNUTLS_MAC_SHA1);
+            int hashedLen = gnutls_hmac_get_len(_macAlgorithm);
             unsigned char hashed[hashedLen];
-            std::string ptext = _loxToken;
-            if(gnutls_hmac_fast(GNUTLS_MAC_SHA1, _loxKey.c_str(), _loxKey.size(), ptext.c_str(), ptext.size(), &hashed)<0)
+            if(gnutls_hmac_fast(_macAlgorithm, _loxKey.c_str(), _loxKey.size(), _loxToken.c_str(), _loxToken.size(), &hashed)<0)
             {
-                GD::out.printError("GNUTLS_MAC_SHA1 failed");
+                GD::out.printError("GNUTLS_MAC_xxx failed");
                 return -1;
             }
-
             hashedToken = BaseLib::HelperFunctions::getHexString(hashed, hashedLen);
             hashedToken = BaseLib::HelperFunctions::toLower(hashedToken);
             return 0;
@@ -237,25 +292,66 @@ namespace Loxone
     {
         try
         {
-            _loxToken = value->structValue->at("token")->stringValue;
-            //Not sure if this is the right way. The loxone doku says that this key can be uses like a key from the /getkey2 request
-            //But later in the docu thay say to authenticate by token, the token has to be hashed bei the key from /getkey2 request.
-            //But they didn't say get key by /getkey2 request to hash the token.
-            //See section Authentication using Tokens.
-            setKey(value->structValue->at("key")->stringValue);
-            _tokenValidUntil = value->structValue->at("validUntil")->floatValue;
-            _tokenValidUntil += _loxoneTimeOffset;
+            return setToken(value->structValue->at("token")->stringValue);
+        }
+        catch (const std::exception &ex)
+        {
+            GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+            return -1;
+        }
+    }
 
-            /*
-            time_t time = std::time(nullptr);
-            std::string stime = std::to_string(time);
-            */
-            time_t timeTokenValidUntil = _tokenValidUntil;
-            std::string timeString(ctime(&timeTokenValidUntil));
-            if (GD::bl->debugLevel >= 5) GD::out.printDebug("This Token is valid until: " + timeString);
+    uint32_t LoxoneEncryption::setToken(const std::string jwt)
+    {
+        try
+        {
+            _loxToken = jwt;
 
-            uint32_t tokenRights = value->structValue->at("tokenRights")->integerValue;
-            bool unsecurePass = value->structValue->at("unsecurePass")->booleanValue;
+            std::stringstream ss(jwt);
+            std::string part;
+            uint32_t count = 0;
+            while (std::getline(ss, part, '.'))
+            {
+                count++;
+                if(count == 1 || count == 2)
+                {
+                    std::string jsonString;
+                    BaseLib::Base64::decode(part, jsonString);
+                    if (GD::bl->debugLevel >= 5) GD::out.printDebug("Parse Token Part: " +std::to_string(count) + jsonString);
+
+                    _jsonDecoder.reset(new BaseLib::Rpc::JsonDecoder(GD::bl));
+                    PVariable json = _jsonDecoder->decode(jsonString);
+
+                    if(count == 1)
+                    {
+
+                    }
+                    else
+                    {
+                        uint64_t tokenGeneratet = json->structValue->at("iat")->floatValue;
+                        time_t time = tokenGeneratet;
+                        std::string timeGeneratet(ctime(&time));
+
+                        _tokenValidUntil = json->structValue->at("exp")->floatValue;
+                        time = _tokenValidUntil;
+                        std::string timeValid(ctime(&time));
+
+                        if (GD::bl->debugLevel >= 5) GD::out.printDebug("This Token was generatet at: "+ timeGeneratet + " and is valid until: " + timeValid);
+                        uint32_t tokenRights = json->structValue->at("tokenRights")->integerValue;
+                        std::string uuid = json->structValue->at("uuid")->stringValue;
+                        std::string user = json->structValue->at("user")->stringValue;
+                    }
+                }
+                else if (count == 3)
+                {
+                    if (GD::bl->debugLevel >= 5) GD::out.printDebug("Parse Token Part: " + part);
+                }
+                else
+                {
+                    GD::out.printError("Decryption of JSON Web Token failed");
+                    return  -1;
+                }
+            }
             return 0;
         }
         catch (const std::exception &ex)
@@ -265,19 +361,7 @@ namespace Loxone
         }
     }
 
-    uint32_t LoxoneEncryption::setToken(const std::string token, const uint64_t lifeTime)
-    {
-	    _loxToken = token;
-	    _tokenValidUntil = lifeTime;
-
-	    time_t timeTokenValidUntil = _tokenValidUntil;
-        std::string timeString(ctime(&timeTokenValidUntil));
-        if (GD::bl->debugLevel >= 5) GD::out.printDebug("This Token is valid until: " + timeString);
-
-        return 0;
-    }
-
-    uint32_t LoxoneEncryption::getToken(std::string& token, uint64_t& lifeTime)
+    uint32_t LoxoneEncryption::getToken(std::string& token, std::time_t& lifeTime)
     {
 	    if(_loxToken.size() <= 0) return -1;
 	    if(_tokenValidUntil == 0) return -1;

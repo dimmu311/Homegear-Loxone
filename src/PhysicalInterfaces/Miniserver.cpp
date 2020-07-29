@@ -1,8 +1,5 @@
 #include "Miniserver.h"
 #include "../Loxone.h"
-#include "../GD.h"
-#include "LoxoneEncryption.h"
-
 
 namespace Loxone
 {
@@ -27,27 +24,16 @@ Miniserver::Miniserver(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettin
 
 	_user = settings->user;
 	_password = settings->password;
-
+    //_msVersion = settings->type;
 	_loxoneEncryption = std::make_shared<LoxoneEncryption>(_user, _password, _bl);
 
-    uint64_t lifeTime = 0;
     std::string token;
-    {
-        std::string name = "token_life_time";
-        auto setting = GD::family->getFamilySetting(name);
-        std::string lifeTimeString = "";
-		if(setting)
-		{
-			lifeTimeString = setting->stringValue;
-        	lifeTime = std::stoi(lifeTimeString);
-		}
-    }
     {
         std::string name = "token";
         auto setting = GD::family->getFamilySetting(name);
         if(setting) token = setting->stringValue;
     }
-    if(lifeTime >0 && token.size() >0)_loxoneEncryption->setToken(token, lifeTime);
+    if(token.size() >0) _loxoneEncryption->setToken(token);
 }
 
 Miniserver::~Miniserver()
@@ -81,11 +67,8 @@ void Miniserver::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 		{
             if(GD::bl->debugLevel >= 5) GD::out.printInfo("Info: Sending packet " + command);
 
-			std::vector<char> output;
-			std::vector<char> input(command.begin(), command.end());
-			BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
-
-			std::string sendCommand(output.begin(), output.end());
+			auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
+            std::string sendCommand(webSocket);
 			_tcpSocket->proofwrite(sendCommand);
 
 			_lastPacketSent = BaseLib::HelperFunctions::getTime();
@@ -171,27 +154,42 @@ void Miniserver::init()
         }
 
 		{
+            {
+                httpPacket = true;
+
+                if (GD::bl->debugLevel >= 5) _out.printDebug("Step 0: getVersion");
+
+                auto responsePacket = getResponse("dev/cfg/apiKey/", "GET /jdev/cfg/apiKey/ HTTP/1.1\r\n");
+                if (!responsePacket) {
+                    _out.printError("Error: Could not get Version from Miniserver.");
+                    _stopped = true;
+                    return;
+                }
+                auto loxoneHttpPacket = std::dynamic_pointer_cast<LoxoneHttpPacket>(responsePacket);
+                if (!loxoneHttpPacket || loxoneHttpPacket->getResponseCode() != 200) {
+                    _out.printError("Error: Could not get Version from Miniserver.");
+                    _stopped = true;
+                    return;
+                }
+                std::string value = loxoneHttpPacket->getValue()->stringValue;
+                std::replace(value.begin(),value.end(), '\'', '"');
+                PVariable json = BaseLib::Rpc::JsonDecoder::decode(value);
+                if (GD::bl->debugLevel >= 5) _out.printDebug("Miniserver Version = " + json->structValue->at("version")->stringValue);
+                std::string ver = json->structValue->at("version")->stringValue;
+                ver = ver.substr(0, ver.find("."));
+                uint32_t version = std::stoi(ver);
+                if(version < _msVersion)
+                {
+                    _out.printError("Error: Miniserver Firmware not Supported by this Module. Please update the Miniserver to min Firmware Version 11.x.x.");
+                    _stopped = true;
+                    return;
+                }
+            }
 			{
-				httpPacket = true;
-				
-				//BaseLib::Http::constructHeader();	
-				//"GET /jdev/sys/getPublicKey / HTTP / 1.1\r\n"
-				//"Host: homegear\r\n"
-				//"User-Agent: homegear\r\n"
-				//"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
-				//"Accept-Language: en-us,en;q=0.5\r\n"
-				//"Accept-Encoding: gzip,deflate\r\n"
-				//"Accept-Charset: ISO-8859-1,utf-8;\r\n"
-				//"Keep-Alive: 1000\r\n"
-				//"Connection: keep-alive\r\n"
-				//"\r\n"
+				if (GD::bl->debugLevel >= 5) _out.printDebug("Step 1: getPublicKey");
 
-                if (GD::bl->debugLevel >= 5) _out.printDebug("Step 1: getPublicKey");
-
-                //auto loxonePacket = std::make_shared<LoxonePacket>(LoxonePacket::httpGetPublicKey());
-				auto loxonePacket = LoxonePacket::_commands.at("getPublicKey");
-				auto responsePacket = getResponse(loxonePacket);
-				if(!responsePacket)
+				auto responsePacket = getResponse("dev/sys/getPublicKey/", "GET /jdev/sys/getPublicKey/ HTTP/1.1\r\n");
+                if(!responsePacket)
 				{
 					_out.printError("Error: Could not get Public Key from Miniserver.");
 					_stopped = true;
@@ -206,13 +204,10 @@ void Miniserver::init()
 				}
 				_loxoneEncryption->setPublicKey(loxoneHttpPacket->getValue()->stringValue);
 			}
-
 			{
                 if (GD::bl->debugLevel >= 5) _out.printDebug("Step 2: openWebsocket Connection");
 
-				auto loxonePacket = LoxonePacket::_commands.at("openWebsocket");
-				auto responsePacket = getResponse(loxonePacket);
-
+                auto responsePacket = getResponse("Web Socket Protocol Handshake", "GET /ws/rfc6455/ HTTP/1.1\r\n");
 				if (!responsePacket)
 				{
 					_out.printError("Error: Could not open Websocket Connection to Miniserver.");
@@ -227,14 +222,11 @@ void Miniserver::init()
 					return;
 				}
 			}
-
 			{
                 if (GD::bl->debugLevel >= 5) _out.printDebug("Step 3: start keyexchange");
 
 				httpPacket = false;
 				webSocketPacket = true;
-				
-				auto loxonePacket = LoxonePacket::_commands.at("keyexchange");
 
 				std::string RSA_encrypted;
 				if(_loxoneEncryption->buildSessionKey(RSA_encrypted)< 0)
@@ -244,21 +236,17 @@ void Miniserver::init()
                     return;
                 }
 
-				std::string command = loxonePacket._command + RSA_encrypted;
-				std::vector<char> output;
-				std::vector<char> input(command.begin(), command.end());
-				BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
-				loxonePacket._command = std::string(output.begin(), output.end());
-
-				auto responsePacket = getResponse(loxonePacket);
+                std::string command = "jdev/sys/keyexchange/" + RSA_encrypted;
+                auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
+                auto responsePacket = getResponse("jdev/sys/keyexchange/", webSocket);
 				if(!responsePacket)
 				{
 					_out.printError("Error: Could not exchange AES Keys with Miniserver.");
 					_stopped = true;
 					return;
 				}
-				auto loxoneTextmessagePacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-				if (!loxoneTextmessagePacket || loxoneTextmessagePacket->getResponseCode() != 200)
+				auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+				if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
 				{
 					_out.printError("Error: Could not exchange AES Keys with Miniserver.");
 					_stopped = true;
@@ -266,110 +254,35 @@ void Miniserver::init()
 				}
 			}
 
-			{
-                if (GD::bl->debugLevel >= 5) _out.printDebug("Step 4: getkey2");
-
-                auto loxonePacket = LoxonePacket::_commands.at("getkey2");
-
-                std::string command;
-                if(_loxoneEncryption->encryptCommand(loxonePacket._command + _user, command)<0)
+            if (GD::bl->debugLevel >= 5) _out.printDebug("Step 4: Check if there is a valid token that can be used for authentication");
+            std::string token;
+            std::time_t lifeTime;
+            if(_loxoneEncryption->getToken(token, lifeTime) == 0)
+            {
+                std::time_t t = std::time(0);
+                if(lifeTime > t)
                 {
-                    _out.printError("Error: Could not encrypt command.");
-                    _stopped = true;
-                    return;
+                    if (GD::bl->debugLevel >= 5) _out.printDebug("Step 5: there is a valid token!");
+                    authenticateUsingTokens();
                 }
+                else acquireToken();
+            }
+            else acquireToken();
 
-				std::vector<char> output;
-				std::vector<char> input(command.begin(), command.end());
-				BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
-				loxonePacket._command = std::string(output.begin(), output.end());
-
-				auto responsePacket = getResponse(loxonePacket);
-				if (!responsePacket)
-				{
-					_out.printError("Error: Could not get Key from Miniserver.");
-					_stopped = true;
-					return;
-				}
-				auto loxoneTextmessagePacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-				if (!loxoneTextmessagePacket || loxoneTextmessagePacket->getResponseCode() != 200)
-				{
-					_out.printError("Error: Could not get Key from Miniserver.");
-					_stopped = true;
-					return;
-				}
-
-				_loxoneEncryption->setKey(loxoneTextmessagePacket->getValue()->structValue->at("key")->stringValue);
-				_loxoneEncryption->setSalt(loxoneTextmessagePacket->getValue()->structValue->at("salt")->stringValue);
-			}
-			{
-                if (GD::bl->debugLevel >= 5) _out.printDebug("Step 5: getToken");
-
-				auto loxonePacket = LoxonePacket::_commands.at("getToken");
-				std::string hashedPassword;
-				if(_loxoneEncryption->hashPassword(hashedPassword)<0)
-                {
-                    _out.printError("Error: Could not hash password.");
-                    _stopped = true;
-                    return;
-                }
-				std::string command;
-                if(_loxoneEncryption->encryptCommand("jdev/sys/gettoken/" + hashedPassword + "/"+ _user + "/2/edfc5f9a-df3f-4cad-9dddcdc42c732be2/homegearloxwsapi", command)<0)
-                {
-                    _out.printError("Error: Could not encrypt command.");
-                    _stopped = true;
-                    return;
-                }
-
-				std::vector<char> output;
-				std::vector<char> input(command.begin(), command.end());
-				BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
-				loxonePacket._command = std::string(output.begin(), output.end());
-
-				auto responsePacket = getResponse(loxonePacket);
-				if(!responsePacket)
-				{
-					_out.printError("Error: Could not get Token from Miniserver.");
-					_stopped = true;
-					return;
-				}
-
-				auto loxoneTextmessagePacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-				if (!loxoneTextmessagePacket || loxoneTextmessagePacket->getResponseCode() != 200)
-				{
-					_out.printError("Error: Could not get Token from Miniserver.");
-					_stopped = true;
-					return;
-				}
-
-				if(_loxoneEncryption->setToken(loxoneTextmessagePacket->getValue())<0)
-                {
-                    _out.printError("Error: Could not import Token.");
-                    _stopped = true;
-                    return;
-                }
-				saveToken();
-			}
 			{
                 if (GD::bl->debugLevel >= 5) _out.printDebug("Step 6: enableUpdates");
 
-				auto loxonePacket = LoxonePacket::_commands.at("enableUpdates");
-
-				std::string command = loxonePacket._command;
-				std::vector<char> output;
-				std::vector<char> input(command.begin(), command.end());
-				BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
-				loxonePacket._command = std::string(output.begin(), output.end());
-
-				auto responsePacket = getResponse(loxonePacket);
-				if(!responsePacket)
+				std::string command = "jdev/sps/enablebinstatusupdate";
+				auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
+                auto responsePacket = getResponse("dev/sps/enablebinstatusupdate", webSocket);
+                if(!responsePacket)
 				{
 					_out.printError("Error: Could not enable Updates from Miniserver.");
 					_stopped = true;
 					return;
 				}
-				auto loxoneTextmessagePacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-				if (!loxoneTextmessagePacket || loxoneTextmessagePacket->getResponseCode() != 200)
+				auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+				if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
 				{
 					_out.printError("Error: Could not enable Updates from Miniserver.");
 					_stopped = true;
@@ -388,91 +301,247 @@ void Miniserver::init()
         _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
 }
+void Miniserver:: authenticateUsingTokens()
+{
+    if (GD::bl->debugLevel >= 5) _out.printDebug("authenticateUsingTokens");
+    if (GD::bl->debugLevel >= 5) _out.printDebug("Step 1: getkey2");
+    {
+        std::string command;
+        if(_loxoneEncryption->encryptCommand("jdev/sys/getkey2/" + _user, command)<0)
+        {
+            _out.printError("Error: Could not encrypt command.");
+            _stopped = true;
+            return;
+        }
+
+        auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
+        auto responsePacket = getResponse("jdev/sys/getkey2/", webSocket);
+        if (!responsePacket)
+        {
+            _out.printError("Error: Could not get Key from Miniserver.");
+            _stopped = true;
+            return;
+        }
+        auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+        if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
+        {
+            _out.printError("Error: Could not get Key from Miniserver.");
+            _stopped = true;
+            return;
+        }
+
+        _loxoneEncryption->setKey(loxoneWsPacket->getValue()->structValue->at("key")->stringValue);
+        _loxoneEncryption->setSalt(loxoneWsPacket->getValue()->structValue->at("salt")->stringValue);
+        if(_loxoneEncryption->setHashAlgorithm(loxoneWsPacket->getValue()->structValue->at("hashAlg")->stringValue)<0)
+        {
+            _out.printError("Error: Could not set Hash Algorithm.");
+            _stopped = true;
+            return;
+        }
+    }
+    {
+        if (GD::bl->debugLevel >= 5) _out.printDebug("Step 2: authenticate");
+        std::string hashedToken;
+        if (_loxoneEncryption->hashToken(hashedToken) < 0) {
+            _out.printError("Error: Could not hash the Token.");
+            _stopped = true;
+            return;
+        }
+        std::string command;
+        if (_loxoneEncryption->encryptCommand("authwithtoken/" + hashedToken + "/" + _user,command) < 0) {
+            _out.printError("Error: Could not encrypt command.");
+            _stopped = true;
+            return;
+        }
+        auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
+        auto responsePacket = getResponse("authwithtoken/", webSocket);
+        if (!responsePacket)
+        {
+            _out.printError("Error: Could not authenticate with token.");
+            _stopped = true;
+            return;
+        }
+        auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+        if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
+        {
+            _out.printError("Error: Could not authenticate with token.");
+            _stopped = true;
+            return;
+        }
+
+
+    }
+}
+void Miniserver:: acquireToken()
+{
+    {
+        if (GD::bl->debugLevel >= 5) _out.printDebug("Step 4: getkey2");
+
+        std::string command;
+        if(_loxoneEncryption->encryptCommand("jdev/sys/getkey2/" + _user, command)<0)
+        {
+            _out.printError("Error: Could not encrypt command.");
+            _stopped = true;
+            return;
+        }
+
+        auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
+        auto responsePacket = getResponse("jdev/sys/getkey2/", webSocket);
+        if (!responsePacket)
+        {
+            _out.printError("Error: Could not get Key from Miniserver.");
+            _stopped = true;
+            return;
+        }
+        auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+        if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
+        {
+            _out.printError("Error: Could not get Key from Miniserver.");
+            _stopped = true;
+            return;
+        }
+
+        _loxoneEncryption->setKey(loxoneWsPacket->getValue()->structValue->at("key")->stringValue);
+        _loxoneEncryption->setSalt(loxoneWsPacket->getValue()->structValue->at("salt")->stringValue);
+        if(_loxoneEncryption->setHashAlgorithm(loxoneWsPacket->getValue()->structValue->at("hashAlg")->stringValue)<0)
+        {
+            _out.printError("Error: Could not set Hash Algorithm.");
+            _stopped = true;
+            return;
+        }
+    }
+    {
+        if (GD::bl->debugLevel >= 5) _out.printDebug("Step 5: getToken");
+
+        std::string hashedPassword;
+        if(_loxoneEncryption->hashPassword(hashedPassword)<0)
+        {
+            _out.printError("Error: Could not hash password.");
+            _stopped = true;
+            return;
+        }
+        std::string command;
+        //if(_loxoneEncryption->encryptCommand("jdev/sys/gettoken/" + hashedPassword + "/"+ _user + "/2/edfc5f9a-df3f-4cad-9dddcdc42c732be2/homegearloxwsapi", command)<0)
+        if(_loxoneEncryption->encryptCommand("jdev/sys/getjwt/" + hashedPassword + "/"+ _user + "/2/edfc5f9a-df3f-4cad-9dddcdc42c732be2/homegearloxwsapi", command)<0)
+        {
+            _out.printError("Error: Could not encrypt command.");
+            _stopped = true;
+            return;
+        }
+
+        auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
+        //auto responsePacket = getResponse("jdev/sys/gettoken/", std::string(output.begin(), output.end()));
+        auto responsePacket = getResponse("jdev/sys/getjwt/", webSocket);
+        if(!responsePacket)
+        {
+            _out.printError("Error: Could not get Token from Miniserver.");
+            _stopped = true;
+            return;
+        }
+        auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+        if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
+        {
+            _out.printError("Error: Could not get Token from Miniserver.");
+            _stopped = true;
+            return;
+        }
+
+        if(_loxoneEncryption->setToken(loxoneWsPacket->getValue())<0)
+        {
+            _out.printError("Error: Could not import Token.");
+            _stopped = true;
+            return;
+        }
+        saveToken();
+    }
+}
+
 void Miniserver::saveToken()
 {
     _out.printInfo("Info: Save Token.");
     std::string token;
-    uint64_t lifeTime;
+    std::time_t lifeTime;
     if(_loxoneEncryption->getToken(token, lifeTime)==0)
     {
-        std::string name = "token_life_time";
-        std::string lifeTimeString = std::to_string(lifeTime);
-        GD::family->setFamilySetting(name, lifeTimeString);
-        name = "token";
-        GD::family->setFamilySetting(name, token);
+        GD::family->setFamilySetting("token", token);
     }
 }
 void Miniserver::refreshToken()
-{/*
+{
     try
     {
-        uint32_t refreshToken = 5000;
+        uint32_t refreshToken = 3600;
         while (!_stopCallbackThread)
-            //_stopped
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //Sleep for 1sec
             {
                 if (refreshToken >= 3600)
                 {
                     refreshToken = 0;
-
+                    if (GD::bl->debugLevel >= 5) _out.printDebug("Refresh Token");
                     if (GD::bl->debugLevel >= 5) _out.printDebug("Step 1: getkey");
                     {
-                        auto loxonePacket = LoxonePacket::_commands.at("getkey");
-
                         std::string command;
-                        if (_loxoneEncryption->encryptCommand(loxonePacket._command + _user, command) < 0) {
+                        if(_loxoneEncryption->encryptCommand("jdev/sys/getkey/", command)<0)
+                        {
                             _out.printError("Error: Could not encrypt command.");
                             _stopped = true;
                             return;
                         }
-                        loxonePacket._value = command;
-                        loxonePacket._command = "jdev/sys/enc/";
 
-                        auto responsePacket = getResponse(loxonePacket);
-                        auto loxoneTextmessagePacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-
-                        //if (!responsePacket || responsePacket->getPayload().at(0) == 1)
-                        if (loxoneTextmessagePacket->getResponseCode() != 200) {
-                            _out.printError("Error: Could not get Tokens from Miniserver.");
+                        auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
+                        auto responsePacket = getResponse("jdev/sys/getkey/", webSocket);
+                        if(!responsePacket)
+                        {
+                            _out.printError("Error: Could not get Key from Miniserver.");
+                            _stopped = true;
+                            return;
+                        }
+                        auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+                        if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
+                        {
+                            _out.printError("Error: Could not get Key from Miniserver.");
+                            _stopped = true;
+                            return;
+                        }
+                        _loxoneEncryption->setKey(loxoneWsPacket->getValue()->stringValue);
+                    }
+                    {
+                        if (GD::bl->debugLevel >= 5) _out.printDebug("Step 2: refresh Token");
+                        std::string hashedToken;
+                        if (_loxoneEncryption->hashToken(hashedToken) < 0) {
+                            _out.printError("Error: Could not hash the Token.");
+                            _stopped = true;
+                            return;
+                        }
+                        std::string command;
+                        if (_loxoneEncryption->encryptCommand("jdev/sys/refreshjwt/" + hashedToken + "/" + _user,command) < 0) {
+                            _out.printError("Error: Could not encrypt command.");
                             _stopped = true;
                             return;
                         }
 
-                        _loxoneEncryption->setKey(loxoneTextmessagePacket->getValue()->structValue->at("key")->stringValue);
-                    }
-                    {
-                    auto loxonePacket = LoxonePacket::_commands.at("refreshToken");
-                    std::string hashedToken;
-                    if(_loxoneEncryption->hashToken(hashedToken)<0)
-                    {
-                        _out.printError("Error: Could not hash the Token.");
-                        _stopped = true;
-                        return;
-                    }
-                    std::string command;
-                    if(_loxoneEncryption->encryptCommand(loxonePacket._value + hashedToken + "/" + _user, command)<0)
-                    {
-                        _out.printError("Error: Could not encrypt command.");
-                        _stopped = true;
-                        return;
-                    }
-                    loxonePacket._value = command;
+                        auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
+                        auto responsePacket = getResponse("dev/sys/refreshjwt/", webSocket);
+                        if (!responsePacket) {
+                            _out.printError("Error: Could not refresh token.");
+                            _stopped = true;
+                            return;
+                        }
+                        auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+                        if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200) {
+                            _out.printError("Error: Could not refresh token.");
+                            _stopped = true;
+                            return;
+                        }
 
-                    _out.printInfo(loxonePacket._value);
-
-                    loxonePacket._command = "jdev/sys/enc/";
-                    auto responsePacket = getResponse(loxonePacket);
-
-                    auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-
-                    if (loxoneWsPacket->getResponseCode() != 200)
-                    {
-                        _out.printError("Error: Could not refresh token lifetime at the miniserver.");
-                        _stopped = true;
-                        return;
-                    }
-                    saveToken();
+                        if(_loxoneEncryption->setToken(loxoneWsPacket->getValue())<0)
+                        {
+                            _out.printError("Error: Could not import Token.");
+                            _stopped = true;
+                            return;
+                        }
+                        saveToken();
                     }
                 }
                 refreshToken++;
@@ -483,8 +552,7 @@ void Miniserver::refreshToken()
     {
         _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
-*/}
-
+}
 void Miniserver::keepAlive()
 {
 	try
@@ -499,16 +567,9 @@ void Miniserver::keepAlive()
 				{
 					keepAliveCounter = 0;
 
-					auto loxonePacket = LoxonePacket::_commands.at("keepalive");
-
-					std::string command = loxonePacket._command;
-					std::vector<char> output;
-					std::vector<char> input(command.begin(), command.end());
-					BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
-					loxonePacket._command = std::string(output.begin(), output.end());
-
-					auto responsePacket = getResponse(loxonePacket);
-					if (!responsePacket)
+					auto webSocket = encodeWebSocket("keepalive", WebSocket::Header::Opcode::Enum::text);
+                    auto responsePacket = getResponse("keepalive", webSocket);
+                    if (!responsePacket)
 					{
 						_out.printError("Error: Could not keepalive the connection to the miniserver.");
 						_stopped = true;
@@ -584,8 +645,6 @@ void Miniserver::listen()
                 try
                 {
                     bytesRead = _tcpSocket->proofread((char*)buffer.data(), buffer.size());
-                    if (GD::bl->debugLevel >= 6) _out.printDebug("listen -> " + std::string(buffer.begin(), buffer.begin()+ bytesRead));
-                    if (GD::bl->debugLevel >= 6) _out.printDebug("listen -> " + BaseLib::HelperFunctions::getHexString((char*)buffer.data(), bytesRead));
                 }
                 catch (BaseLib::SocketTimeOutException& ex)
                 {
@@ -626,19 +685,17 @@ void Miniserver::listen()
 							auto content = websocket.getContent();
 							if (websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::binary)
 							{
+                                if (GD::bl->debugLevel >= 5) _out.printDebug("Websocket Opcode is typ BINARY");
+
 								if (content.at(0) == 3 && content.size() == 8)//Loxone Header
 								{
+                                    if (GD::bl->debugLevel >= 5) _out.printDebug("Websocket BINARY Packet is typ Loxone Header");
+
 									loxoneHeader->identifier = (LoxoneHeader::Identifier)content.at(1);
 									loxoneHeader->loxonePayloadLength = content.at(4) | content.at(5) << 8 | content.at(6) << 16 | content.at(7) << 24;
 								
-									if (loxoneHeader->identifier == LoxoneHeader::Identifier::Keepalive_Response)
-									{
-										processKeepAlivePacket();
-									}
-									else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Out_Of_Service_Indicator)
-									{
-										processOutOfServiceIndicatorPacket();
-									}
+									if (loxoneHeader->identifier == LoxoneHeader::Identifier::Keepalive_Response) processKeepAlivePacket();
+									else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Out_Of_Service_Indicator) processOutOfServiceIndicatorPacket();
 								}
 								else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Textmessage)
 								{
@@ -681,12 +738,14 @@ void Miniserver::listen()
 									processKeepAlivePacket();
 								}
 							}
-							if (websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::text)
+							else if (websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::text)
 							{
+                                if (GD::bl->debugLevel >= 5) _out.printDebug("Websocket Opcode is typ TEXT");
 								processWsPacket(content);
 							}
-							if(websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::close)
+							else if(websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::close)
 							{
+                                if (GD::bl->debugLevel >= 5) _out.printDebug("Websocket Opcode is typ CLOSE");
 								if (GD::bl->debugLevel >= 5) _out.printDebug("Opcode CLOSE -> " + std::string(content.begin(), content.end()));
 								_stopped = true;
 								websocket.reset();
@@ -740,8 +799,24 @@ void Miniserver::processWsPacket(std::vector<char>& data)
     if (GD::bl->debugLevel >= 5) _out.printDebug("processWsPacket");
 
     std::string content(data.begin(), data.end());
-	auto loxoneWsPacket = std::make_shared<LoxoneWsPacket>(content);
+    auto loxoneWsPacket = std::make_shared<LoxoneWsPacket>(content);
 
+    if(loxoneWsPacket->isControlEncypted())
+    {
+        std::string control = loxoneWsPacket->getControl();
+        //remove "jdev/sys/enc/" at the beginning
+        control.erase(0, 13);
+        std::string decrypted;
+        if(_loxoneEncryption->decryptCommand(control, decrypted)<0)
+        {
+            _out.printError("Error: Could not decrypt Packet");
+            _stopped = true;
+            return;
+        }
+        loxoneWsPacket->setControl(decrypted);
+        if (GD::bl->debugLevel >= 7) _out.printDebug("decrypted Command = " + decrypted);
+        if (GD::bl->debugLevel >= 7) _out.printDebug("decrypted Command as hex= " + BaseLib::HelperFunctions::getHexString(decrypted));
+    }
 	std::unique_lock<std::mutex> requestsGuard(_responsesMutex);
 
 	auto responsesIterator = _responses.find(loxoneWsPacket->getControl());
@@ -913,9 +988,9 @@ void Miniserver::processEventTableOfWeatherStatesPacket(std::vector<char>& data)
 	}
 }
 
-PLoxonePacket Miniserver::getResponse(const LoxoneHttpCommand& requestPacket, int32_t waitForSeconds)
+PLoxonePacket Miniserver::getResponse(const std::string& responseCommand, const std::string& command, int32_t waitForSeconds)
 {
-	try
+    try
     {
         if(_stopped) return PLoxonePacket();
 
@@ -923,16 +998,16 @@ PLoxonePacket Miniserver::getResponse(const LoxoneHttpCommand& requestPacket, in
         std::lock_guard<std::mutex> getResponseGuard(_getResponseMutex);
         std::shared_ptr<Request> request = std::make_shared<Request>();
         std::unique_lock<std::mutex> requestsGuard(_responsesMutex);
-		_responses[requestPacket._responseCommand] = request;
-		requestsGuard.unlock();
+        _responses[responseCommand] = request;
+        requestsGuard.unlock();
         std::unique_lock<std::mutex> lock(request->mutex);
 
-		try
+        try
         {
-            GD::out.printInfo("Info: Sending packet " + requestPacket._command);
-            _tcpSocket->proofwrite(requestPacket._command);
+            GD::out.printInfo("Info: Sending command " + command);
+            _tcpSocket->proofwrite(command);
 
-			_lastPacketSent = BaseLib::HelperFunctions::getTime();
+            _lastPacketSent = BaseLib::HelperFunctions::getTime();
         }
         catch(const BaseLib::SocketOperationException& ex)
         {
@@ -940,22 +1015,22 @@ PLoxonePacket Miniserver::getResponse(const LoxoneHttpCommand& requestPacket, in
             return PLoxonePacket();
         }
 
-		int32_t i = 0;
-		while(!request->conditionVariable.wait_for(lock, std::chrono::milliseconds(1000), [&]
-		{
-			i++;
-			return request->mutexReady || _stopped || i == waitForSeconds;
-		}));
+        int32_t i = 0;
+        while(!request->conditionVariable.wait_for(lock, std::chrono::milliseconds(1000), [&]
+        {
+            i++;
+            return request->mutexReady || _stopped || i == waitForSeconds;
+        }));
 
-		if (i == waitForSeconds || !request->response)
-		{
-			_out.printError("Error: No response received to packet: " + requestPacket._command);
-			return PLoxonePacket();
-		}
-		auto responsePacket = request->response;
+        if (i == waitForSeconds || !request->response)
+        {
+            _out.printError("Error: No response received to command: " + command);
+            return PLoxonePacket();
+        }
+        auto responsePacket = request->response;
 
         requestsGuard.lock();
-		_responses.erase(requestPacket._responseCommand);
+        _responses.erase(responseCommand);
         requestsGuard.unlock();
 
         return responsePacket;
@@ -967,27 +1042,27 @@ PLoxonePacket Miniserver::getResponse(const LoxoneHttpCommand& requestPacket, in
     return PLoxonePacket();
 }
 
+std::string Miniserver::encodeWebSocket(const std::string& command, WebSocket::Header::Opcode::Enum messageType)
+{
+    std::vector<char> output;
+    std::vector<char> input(command.begin(), command.end());
+    BaseLib::WebSocket::encode(input, messageType, output);
+    return std::string(output.begin(), output.end());
+}
+
 PVariable Miniserver::getNewStructfile()
 {
     if (GD::bl->debugLevel >= 5) _out.printDebug("getNewStructfile");
 
-	auto loxonePacket = LoxonePacket::_commands.at("newStuctfile");
-
-	std::string command = loxonePacket._command;
-	std::vector<char> output;
-	std::vector<char> input(command.begin(), command.end());
-	BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
-	loxonePacket._command = std::string(output.begin(), output.end());
-
-	auto responsePacket = getResponse(loxonePacket);
-	if(!responsePacket)
+    auto webSocket = encodeWebSocket("data/LoxAPP3.json", WebSocket::Header::Opcode::Enum::text);
+    auto responsePacket = getResponse("newStuctfile", webSocket);
+    if(!responsePacket)
 	{
 		_out.printError("Error: Could not get new Structfile from miniserver.");
 		_stopped = true;
 		return PVariable();
 	}
 	auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-
 	if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
 	{
 		_out.printError("Error: Could not get new Structfile from miniserver.");
@@ -1001,18 +1076,16 @@ PVariable Miniserver::getLoxApp3Version()
 {
     if (GD::bl->debugLevel >= 5) _out.printDebug("getLoxApp3Version");
 
-	auto loxonePacket = LoxonePacket::_commands.at("LoxApp3Version");
-
-	std::string command = loxonePacket._command;
-	std::vector<char> output;
-	std::vector<char> input(command.begin(), command.end());
-	BaseLib::WebSocket::encode(input, BaseLib::WebSocket::Header::Opcode::Enum::text, output);
-	loxonePacket._command = std::string(output.begin(), output.end());
-
-	auto responsePacket = getResponse(loxonePacket);
-	auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-
-	if (loxoneWsPacket->getResponseCode() != 200)
+	auto webSocket = encodeWebSocket("jdev/sps/LoxAPPversion3", WebSocket::Header::Opcode::Enum::text);
+    auto responsePacket = getResponse("dev/sps/LoxAPPversion3", webSocket);
+    if(!responsePacket)
+    {
+        _out.printError("Error: Could not get LoxApp3Version from miniserver.");
+        _stopped = true;
+        return PVariable();
+    }
+    auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+    if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
 	{
 		_out.printError("Error: Could not get LoxApp3Version from miniserver.");
 		_stopped = true;
@@ -1020,5 +1093,4 @@ PVariable Miniserver::getLoxApp3Version()
 	}
 	return loxoneWsPacket->getValue();
 }
-
 }

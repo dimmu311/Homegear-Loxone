@@ -1,5 +1,6 @@
-<homegearDevice version="1">
-  <supportedDevices>
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
     <device id="Loxone Switch">
       <description>Loxone Switch</description>
       <typeNumber>0x0100</typeNumber>
@@ -8,23 +9,23 @@
   </supportedDevices>
   <properties/>
   <functions>
-    <function channel="0" type="MAINTENANCE" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
       <properties>
         <internal>true</internal>
       </properties>
       <configParameters>maint_ch_master--0</configParameters>
       <variables>maint_ch_values--0</variables>
     </function>
-    <function channel="1" type="SWITCH" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="SWITCH" channelCount="1">
       <properties/>
       <configParameters>config--1</configParameters>
       <variables>switch_valueset--1</variables>
     </function>
   </functions>
-  <packets>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
     <packet id="on.stateSet">
       <direction>toCentral</direction>
-      <function1>StateSet</function1>
+      <function1>on.valueSet</function1>
       <channel>1</channel>
       <jsonPayload>
         <element>
@@ -61,8 +62,18 @@
       </jsonPayload>
     </packet>
   </packets>
-  <parameterGroups>
-    <configParameters id="config--1"/>
+  <parameterGroups xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <internal>true</internal>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>store</operationType>
+        </physicalString>
+      </parameter>
+    </configParameters>
     <configParameters id="maint_ch_master--0"/>
     <variables id="maint_ch_values--0">
       <parameter id="UNREACH">
@@ -82,6 +93,11 @@
           <writeable>true</writeable>
           <casts>
             <rpcBinary/>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
           </casts>
         </properties>
         <logicalBoolean>
@@ -102,6 +118,7 @@
       <parameter id="SET_ON">
         <properties>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
             <optionString/>
             <rpcBinary/>
@@ -120,6 +137,7 @@
       <parameter id="SET_OFF">
         <properties>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
             <optionString/>
             <rpcBinary/>

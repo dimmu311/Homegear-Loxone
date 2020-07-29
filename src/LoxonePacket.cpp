@@ -1,7 +1,5 @@
 #include "LoxonePacket.h"
 #include "GD.h"
-#include "homegear-base/Encoding/JsonDecoder.h"
-#include "homegear-base/Encoding/JsonEncoder.h"
 #include "LoxoneCentral.h"
 
 namespace Loxone
@@ -12,93 +10,12 @@ namespace Loxone
 		"jdev/sys/keyexchange/",
 		"jdev/sys/getkey2/",
 		"jdev/sys/gettoken/",
+        "jdev/sys/getjwt/",
+        "dev/sys/refreshjwt/",
+        "authwithtoken/",
 		"dev/sps/enablebinstatusupdate",
 
 		"jdev/sys/enc/",
-	};
-
-	const std::unordered_map<std::string, LoxoneHttpCommand> LoxonePacket::_commands =
-	{
-		{"getPublicKey", LoxoneHttpCommand{
-			"GET /jdev/sys/getPublicKey / HTTP / 1.1\r\n"
-			"Host: homegear\r\n"
-			"User-Agent: homegear\r\n"
-			"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
-			"Accept-Language: en-us,en;q=0.5\r\n"
-			"Accept-Encoding: gzip,deflate\r\n"
-			"Accept-Charset: ISO-8859-1,utf-8;\r\n"
-			"Keep-Alive: 1000\r\n"
-			"Connection: keep-alive\r\n"
-			"\r\n"
-			,
-			"dev/sys/getPublicKey"
-			}
-		},
-		{"openWebsocket", LoxoneHttpCommand{
-			"GET /ws/rfc6455/ HTTP/1.1\r\n"
-			"Host: miniserver\r\n"
-			"Upgrade: websocket\r\n"
-			"Connection: Upgrade\r\n"
-			"Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
-			"Sec-WebSocket-Protocol: remotecontrol\r\n"
-			"\r\n"
-			,
-			"Web Socket Protocol Handshake"
-			}
-		},
-		{"keyexchange", LoxoneHttpCommand{
-			"jdev/sys/keyexchange/"
-			,
-			"jdev/sys/keyexchange/" 
-			}
-		},
-		{"getkey2", LoxoneHttpCommand{
-			"jdev/sys/getkey2/"
-			,
-			"jdev/sys/getkey2/"
-			}
-		},
-        {"getkey", LoxoneHttpCommand{
-            "jdev/sys/getkey/"
-            ,
-            "jdev/sys/enc/"
-            }
-        },
-		{"getToken", LoxoneHttpCommand{
-			"jdev/sys/gettoken/"
-			,
-			"jdev/sys/gettoken/"
-			}
-		},
-		{"enableUpdates", LoxoneHttpCommand{
-			"jdev/sps/enablebinstatusupdate"
-			,
-			"dev/sps/enablebinstatusupdate"
-			}
-		},
-		{"keepalive", LoxoneHttpCommand{
-			"keepalive"
-			,
-			"keepalive"
-			}
-		},
-		{"newStuctfile", LoxoneHttpCommand{
-			"data/LoxAPP3.json"
-			,
-			"newStuctfile"
-			}
-		},
-		{"LoxApp3Version", LoxoneHttpCommand{
-			"jdev/sps/LoxAPPversion3"
-			,
-			"dev/sps/LoxAPPversion3"
-			}
-		},
-        {"refreshToken", LoxoneHttpCommand{
-            "jdev/sys/refreshtoken/",
-            "dev/sps/LoxAPPversion3",
-            }
-        },
 	};
 
 	std::string LoxonePacket::getUuidFromPacket(char* packet)
@@ -155,14 +72,31 @@ namespace Loxone
 		return *reinterpret_cast<double*>(ptr);
 	}
 
+    uint32_t LoxonePacket::getCodeFromPacket(PVariable& json)
+    {
+	    //this is a little nasty function, but it is requiered, because Loxone encode the response code in diffrent ways.
+        if (json->structValue->find("Code") != json->structValue->end())
+        {
+            if(json->structValue->at("Code")->type == BaseLib::VariableType::tInteger)
+                return json->structValue->at("Code")->integerValue;
+            else if(json->structValue->at("Code")->type == BaseLib::VariableType::tString)
+                return std::stoi(json->structValue->at("Code")->stringValue);
+        }
+        else if (json->structValue->find("code") != json->structValue->end())
+        {
+            if(json->structValue->at("code")->type == BaseLib::VariableType::tInteger)
+                return json->structValue->at("code")->integerValue;
+            else if(json->structValue->at("code")->type == BaseLib::VariableType::tString)
+                return std::stoi(json->structValue->at("code")->stringValue);
+        }
+        return -1;
+    }
+
 	PVariable LoxonePacket::getJson(std::string& jsonString)
 	{
 		try
 		{
 		    _jsonDecoder.reset(new BaseLib::Rpc::JsonDecoder(GD::bl));
-
-            GD::out.printError("test message." + jsonString);
-
             return _jsonDecoder->decode(jsonString);
 		}
 		catch (const BaseLib::Rpc::JsonDecoderException& ex)
@@ -183,94 +117,89 @@ namespace Loxone
 		}
 		return PVariable();
 	}
-	/*
-	LoxoneCommand LoxonePacket::getResponseCommand()
-	{
-		auto iterator = _requestResponseMapping.find(_command);
-		if (iterator != _requestResponseMapping.end()) return iterator->second;
-		return LoxoneCommand;
-	}
-	*/
+
 	LoxoneHttpPacket::LoxoneHttpPacket(std::string jsonString, uint32_t responseCode)
 	{
-		PVariable json = getJson(jsonString);
-		if (!json) return;
+        _packetType = LoxonePacketType::LoxoneHttpPacket;
 
 		if (responseCode == 200)// ok
 		{
+            if (GD::bl->debugLevel >= 6) GD::out.printDebug("httpPacket is " + jsonString);
+
 			PVariable json = getJson(jsonString);
 			if (!json) return;
-
-			uint32_t code = 0;
-			if (json->structValue->at("LL")->structValue->find("Code") != json->structValue->at("LL")->structValue->end())
-			{
-				code = json->structValue->at("LL")->structValue->at("Code")->integerValue;
-				if (code == 0) code = std::stoi(json->structValue->at("LL")->structValue->at("Code")->stringValue);
-			}
-			else if (json->structValue->at("LL")->structValue->find("code") != json->structValue->at("LL")->structValue->end())
-			{
-				code = json->structValue->at("LL")->structValue->at("code")->integerValue;
-				if (code == 0)code = std::stoi(json->structValue->at("LL")->structValue->at("code")->stringValue);
-			}
-
-			if (code == 200)
-			{
-				_responseCode = 200;
-				_value = json->structValue->at("LL")->structValue->at("value");
-				_control = json->structValue->at("LL")->structValue->at("control")->stringValue;
+			if(json->structValue->find("LL") != json->structValue->end()) _responseCode = getCodeFromPacket(json->structValue->at("LL"));
+            if (_responseCode == 200)
+            {
+                if(json->structValue->at("LL")->structValue->find("value") != json->structValue->at("LL")->structValue->end())
+				    _value = json->structValue->at("LL")->structValue->at("value");
+                if(json->structValue->at("LL")->structValue->find("control") != json->structValue->at("LL")->structValue->end())
+				    _control = json->structValue->at("LL")->structValue->at("control")->stringValue;
 			}
 		}
 		else if (responseCode == 101)//Websocket Handshake
 		{
 			_responseCode = 101;
-			//_value = "wird das hier gebraucht?";
 			_control = "Web Socket Protocol Handshake";
 		}
 		else
 		{
 			GD::out.printMessage("Received Http Command with Code not 200 and not 101" + jsonString, 0, true);
+			//<html>
+			//  <head>
+			//      <title>error</title>
+			//  </head>
+			//  <body>
+			//      <errorcode>403</errorcode>
+			//      <errordetail>
+			//          <errortext>Forbidden</errortext>
+			//          <description>IP 192.168.41.42 temporarily blocked, too many failed login attempts;</description>
+			//          <remaining>25</remaining>
+			//      </errordetail>
+			//  </body>
+			//</html>
 			//TODO Handle Responses like 404 and so
 		}
+
+        if (GD::bl->debugLevel >= 6) GD::out.printDebug("httpPacket parsed json is: responseCode " + std::to_string(_responseCode) + " control " + _control);
 	}
 	LoxoneWsPacket::LoxoneWsPacket()
 	{
+        _packetType = LoxonePacketType::LoxoneWsPacket;
 		_responseCode = 0;
 	}
 	LoxoneWsPacket::LoxoneWsPacket(std::string jsonString)
 	{
-		PVariable json = getJson(jsonString);
+        _packetType = LoxonePacketType::LoxoneWsPacket;
+
+        if (GD::bl->debugLevel >= 6) GD::out.printDebug("wsPacket is " + jsonString);
+
+	    PVariable json = getJson(jsonString);
 		if (!json) return;
 
-		uint32_t code = 0;
+        if(json->structValue->find("LL") != json->structValue->end())
+        {
+            _responseCode = getCodeFromPacket(json->structValue->at("LL"));
+            if (_responseCode == 200)
+            {
+                if (json->structValue->at("LL")->structValue->find("value") != json->structValue->at("LL")->structValue->end())
+                    _value = json->structValue->at("LL")->structValue->at("value");
+                if (json->structValue->at("LL")->structValue->find("control") != json->structValue->at("LL")->structValue->end())
+                {
+                    _control = json->structValue->at("LL")->structValue->at("control")->stringValue;
+                    for (const std::string &command : _responseCommands) {
+                        if (_control.compare(0, command.size(), command) == 0) {
+                            _control = command;
 
-		if (json->structValue->find("LL") != json->structValue->end())
-		{
-			if (json->structValue->at("LL")->structValue->find("Code") != json->structValue->at("LL")->structValue->end())
-			{
-				code = json->structValue->at("LL")->structValue->at("Code")->integerValue;
-				if (code == 0) code = std::stoi(json->structValue->at("LL")->structValue->at("Code")->stringValue);
-			}
-			else if (json->structValue->at("LL")->structValue->find("code") != json->structValue->at("LL")->structValue->end())
-			{
-				code = json->structValue->at("LL")->structValue->at("code")->integerValue;
-				if (code == 0)code = std::stoi(json->structValue->at("LL")->structValue->at("code")->stringValue);
-			}
-
-			if (code == 200)
-			{
-				_responseCode = 200;
-				_control = json->structValue->at("LL")->structValue->at("control")->stringValue;
-				_value = json->structValue->at("LL")->structValue->at("value");
-
-				for (const std::string& command : _responseCommands)
-				{
-					if (_control.compare(0, command.size(), command) == 0)
-					{
-						_control = command;
-						break;
-					}
-				}
-			}
+                            if (command == "jdev/sys/enc/") {
+                                _controlIsEncrypted = true;
+                                _control = json->structValue->at("LL")->structValue->at("control")->stringValue;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
 		}
 		else
 		{
@@ -280,12 +209,14 @@ namespace Loxone
 			_control = "newStuctfile";
 			_value = json;
 		}
+
+        if (GD::bl->debugLevel >= 6) GD::out.printDebug("wsPacket parsed json is: responseCode " + std::to_string(_responseCode) + " control " + _control);
 	}
 
-	LoxoneTextmessagePacket::LoxoneTextmessagePacket(std::string jsonString)
+	LoxoneTextmessagePacket::LoxoneTextmessagePacket(std::string command)
 	{
-		PVariable json = getJson(jsonString);
-		if (!json) return;
+	    _packetType = LoxonePacketType::LoxoneTextMessage;
+		_command = command;
 	}
 
 	LoxoneValueStatesPacket::LoxoneValueStatesPacket(char* packet)
@@ -301,14 +232,15 @@ namespace Loxone
 
 		_uuid = getUuidFromPacket(packet);
 		_uuidIcon = getUuidFromPacket(packet+16);
-
+		_text = std::string(packet + 36, packet + len);
+		/*
 		std::stringstream ss;
-
 		for (uint32_t i = 36; i < len; i++)
 		{
 			ss << packet[i];
 		}
 		_text = ss.str();
+		*/
 	}
 	LoxoneDaytimerStatesPacket::LoxoneTimeEntry::LoxoneTimeEntry(std::vector<uint8_t> data)
 	{

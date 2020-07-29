@@ -2,30 +2,6 @@
 
 namespace Loxone
 {
-	template<typename T> LoxoneControl* createInstance(PVariable control, std::string room, std::string cat) { return new T(control, room, cat); }
-	const std::unordered_map<std::string, LoxoneControl* (*)(PVariable, std::string, std::string)> LoxoneControl::_controlsMap =
-	{
-		{"Pushbutton", &createInstance<Pushbutton>},
-		{"Switch", &createInstance<Pushbutton>},
-		{"Slider", &createInstance<Slider>},
-		{"Dimmer", &createInstance<Dimmer>},
-		{"LightControllerV2", &createInstance<LightControllerV2>},
-		{"Alarm", &createInstance<Alarm>},
-		{"MediaClient", &createInstance<MediaClient>},
-	};
-
-	template<typename T> LoxoneControl* createInstance2(std::shared_ptr<BaseLib::Database::DataTable> rows) { return new T(rows); }
-    const std::unordered_map<uint32_t, LoxoneControl* (*)(std::shared_ptr<BaseLib::Database::DataTable>)> LoxoneControl::_uintControlsMap =
-    {
-		{0x100, &createInstance2<Pushbutton>},//Pushbutton
-		//{0x100, &createInstance2<Pushbutton>}, Switch
-		{0x101, &createInstance2<Slider>},
-		{0x102, &createInstance2<Dimmer>},
-		{0x103, &createInstance2<LightControllerV2>},
-		{0x200, &createInstance2<Alarm>},
-		{0x201, &createInstance2<MediaClient>},
-    };
-
     MandatoryFields::MandatoryFields(PVariable mandatoryFields, std::string room, std::string cat)
     {
     	_name = mandatoryFields->structValue->at("name")->stringValue;
@@ -230,14 +206,6 @@ namespace Loxone
 		}
 	}
 
-	void LoxoneControl::addBooleanState(double value, std::string& variable)
-	{
-		GD::out.printDebug("LoxoneControl::addBooleanState ");
-
-		if(variable == "value") _json->structValue->at("state")->structValue->operator[]("state") = PVariable(new Variable((bool)value));
-		else if (variable == "position") _json->structValue->at("state")->structValue->operator[]("state") = PVariable(new Variable((bool)value));
-	}
-
 	bool LoxoneControl::processPacket(PLoxoneValueStatesPacket loxonePacket)
 	{
 		try
@@ -250,9 +218,8 @@ namespace Loxone
 			_json = std::make_shared<Variable>(VariableType::tStruct);
 			_json->structValue->operator[]("state") = PVariable(new Variable(VariableType::tStruct));
 			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second.variable) = PVariable(new Variable(loxonePacket->getDValue()));
-			addBooleanState(loxonePacket->getDValue(), variable_PeerId->second.variable);
-
 			loxonePacket->setJsonString(_json);
+			loxonePacket->setMethod("on.valueSet");
 			return true;
 		}
 		catch (const std::exception& ex)
@@ -276,6 +243,7 @@ namespace Loxone
 			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second.variable) = PVariable(new Variable(loxonePacket->getText()));
 
 			loxonePacket->setJsonString(_json);
+            loxonePacket->setMethod("on.textSet");
 			return true;
 		}
 		catch (const std::exception& ex)
@@ -351,6 +319,65 @@ namespace Loxone
 		}
 		return 0;
 	}
+    bool LoxoneControl::setValue(std::string method, BaseLib::PVariable parameters, std::string& command)
+    {
+        try
+        {
+            command = "jdev/sps/io/" + _uuidAction + "/";
+            if(method == "setConstString")
+            {
+                if(parameters->type == VariableType::tArray) {
+                    for (auto value1 = parameters->arrayValue->begin();
+                         value1 != parameters->arrayValue->end(); ++value1) {
+                        switch (value1.operator*()->type) {
+                            case VariableType::tString: {
+                                command += value1.operator*()->stringValue;
+                                return true;
+                            }
+                            default:
+                                return false;
+                        }
+                    }
+                }
+                return false;
+            }
+            else
+            {
+                if(parameters->type == VariableType::tArray) {
+                    for (auto value1 = parameters->arrayValue->begin(); value1 != parameters->arrayValue->end(); ++value1) {
+                        switch (value1.operator*()->type) {
+                            case VariableType::tString: {
+                                command += value1.operator*()->stringValue;
+                                break;
+                            }
+                            case VariableType::tInteger: {
+                                command += std::to_string(value1.operator*()->integerValue);
+                                break;
+                            }
+                            case VariableType::tFloat: {
+                                command += std::to_string(value1.operator*()->floatValue);
+                                break;
+                            }
+                            case VariableType::tBoolean: {
+                                std::string doCommand = "off";
+                                if (value1.operator*()->booleanValue) doCommand = "on";
+                                command += doCommand;
+                                //todo break?
+                            }
+                            default:
+                                break;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+        catch (const std::exception& ex)
+        {
+            GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+        }
+        return false;
+    }
 	bool LoxoneControl::setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet)
 	{
 		try
@@ -388,6 +415,7 @@ namespace Loxone
 								if(value1.operator *()->booleanValue) doCommand = "on";
 								command += "/";
 								command += doCommand;
+								//todo break?
 							}
 							default:
 								break;
@@ -643,267 +671,5 @@ namespace Loxone
 		return false;
 	}
 
-	Pushbutton::Pushbutton(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x100)
-	{
-		getValueFromStructFile("isFavorite","", _isFavorite);
-		getValueFromStructFile("defaultIcon","", _defaultIcon);
-	}
-	Pushbutton::Pushbutton(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x100)
-	{
-		getValueFromDataTable(107, _isFavorite);
-		getBinaryValueFromDataTable(108, _defaultIcon);
-	}
-	bool Pushbutton::processPacket(PLoxoneValueStatesPacket loxonePacket)
-	{
-		try
-		{
-			if (LoxoneControl::processPacket(loxonePacket))
-			{
-				if (_json->structValue->at("state")->structValue->find("active") != _json->structValue->at("state")->structValue->end())
-				{
-					auto value = _json->structValue->at("state")->structValue->at("active")->floatValue;
-					_json->structValue->at("state")->structValue->at("active") = PVariable(new Variable((bool)value));
-				}
-				loxonePacket->setJsonString(_json);
-				return true;
-			}
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
-	uint32_t Pushbutton::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
-	{
-		LoxoneControl::getDataToSave(list, peerID);
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(107)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_isFavorite)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("isFavorite")));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			list.push_back(data);
-		}
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(108)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("defaultIcon")));
-			std::vector<char> defaultIcon(_defaultIcon.begin(), _defaultIcon.end());
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(defaultIcon)));
-			list.push_back(data);
-		}
-		return 0;
-	}
-	Slider::Slider(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x0101)
-	{
-		getValueFromStructFile("isFavorite", "", _isFavorite);
-		getValueFromStructFile("defaultIcon", "", _defaultIcon);
 
-		getValueFromStructFile("format", "details", _detFormat);
-		getValueFromStructFile("min", "details", _detMin);
-		getValueFromStructFile("max", "details", _detMax);
-		getValueFromStructFile("step", "details", _detStep);
-	}
-	Slider::Slider(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x0101)
-	{
-		getValueFromDataTable(107, _isFavorite);
-		getBinaryValueFromDataTable(108, _defaultIcon);
-		getBinaryValueFromDataTable(111, _detFormat);
-		getValueFromDataTable(112, _detMin);
-		getValueFromDataTable(113, _detMax);
-		getValueFromDataTable(114, _detStep);
-	}
-	uint32_t Slider::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
-	{
-		LoxoneControl::getDataToSave(list, peerID);
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(107)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_isFavorite)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("isFavorite")));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			list.push_back(data);
-		}
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(108)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("defaultIcon")));
-			std::vector<char> defaultIcon(_defaultIcon.begin(), _defaultIcon.end());
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(defaultIcon)));
-			list.push_back(data);
-		}
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(111)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("format")));
-			std::vector<char> detFormat(_detFormat.begin(), _detFormat.end());
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_detFormat)));
-			list.push_back(data);
-		}
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(112)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_detMin)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("min")));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			list.push_back(data);
-		}
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(113)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_detMax)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("max")));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			list.push_back(data);
-		}
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(114)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_detStep)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("step")));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			list.push_back(data);
-		}
-		return 0;
-	}
-
-	Dimmer::Dimmer(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x0102)
-	{
-		getValueFromStructFile("isFavorite", "", _isFavorite);
-	}
-	Dimmer::Dimmer(std::shared_ptr<BaseLib::Database::DataTable> rows): LoxoneControl(rows, 0x0102)
-	{
-		getValueFromDataTable(107, _isFavorite);
-	}
-	uint32_t Dimmer::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
-	{
-		LoxoneControl::getDataToSave(list, peerID);
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(107)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_isFavorite)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("isFavorite")));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			list.push_back(data);
-		}
-		return 0;
-	}
-
-	LightControllerV2::LightControllerV2(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x0103)
-	{
-		getValueFromStructFile("isFavorite", "", _isFavorite);
-
-		getValueFromStructFile("movementScene", "details", _detMovementScene);
-		getValueFromStructFile("masterValue", "details", _detMasterValue);
-		getValueFromStructFile("masterColor", "details", _detMasterColor);
-	}
-	LightControllerV2::LightControllerV2(std::shared_ptr<BaseLib::Database::DataTable> rows): LoxoneControl(rows, 0x0103)
-	{
-		getValueFromDataTable(107, _isFavorite);
-		getValueFromDataTable(111, _detMovementScene);
-		getBinaryValueFromDataTable(112, _detMasterValue);
-		getBinaryValueFromDataTable(113, _detMasterColor);
-	}
-
-	uint32_t LightControllerV2::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
-	{
-		LoxoneControl::getDataToSave(list, peerID);
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(107)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_isFavorite)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("isFavorite")));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			list.push_back(data);
-		}
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(111)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_detMovementScene)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("movementScene")));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			list.push_back(data);
-		}
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(112)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("masterValue")));
-			std::vector<char> masterValue(_detMasterValue.begin(), _detMasterValue.end());
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(masterValue)));
-			list.push_back(data);
-		}
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(113)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("masterColor")));
-			std::vector<char> masterColor(_detMasterColor.begin(), _detMasterColor.end());
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(masterColor)));
-			list.push_back(data);
-		}
-		return 0;
-	}
-
-	Alarm::Alarm(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x0200)
-	{
-		getValueFromStructFile("alert", "details", _detAlert);
-		getValueFromStructFile("presenceConnected", "details", _detPresenceConnected);
-	}
-	Alarm::Alarm(std::shared_ptr<BaseLib::Database::DataTable> rows): LoxoneControl(rows, 0x0200)
-	{
-		getValueFromDataTable(111, _detAlert);
-		getValueFromDataTable(112, _detPresenceConnected);
-	}
-	uint32_t Alarm::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
-	{
-		LoxoneControl::getDataToSave(list, peerID);
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(111)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_detAlert)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("detAlert")));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			list.push_back(data);
-		}
-		{
-			Database::DataRow data;
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(112)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_detPresenceConnected)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("detPresenceConnected")));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-			list.push_back(data);
-		}
-		return 0;
-	}
-
-
-	MediaClient::MediaClient(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x201){}
-	MediaClient::MediaClient(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x201){}
-	uint32_t MediaClient::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
-	{
-		LoxoneControl::getDataToSave(list, peerID);
-		{
-			return 0;
-		}
-	}
 }

@@ -12,11 +12,16 @@ namespace Loxone
 
 	enum class LoxonePacketType
 	{
+	    LoxoneHttpPacket,
+	    LoxoneWsPacket,
+
 		LoxoneTextMessage,
 		LoxoneBinaryFilePacket,
 		LoxoneValueStatesPacket,
 		LoxoneTextStatesPacket,
 		LoxoneDaytimerStatesPacket,
+		LoxoneOutOfService,
+		LoxoneKeepAliveResponse,
 		LoxoneWeatherStatesPacket,
 	};
 
@@ -26,49 +31,37 @@ public:
     explicit InvalidLoxonePacketException(const std::string& message) : Exception(message) {}
 };
 
-struct LoxoneHttpCommand
-{
-	public:
-		std::string _command;
-		std::string _responseCommand;
-		int32_t _code;
-};
 class LoxonePacket : public BaseLib::Systems::Packet
 {
 public:
 	virtual ~LoxonePacket() = default;
-	static const std::unordered_map<std::string, LoxoneHttpCommand> _commands;
 	static const std::list<std::string> _responseCommands;
-	
-    std::string getResponseCommand() { return _command; };
-	std::string getMessageType() { return "StateSet"; }
 
 	void setCommand(std::string command) { _command = command; };
 	std::string getCommand() { return _command; };
    	
-	virtual PVariable getJsonString() { return _jsonString; }
-	void setJsonString(PVariable setJsonString) { _jsonString = setJsonString; }
+	virtual PVariable getJsonString() { return _json; }
+	void setJsonString(PVariable jsonString) { _json = jsonString; }
+    std::string getMethod() {return _method; }
+    void setMethod(std::string method){_method = method;};
 
 	LoxonePacketType getPacketType() { return _packetType; };
 	std::string getUuid() { return _uuid; };
 
 protected:
 	std::string _command;
-    
-	PVariable _jsonString;
-	std::unique_ptr<BaseLib::Rpc::JsonDecoder> _jsonDecoder;
-	std::unique_ptr<BaseLib::Rpc::JsonEncoder> _jsonEncoder;
-	PVariable getJson(std::string& jsonString);
+    std::string _method;
 
-	std::string _method;
-	BaseLib::PVariable _parameters;
-	BaseLib::PVariable _result;
+	PVariable _json;
+	std::unique_ptr<BaseLib::Rpc::JsonDecoder> _jsonDecoder;
+	PVariable getJson(std::string& jsonString);
 
 	std::string _uuid;
 	LoxonePacketType _packetType;
 
 	std::string getUuidFromPacket(char* data);
 	double getValueFromPacket(char* data);
+	uint32_t getCodeFromPacket(PVariable& json);
 };
 
 
@@ -93,17 +86,20 @@ public:
 	uint32_t getResponseCode() { return _responseCode; };
 	void setResponseCode(uint32_t responseCode) { _responseCode = responseCode; };
 	std::string getControl() { return _control; };
-	BaseLib::PVariable getValue() { return _value; };
+	void setControl(std::string control) {_control = control; };
+	BaseLib::PVariable getValue() { return _value; }
+	bool isControlEncypted() { return _controlIsEncrypted; };
 protected:
 	uint32_t _responseCode;
 	std::string _control;
 	BaseLib::PVariable  _value;
+	bool _controlIsEncrypted = false;
 };
 
 class LoxoneTextmessagePacket : public LoxonePacket
 {
 public:
-	LoxoneTextmessagePacket(std::string jsonString);
+	LoxoneTextmessagePacket(std::string command);
 	std::string getControl() { return _control; };
 	BaseLib::PVariable getValue() { return _value; };
 protected:

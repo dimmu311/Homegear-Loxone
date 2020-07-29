@@ -47,8 +47,8 @@ public:
     void startListening() override;
     void stopListening() override;
     void sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet) override;
-	BaseLib::PVariable getNewStructfile();
-	BaseLib::PVariable getLoxApp3Version();
+	PVariable getNewStructfile();
+	PVariable getLoxApp3Version();
     bool isOpen() override { return !_stopped; }
     uint16_t getMessageCounter();
 	
@@ -68,9 +68,9 @@ protected:
     int32_t _port = 80;
 	std::string _user;
 	std::string _password;
+	uint32_t _msVersion = 11;
     std::shared_ptr<BaseLib::TcpSocket> _tcpSocket;
-
-	std::shared_ptr<BaseLib::WebSocket> _webSocket;
+    std::shared_ptr<LoxoneEncryption> _loxoneEncryption;
 
     std::atomic<uint16_t> _messageCounter{ 0 };
 
@@ -84,12 +84,17 @@ protected:
     std::unordered_map<std::string, std::shared_ptr<Request>> _responses;
 	std::unordered_map<std::string, std::list<PLoxonePacket>> _responseCollections;
 
-
     void listen();
     void init();
 	void keepAlive();
     void refreshToken();
     void saveToken();
+
+    void acquireToken();
+    void authenticateUsingTokens();
+
+    PLoxonePacket getResponse(const std::string& responseCommand, const std::string& command, int32_t waitForSeconds = 15);
+    std::string encodeWebSocket(const std::string& command, WebSocket::Header::Opcode::Enum messageType);
 
 	void processHttpPacket(const std::vector<char>& data, uint32_t responseCode);
 	void processWsPacket(std::vector<char>& data);
@@ -101,10 +106,6 @@ protected:
 	void processOutOfServiceIndicatorPacket();
 	void processKeepAlivePacket();
 	void processEventTableOfWeatherStatesPacket(std::vector<char>& data);
-
-    PLoxonePacket getResponse(const LoxoneHttpCommand& requestPacket, int32_t waitForSeconds = 15);
-
-    std::shared_ptr<LoxoneEncryption> _loxoneEncryption;
 };
 
 
