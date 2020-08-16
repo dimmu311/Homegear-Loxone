@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(homegear_loxone_miniserver)
+project(loxone_miniserver)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -43,7 +43,12 @@ set(SOURCE_FILES
 		src/controls/Alarm.cpp
 		src/controls/Alarm.h
 		src/controls/MediaClient.cpp
-		src/controls/MediaClient.h)
-add_custom_target(homegear COMMAND ../../makeAll.sh SOURCES ${SOURCE_FILES})
+		src/controls/MediaClient.h
+		src/controls/Jalousie.cpp
+		src/controls/Jalousie.h)
 
-add_library(homegear_loxone_miniserver ${SOURCE_FILES})
+add_custom_target(homegear COMMAND ../../makeAll.sh SOURCES ${SOURCE_FILES})
+set(CMAKE_SHARED_LIBRARY_PREFIX "mod_")
+
+add_library(loxone_miniserver SHARED ${SOURCE_FILES})
+install(TARGETS loxone_miniserver DESTINATION /var/lib/homegear/modules)
