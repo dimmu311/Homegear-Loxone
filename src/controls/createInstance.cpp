@@ -4,6 +4,7 @@
 #include "Slider.h"
 #include "Dimmer.h"
 #include "LightControllerV2.h"
+#include "Jalousie.h"
 #include "Alarm.h"
 #include "MediaClient.h"
 
@@ -17,6 +18,7 @@ namespace Loxone
             {"Slider", &createInstance3<Slider>},
             {"Dimmer", &createInstance3<Dimmer>},
             {"LightControllerV2", &createInstance3<LightControllerV2>},
+            {"Jalousie", &createInstance3<Jalousie>},
             {"Alarm", &createInstance3<Alarm>},
             {"MediaClient", &createInstance3<MediaClient>},
     };
@@ -29,6 +31,7 @@ namespace Loxone
             {0x101, &createInstance2<Slider>},
             {0x102, &createInstance2<Dimmer>},
             {0x103, &createInstance2<LightControllerV2>},
+            {0x104, &createInstance2<Jalousie>},
             {0x200, &createInstance2<Alarm>},
             {0x201, &createInstance2<MediaClient>},
     };

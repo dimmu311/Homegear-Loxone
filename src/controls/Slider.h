@@ -7,6 +7,7 @@ namespace Loxone
 {
     class Slider : public LoxoneControl
     {
+        //TODO: maybe a second value Variable wich only can send values inbetween min and max, see details....
         /*
         "0e3dca32-0006-e500-ffff1239b12ff514":{
             "name":"Volume",
@@ -34,14 +35,15 @@ namespace Loxone
         Slider(PVariable control, std::string room, std::string cat);
         Slider(std::shared_ptr<BaseLib::Database::DataTable> rows);
         uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
+        uint32_t getExtraData(std::list<extraData> &extraData);
     protected:
         bool _isFavorite;
         std::string _defaultIcon;
 
-        std::string _detFormat;
-        float _detMin;
-        float _detMax;
-        float _detStep;
+        std::string _format;
+        float _min;
+        float _max;
+        float _step;
     };
 }
 #endif //HOMEGEAR_LOXONE_MINISERVER_SLIDER_H
