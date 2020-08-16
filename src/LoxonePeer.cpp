@@ -26,7 +26,12 @@ LoxonePeer::LoxonePeer(uint32_t parentID, IPeerEventSink* eventHandler, std::sha
 	_binaryEncoder.reset(new BaseLib::Rpc::RpcEncoder(GD::bl));
 	_binaryDecoder.reset(new BaseLib::Rpc::RpcDecoder(GD::bl));
 	_control = control;
-	_control->setValuesCentral(valuesCentral);
+
+	_uuidVariable_PeerIdMap = _control->getVariables();
+    for(auto i = _uuidVariable_PeerIdMap.begin(); i != _uuidVariable_PeerIdMap.end(); ++i)
+    {
+        i->second.peerId = _peerID;
+    }
 }
 //wird aufgerufen wenn ein vorhandener peer neu geladen wird
 //danach siehe LoxonePeer::load()
@@ -54,44 +59,6 @@ std::string LoxonePeer::handleCliCommand(std::string command)
 			stringStream << "unselect\t\tUnselect this peer" << std::endl;
 			return stringStream.str();
 		}
-		else if(command == "test")
-        {
-            std::shared_ptr<std::vector<std::string>> valueKeys(new std::vector<std::string>());
-            std::shared_ptr<std::vector<PVariable>> values(new std::vector<PVariable>());
-
-            BaseLib::Systems::RpcConfigurationParameter& parameter = configCentral[1]["ROOM"];
-
-            std::unordered_map<uint32_t, std::unordered_map<std::string, RpcConfigurationParameter>>::iterator channelIterator = configCentral.find(1);
-            std::unordered_map<std::string, RpcConfigurationParameter>::iterator parameterIterator = channelIterator->second.find("ROOM");
-            PParameter rpcParameter = parameterIterator->second.rpcParameter;
-
-            std::vector<uint8_t> parameterData;
-            rpcParameter->convertToPacket("mein Test", parameter.mainRole() ,parameterData);
-            parameter.setBinaryData(parameterData);
-
-            auto value = rpcParameter->convertFromPacket(parameterData, parameter.mainRole(), false);
-
-            valueKeys->push_back("ROOM");
-            values->push_back(value);
-
-            std::string eventSource = "device-" + std::to_string(_peerID);
-            std::string address(_serialNumber + ":" + "ROOM");
-            raiseEvent(eventSource, _peerID, 1, valueKeys, values);
-            raiseRPCEvent(eventSource, _peerID, 1, address, valueKeys, values);
-        }
-        else if(command == "test1")
-        {
-            BaseLib::Systems::RpcConfigurationParameter& parameter = configCentral[1]["ROOM"];
-
-            std::unordered_map<uint32_t, std::unordered_map<std::string, RpcConfigurationParameter>>::iterator channelIterator = configCentral.find(1);
-            std::unordered_map<std::string, RpcConfigurationParameter>::iterator parameterIterator = channelIterator->second.find("ROOM");
-            PParameter rpcParameter = parameterIterator->second.rpcParameter;
-
-            std::vector<uint8_t> parameterData;
-            rpcParameter->convertToPacket("was anderes", parameter.mainRole() ,parameterData);
-            parameter.setBinaryData(parameterData);
-
-        }
 		return "Unknown command.\n";
 	}
 	catch(const std::exception& ex)
@@ -132,7 +99,7 @@ void LoxonePeer::saveUuids()
 	}
 }
 
-void LoxonePeer::loadUuuis()
+void LoxonePeer::loadUuids()
 {
     try
     {
@@ -141,11 +108,54 @@ void LoxonePeer::loadUuuis()
         _control = std::shared_ptr<LoxoneControl>(createInstance::_uintControlsMap.at(_deviceType)(rows));
         if(!_control)return ;
         _uuidVariable_PeerIdMap = _control->getVariables();
-        _control->setValuesCentral(valuesCentral);
+        //_control->setValuesCentral(valuesCentral);
+        //_control->setConfigCentral(configCentral);
     }
     catch(const std::exception& ex)
     {
         GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+}
+void LoxonePeer::setConfigParameters()
+{
+    //This do not set anything to homegear rooms or roles. this are just to variables wich shows how this peer is configred in Loxone Config.
+    //If you want to add a room or role then do this in homegear.
+    { //Set the Roomname wich is configured in Loxone Config
+        BaseLib::Systems::RpcConfigurationParameter &parameter = configCentral[1]["ROOM"];
+        std::vector<uint8_t> parameterData;
+        parameter.rpcParameter->convertToPacket(_control->getRoom(), parameter.mainRole(), parameterData);
+        parameter.setBinaryData(parameterData);
+        if (parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
+        else saveParameter(0, ParameterGroup::Type::Enum::config, 1, "ROOM", parameterData);
+        GD::out.printInfo("Info: Parameter ROOM of peer " + std::to_string(_peerID) + " and channel " + std::to_string(1) +" was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
+        raiseRPCUpdateDevice(_peerID, 1, _serialNumber + ":" + std::to_string(1), 0);
+    }
+    { //Set the Categorie wich is configured in Loxone Config
+        BaseLib::Systems::RpcConfigurationParameter &parameter = configCentral[1]["CATEGORY"];
+        std::vector<uint8_t> parameterData;
+        parameter.rpcParameter->convertToPacket(_control->getCat(), parameter.mainRole(), parameterData);
+        parameter.setBinaryData(parameterData);
+        if (parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
+        else saveParameter(0, ParameterGroup::Type::Enum::config, 1, "CATEGORY", parameterData);
+        GD::out.printInfo("Info: Parameter CATEGORY of peer " + std::to_string(_peerID) + " and channel " + std::to_string(1) + " was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
+        raiseRPCUpdateDevice(_peerID, 1, _serialNumber + ":" + std::to_string(1), 0);
+    }
+    { //Set ExtraData  from this peer
+        std::list<extraData> data;
+        if(_control->getExtraData(data) == 0)
+        {
+            for(auto i = data.begin(); i != data.end(); ++i)
+            {
+                BaseLib::Systems::RpcConfigurationParameter &parameter = configCentral[i->channel][i->variable];
+                std::vector<uint8_t> parameterData;
+                parameter.rpcParameter->convertToPacket(i->value, parameter.mainRole(), parameterData);
+                parameter.setBinaryData(parameterData);
+                if (parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
+                else saveParameter(0, ParameterGroup::Type::Enum::config, i->channel, i->variable, parameterData);
+                GD::out.printInfo("Info: Parameter "+ i->variable +" of peer " + std::to_string(_peerID) + " and channel " + std::to_string(i->channel) +" was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
+                raiseRPCUpdateDevice(_peerID, i->channel, _serialNumber + ":" + std::to_string(1), 0);
+            }
+        }
     }
 }
 void LoxonePeer::setPhysicalInterfaceId(std::string id)
@@ -262,28 +272,6 @@ PParameterGroup LoxonePeer::getParameterSet(int32_t channel, ParameterGroup::Typ
 		GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 	}
 	return PParameterGroup();
-}
-
-bool LoxonePeer::getAllValuesHook2(PRpcClientInfo clientInfo, PParameter parameter, uint32_t channel, PVariable parameters)
-{
-	try
-	{
-		if(channel == 1)
-		{
-			if (parameter->id == "PEER_ID")
-			{
-				std::vector<uint8_t> parameterData;
-				auto& rpcConfigurationParameter = valuesCentral[channel][parameter->id];
-				parameter->convertToPacket(PVariable(new Variable((int32_t)_peerID)), rpcConfigurationParameter.mainRole(), parameterData);
-				rpcConfigurationParameter.setBinaryData(parameterData);
-			}
-		}
-	}
-	catch(const std::exception& ex)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-    return false;
 }
 
 void LoxonePeer::getValuesFromPacket(PLoxonePacket packet, std::vector<FrameValues>& frameValues)
@@ -527,19 +515,6 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
     }
 }
 
-std::string LoxonePeer::getFirmwareVersionString(int32_t firmwareVersion)
-{
-	try
-	{
-		return std::to_string(firmwareVersion);
-	}
-	catch(const std::exception& ex)
-    {
-    	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-	return "";
-}
-
 //RPC Methods
 PVariable LoxonePeer::getDeviceInfo(BaseLib::PRpcClientInfo clientInfo, std::map<std::string, bool> fields)
 {
@@ -585,8 +560,10 @@ PVariable LoxonePeer::putParamset(BaseLib::PRpcClientInfo clientInfo, int32_t ch
 	{
 		if(_disposing) return Variable::createError(-32500, "Peer is disposing.");
 		if(channel < 0) channel = 0;
+        if(remoteChannel < 0) remoteChannel = 0;
 		Functions::iterator functionIterator = _rpcDevice->functions.find(channel);
 		if(functionIterator == _rpcDevice->functions.end()) return Variable::createError(-2, "Unknown channel");
+        if(type == ParameterGroup::Type::none) type = ParameterGroup::Type::link;
 		PParameterGroup parameterGroup = functionIterator->second->getParameterGroup(type);
 		if(!parameterGroup) return Variable::createError(-3, "Unknown parameter set");
 		if(variables->structValue->empty()) return PVariable(new Variable(VariableType::tVoid));
@@ -594,7 +571,31 @@ PVariable LoxonePeer::putParamset(BaseLib::PRpcClientInfo clientInfo, int32_t ch
 		auto central = getCentral();
 		if(!central) return Variable::createError(-32500, "Could not get central.");
 
-		if(type == ParameterGroup::Type::Enum::variables)
+        if(type == ParameterGroup::Type::Enum::config)
+        {
+            bool configChanged = false;
+            for(Struct::iterator i = variables->structValue->begin(); i != variables->structValue->end(); ++i)
+            {
+                if(i->first.empty() || !i->second) continue;
+                std::unordered_map<uint32_t, std::unordered_map<std::string, BaseLib::Systems::RpcConfigurationParameter>>::iterator channelIterator = configCentral.find(channel);
+                if(channelIterator == configCentral.end()) continue;
+                std::unordered_map<std::string, BaseLib::Systems::RpcConfigurationParameter>::iterator parameterIterator = channelIterator->second.find(i->first);
+                if(parameterIterator == channelIterator->second.end()) continue;
+                BaseLib::Systems::RpcConfigurationParameter& parameter = parameterIterator->second;
+                if(!parameter.rpcParameter) continue;
+
+                std::vector<uint8_t> parameterData;
+                parameter.rpcParameter->convertToPacket(i->second, parameter.mainRole(), parameterData);
+                parameter.setBinaryData(parameterData);
+                if(parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
+                else saveParameter(0, ParameterGroup::Type::Enum::config, channel, i->first, parameterData);
+                GD::out.printInfo("Info: Parameter " + i->first + " of peer " + std::to_string(_peerID) + " and channel " + std::to_string(channel) + " was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
+                if(parameter.rpcParameter->physical->operationType != IPhysical::OperationType::Enum::config && parameter.rpcParameter->physical->operationType != IPhysical::OperationType::Enum::configString) continue;
+                configChanged = true;
+            }
+            if(configChanged) raiseRPCUpdateDevice(_peerID, channel, _serialNumber + ":" + std::to_string(channel), 0);
+        }
+		else if(type == ParameterGroup::Type::Enum::variables)
 		{
 			for(Struct::iterator i = variables->structValue->begin(); i != variables->structValue->end(); ++i)
 			{
@@ -653,6 +654,14 @@ PVariable LoxonePeer::getParamset(BaseLib::PRpcClientInfo clientInfo, int32_t ch
 				std::vector<uint8_t> parameterData = valuesCentral[channel][i->second->id].getBinaryData();
 				element = i->second->convertFromPacket(parameterData, parameter.mainRole(), false);
 			}
+            else if(type == ParameterGroup::Type::Enum::config)
+            {
+                if(configCentral.find(channel) == configCentral.end()) continue;
+                if(configCentral[channel].find(i->second->id) == configCentral[channel].end()) continue;
+                auto& parameter = configCentral[channel][i->second->id];
+                std::vector<uint8_t> parameterData = parameter.getBinaryData();
+                element = i->second->convertFromPacket(parameterData, parameter.mainRole(), false);
+            }
 
 			if(!element) continue;
 			if(element->type == VariableType::tVoid) continue;
@@ -771,16 +780,30 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 						break;
 					}
 				}
+				if(!paramFound)
+				{
+                    for (std::unordered_map<std::string, BaseLib::Systems::RpcConfigurationParameter>::iterator j = configCentral[channel].begin();
+                         j != configCentral[channel].end(); ++j) {
+                        if (!j->second.rpcParameter) continue;
+                        if ((*i)->parameterId == j->second.rpcParameter->physical->groupId) {
+                            std::vector<uint8_t> additionalParameterData = j->second.getBinaryData();
+                            parameters->arrayValue->push_back(_binaryDecoder->decodeResponse(additionalParameterData));
+                            paramFound = true;
+                            break;
+                        }
+                    }
+                }
 				if (!paramFound) GD::out.printError("Error constructing packet. param \"" + (*i)->parameterId + "\" not found. Peer: " + std::to_string(_peerID) + " Serial number: " + _serialNumber + " Frame: " + frame->id);
 			}
 		}
 
-		std::string myString;
-		if(_control->setValue(frame->function1, parameters, myString)) GD::out.printDebug("Debug: hat funktioniert");
-        GD::out.printDebug(myString);
+		std::string command;
+		if(!_control->setValue(frame, parameters, command)) return Variable::createError(-32500, "Loxone Control can not create packet");
+        GD::out.printDebug(command);
+        std::shared_ptr<LoxonePacket> packet (new LoxonePacket(command));
 
-		std::shared_ptr<LoxonePacket> packet (new LoxonePacket());
-		if(!_control->setValue(frame->function1, parameters, packet )) return Variable::createError(-32500, "Loxone Control can not set value to packet");
+		//std::shared_ptr<LoxonePacket> packet (new LoxonePacket());
+		//if(!_control->setValue(frame->function1, parameters, packet )) return Variable::createError(-32500, "Loxone Control can not set value to packet");
         _physicalInterface->sendPacket(packet);
 
 		if (!valueKeys->empty())

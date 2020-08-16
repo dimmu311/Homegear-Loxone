@@ -34,10 +34,11 @@ public:
 class LoxonePacket : public BaseLib::Systems::Packet
 {
 public:
+    LoxonePacket() = default;
+    LoxonePacket(std::string& command);
 	virtual ~LoxonePacket() = default;
 	static const std::list<std::string> _responseCommands;
 
-	void setCommand(std::string command) { _command = command; };
 	std::string getCommand() { return _command; };
    	
 	virtual PVariable getJsonString() { return _json; }

@@ -162,10 +162,11 @@ namespace Loxone
 			_type = typeNr;
 			_control = control;
 
-			for (auto i = control->structValue->at("states")->structValue->begin(); i != control->structValue->at("states")->structValue->end(); ++i)
+            for (auto i = control->structValue->at("states")->structValue->begin(); i != control->structValue->at("states")->structValue->end(); ++i)
 			{
 				variable_PeerId variable_PeerId;
 				variable_PeerId.variable = i->first;
+                variable_PeerId.peerId = 0;
 				_uuidVariable_PeerIdMap.emplace(i->second->stringValue, variable_PeerId);
 			}
 		}
@@ -219,7 +220,7 @@ namespace Loxone
 			_json->structValue->operator[]("state") = PVariable(new Variable(VariableType::tStruct));
 			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second.variable) = PVariable(new Variable(loxonePacket->getDValue()));
 			loxonePacket->setJsonString(_json);
-			loxonePacket->setMethod("on.valueSet");
+			loxonePacket->setMethod("on.valueStatesPacket");
 			return true;
 		}
 		catch (const std::exception& ex)
@@ -243,7 +244,7 @@ namespace Loxone
 			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second.variable) = PVariable(new Variable(loxonePacket->getText()));
 
 			loxonePacket->setJsonString(_json);
-            loxonePacket->setMethod("on.textSet");
+            loxonePacket->setMethod("on.textStatesPacket");
 			return true;
 		}
 		catch (const std::exception& ex)
@@ -319,56 +320,86 @@ namespace Loxone
 		}
 		return 0;
 	}
-    bool LoxoneControl::setValue(std::string method, BaseLib::PVariable parameters, std::string& command)
+    bool LoxoneControl::setValue(PPacket frame, BaseLib::PVariable parameters, std::string& command)
     {
         try
         {
+            if(parameters->type != VariableType::tArray) return false;
             command = "jdev/sps/io/" + _uuidAction + "/";
-            if(method == "setConstString")
+            if(frame->function1 == "activeSetOn" || frame->function1 == "activeSetOff")
             {
-                if(parameters->type == VariableType::tArray) {
-                    for (auto value1 = parameters->arrayValue->begin();
-                         value1 != parameters->arrayValue->end(); ++value1) {
-                        switch (value1.operator*()->type) {
-                            case VariableType::tString: {
-                                command += value1.operator*()->stringValue;
-                                return true;
-                            }
-                            default:
-                                return false;
-                        }
-                    }
-                }
-                return false;
+                if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
+                command += parameters->arrayValue->at(0)->stringValue;
+                return true;
             }
-            else
+            if(frame->function1 == "setNext" || frame->function1 == "setPrevious")
             {
-                if(parameters->type == VariableType::tArray) {
-                    for (auto value1 = parameters->arrayValue->begin(); value1 != parameters->arrayValue->end(); ++value1) {
-                        switch (value1.operator*()->type) {
-                            case VariableType::tString: {
-                                command += value1.operator*()->stringValue;
-                                break;
-                            }
-                            case VariableType::tInteger: {
-                                command += std::to_string(value1.operator*()->integerValue);
-                                break;
-                            }
-                            case VariableType::tFloat: {
-                                command += std::to_string(value1.operator*()->floatValue);
-                                break;
-                            }
-                            case VariableType::tBoolean: {
-                                std::string doCommand = "off";
-                                if (value1.operator*()->booleanValue) doCommand = "on";
-                                command += doCommand;
-                                //todo break?
-                            }
-                            default:
-                                break;
-                        }
-                    }
+                if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
+                command += parameters->arrayValue->at(0)->stringValue;
+                return true;
+            }
+            else if(frame->function1 == "stepUp" || frame->function1 == "stepDown")
+            {
+                if (parameters->arrayValue->at(0)->type != VariableType::tFloat) return false;
+                if (parameters->arrayValue->at(1)->type != VariableType::tFloat) return false;
+                float value = parameters->arrayValue->at(0)->floatValue;
+                float step = parameters->arrayValue->at(1)->floatValue;
+                value += step;
+                if(frame->function1 == "stepDown")
+                {
+                    value -= step;
+                    value -= step;
                 }
+                command += std::to_string(value);
+                return true;
+            }
+            else if(frame->function1 == "activeSet")
+            {
+                if (parameters->arrayValue->at(0)->type != VariableType::tFloat) return false;
+                std::string doCommand = "off";
+                if ((bool)parameters->arrayValue->at(0)->floatValue) doCommand = "on";
+                command += doCommand;
+                return true;
+            }
+            else if(frame->function1 == "valueSet")
+            {
+                if (parameters->arrayValue->at(0)->type != VariableType::tFloat) return false;
+                command += std::to_string(parameters->arrayValue->at(0)->floatValue);
+                return true;
+            }
+            else if(frame->function1 == "booleanSet")
+            {
+                if (parameters->arrayValue->at(0)->type != VariableType::tFloat) return false;
+                if (parameters->arrayValue->at(1)->type != VariableType::tString) return false;
+                if (parameters->arrayValue->at(2)->type != VariableType::tString) return false;
+
+                std::string doCommand = parameters->arrayValue->at(1)->stringValue;
+                if (!(bool)parameters->arrayValue->at(0)->floatValue) doCommand = parameters->arrayValue->at(2)->stringValue;
+                command += doCommand;
+                return true;
+            }
+            else if(frame->function1 == "valueSetToPath")
+            {
+                if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
+                if (parameters->arrayValue->at(1)->type != VariableType::tInteger) return false;
+                command += parameters->arrayValue->at(0)->stringValue + "/" + std::to_string(parameters->arrayValue->at(1)->integerValue);
+                return true;
+            }
+            else if(frame->function1 == "2valueSetToPath")
+            {
+                if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
+                if (parameters->arrayValue->at(1)->type != VariableType::tInteger) return false;
+                if (parameters->arrayValue->at(2)->type != VariableType::tInteger) return false;
+                command += parameters->arrayValue->at(0)->stringValue + "/" + std::to_string(parameters->arrayValue->at(1)->integerValue)+ "/" + std::to_string(parameters->arrayValue->at(2)->integerValue);
+                return true;
+            }
+            else if(frame->function1 == "valueStringSetToPath") {
+                if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
+                if (parameters->arrayValue->at(1)->type != VariableType::tInteger) return false;
+                if (parameters->arrayValue->at(2)->type != VariableType::tString) return false;
+                command += parameters->arrayValue->at(0)->stringValue + "/" +
+                           std::to_string(parameters->arrayValue->at(1)->integerValue) + "/" +
+                           parameters->arrayValue->at(2)->stringValue;
                 return true;
             }
         }
@@ -378,64 +409,6 @@ namespace Loxone
         }
         return false;
     }
-	bool LoxoneControl::setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet)
-	{
-		try
-		{
-			std::string command = "jdev/sps/io/" + _uuidAction;
-			switch(parameters->type)
-			{
-				case VariableType::tArray:
-				{
-					for(auto value1 = parameters->arrayValue->begin(); value1 != parameters->arrayValue->end(); ++value1)
-					{
-						switch(value1.operator *()->type)
-						{
-							case VariableType::tString:
-							{
-								command += "/";
-								command += value1.operator *()->stringValue;
-								break;
-							}
-							case VariableType::tInteger:
-							{
-								command += "/";
-								command += std::to_string(value1.operator *()->integerValue);
-								break;
-							}
-							case VariableType::tFloat:
-							{
-								command += "/";
-								command += std::to_string(value1.operator *()->floatValue);
-								break;
-							}
-							case VariableType::tBoolean:
-							{
-								std::string doCommand = "off";
-								if(value1.operator *()->booleanValue) doCommand = "on";
-								command += "/";
-								command += doCommand;
-								//todo break?
-							}
-							default:
-								break;
-						}
-					}
-					break;
-				}
-				default:
-					break;
-			}
-			if (GD::bl->debugLevel >= 5) GD::out.printInfo("build command from packet: " + command);
-			packet->setCommand(command);
-			return true;
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		return false;
-	}
 	uint32_t LoxoneControl::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
 		if(peerID == 0)return 0;

@@ -24,9 +24,9 @@ public:
 	LoxonePeer(int32_t id, int32_t address, std::string serialNumber, uint32_t parentID, IPeerEventSink* eventHandler);
 	virtual ~LoxonePeer();
 
-	//Features
-	virtual bool wireless() { return true; }
-	//End features
+    //Features
+    virtual bool wireless() { return false; }
+    //End features
 
 	//{{{ In table variables
 	std::string getPhysicalInterfaceId() { return _physicalInterfaceId; }
@@ -41,13 +41,14 @@ public:
 	virtual void save(bool savePeer, bool saveVariables, bool saveCentralConfig);
 
 	void saveUuids();
-    void loadUuuis();
+    void loadUuids();
+    void setConfigParameters();
 	std::unordered_map <std::string, variable_PeerId> getVariables() { return _uuidVariable_PeerIdMap; };
 
 	virtual void savePeers() {};
 	virtual int32_t getChannelGroupedWith(int32_t channel) { return -1; }
 	virtual int32_t getNewFirmwareVersion() { return 0; }
-	virtual std::string getFirmwareVersionString(int32_t firmwareVersion);
+    virtual std::string getFirmwareVersionString(int32_t firmwareVersion) { return "1.0"; }
     virtual bool firmwareUpdateAvailable() { return false; }
 
 	void packetReceived(std::shared_ptr<LoxonePacket> packet);
@@ -115,19 +116,8 @@ protected:
 	virtual void loadVariables(BaseLib::Systems::ICentral* central, std::shared_ptr<BaseLib::Database::DataTable>& rows);
     virtual void saveVariables();
 
-    // {{{ Hooks
-		/**
-		 * {@inheritDoc}
-		 */
-		virtual bool getAllValuesHook2(PRpcClientInfo clientInfo, PParameter parameter, uint32_t channel, PVariable parameters);
-	// }}}
-
-		bool _state = false;
-		std::unique_ptr<BaseLib::Rpc::JsonEncoder> _jsonEncoder;
-		std::unique_ptr<BaseLib::Rpc::JsonDecoder> _jsonDecoder;
-
-		std::shared_ptr<LoxoneControl> _control;
-		std::unordered_map <std::string, variable_PeerId> _uuidVariable_PeerIdMap;
+    std::shared_ptr<LoxoneControl> _control;
+    std::unordered_map <std::string, variable_PeerId> _uuidVariable_PeerIdMap;
 };
 
 }

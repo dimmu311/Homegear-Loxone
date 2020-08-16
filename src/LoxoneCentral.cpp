@@ -1,7 +1,6 @@
 #include "LoxoneCentral.h"
 #include "PhysicalInterfaces/Miniserver.h"
 #include "Loxone.h"
-#include "GD.h"
 
 #include <iomanip>
 
@@ -100,7 +99,7 @@ void LoxoneCentral::loadPeers()
 			auto peer = std::make_shared<LoxonePeer>(peerId, nodeId, serial, _deviceId, this);
 
 			if(!peer->load(this)) continue;
-			peer->loadUuuis();
+			peer->loadUuids();
 
 			auto variables = peer->getVariables();
 			_uuidVariable_PeerIdMap.insert(variables.begin(), variables.end());
@@ -801,6 +800,8 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::createPeer(uint32_t deviceType, const
 		peer->saveUuids();
 		peer->setPhysicalInterfaceId(interface->getID());
 		peer->initializeCentralConfig();
+
+		peer->setConfigParameters();
 		return peer;
 	}
     catch(const std::exception& ex)
@@ -968,6 +969,9 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo)
                 std::shared_ptr<LoxonePeer> peer = createPeer(deviceType, serial, interface.second, control->second, true);
                 if (!peer || !peer->getRpcDevice()) continue;
                 peer->setName(control->second->getName());
+
+                auto variables = peer->getVariables();
+                _uuidVariable_PeerIdMap.insert(variables.begin(), variables.end());
 
                 {
 					std::lock_guard<std::mutex> peersGuard(_peersMutex);

@@ -1,7 +1,6 @@
 #include "Loxone.h"
 #include "Interfaces.h"
 #include "LoxoneCentral.h"
-#include "GD.h"
 #include <iomanip>
 
 namespace Loxone

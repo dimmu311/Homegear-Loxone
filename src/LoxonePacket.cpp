@@ -18,6 +18,10 @@ namespace Loxone
 		"jdev/sys/enc/",
 	};
 
+    LoxonePacket::LoxonePacket(std::string& command)
+    {
+        _command = command;
+    }
 	std::string LoxonePacket::getUuidFromPacket(char* packet)
 	{
 		std::vector<uint8_t> data;

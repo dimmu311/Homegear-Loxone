@@ -15,6 +15,12 @@ namespace Loxone
 		std::string variable;
 		uint32_t peerId;
 	};
+    struct extraData
+    {
+        std::string variable;
+        uint32_t channel;
+        PVariable value;
+    };
 	class MandatoryFields
 	{
 		public:
@@ -31,6 +37,7 @@ namespace Loxone
 		std::string getType() { return _typeString; };
 		uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 	};
+	//TODO: maybe ther is no more need for the OptionalFields Class, because name and cat are now safed in a config parameter.
 	class OptionalFields
 	{
 		public:
@@ -63,14 +70,9 @@ namespace Loxone
 		virtual bool processPacket(PLoxoneDaytimerStatesPacket loxonePacket);
 		virtual bool processPacket(PLoxoneWeatherStatesPacket loxonePacket);
 
-		bool setValue(std::string method, BaseLib::PVariable parameters, std::shared_ptr<LoxonePacket> packet);
-        bool setValue(std::string method, BaseLib::PVariable parameters, std::string& command);
-		virtual uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
-
-		void setValuesCentral(std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> valuesCentral) {_valuesCentral = valuesCentral; };
-        //std::unordered_map<uint32_t, std::unordered_map<std::string, RpcConfigurationParameter>> configCentral;
-        std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> _valuesCentral;
-
+        bool setValue(PPacket frame, PVariable parameters, std::string &command);
+        virtual uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
+        virtual uint32_t getExtraData(std::list<extraData> &extraData){return -1;};
 	protected:
 		uint32_t _type;
 
@@ -91,6 +93,6 @@ namespace Loxone
 		bool getValueFromDataTable(const uint32_t& variableId, float& value);
 		bool getValueFromDataTable(const uint32_t& variableId, std::string& value);
 		bool getBinaryValueFromDataTable(const uint32_t& variableId, std::string& value);
-	};
+    };
 }
 #endif
