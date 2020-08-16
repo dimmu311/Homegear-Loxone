@@ -23,9 +23,9 @@
     </function>
   </functions>
   <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
-    <packet id="on.stateSet">
+    <packet id="on.activeSet">
       <direction>toCentral</direction>
-      <function1>on.valueSet</function1>
+      <function1>on.valueStatesPacket</function1>
       <channel>1</channel>
       <jsonPayload>
         <element>
@@ -34,9 +34,9 @@
         </element>
       </jsonPayload>
     </packet>
-    <packet id="stateSet">
+    <packet id="activeSet">
       <direction>fromCentral</direction>
-      <function1>StateSet</function1>
+      <function1>activeSet</function1>
       <jsonPayload>
         <element>
           <parameterId>ACTIVE</parameterId>
@@ -45,7 +45,7 @@
     </packet>
     <packet id="setOn">
       <direction>fromCentral</direction>
-      <function1>setConstString</function1>
+      <function1>activeSetOn</function1>
       <jsonPayload>
         <element>
           <constValueString>on</constValueString>
@@ -54,7 +54,7 @@
     </packet>
     <packet id="setOff">
       <direction>fromCentral</direction>
-      <function1>setConstString</function1>
+      <function1>activeSetOff</function1>
       <jsonPayload>
         <element>
           <constValueString>off</constValueString>
@@ -66,11 +66,32 @@
     <configParameters id="config--1">
       <parameter id="ROOM">
         <properties>
-          <internal>true</internal>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
         </properties>
         <logicalString/>
         <physicalString>
-          <operationType>store</operationType>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
         </physicalString>
       </parameter>
     </configParameters>
@@ -90,14 +111,15 @@
     <variables id="switch_valueset--1">
       <parameter id="ACTIVE">
         <properties>
+          <readable>true</readable>
           <writeable>true</writeable>
           <casts>
-            <rpcBinary/>
             <booleanDecimal>
               <trueValue>1.0</trueValue>
               <falseValue>0.0</falseValue>
               <threshold>1.0</threshold>
             </booleanDecimal>
+            <rpcBinary/>
           </casts>
         </properties>
         <logicalBoolean>
@@ -107,10 +129,10 @@
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="on.stateSet">
+          <packet id="on.activeSet">
             <type>event</type>
           </packet>
-          <packet id="stateSet">
+          <packet id="activeSet">
             <type>set</type>
           </packet>
         </packets>
