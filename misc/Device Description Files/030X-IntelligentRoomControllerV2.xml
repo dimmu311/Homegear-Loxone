@@ -1,0 +1,758 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone IntelligentRoomControllerV2">
+      <description>Loxone IntelligentRoomControllerV2</description>
+      <typeNumber>0x0301</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="IntelligentRoomControllerV2" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>IntelligentRoomControllerV2_valueset--1</variables>
+    </function>
+  </functions>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+      <element>
+        <keyPath>state\overrideEntries</keyPath>
+        <parameterId>OVERRIDE_ENTRIES</parameterId>
+      </element>
+      <element>
+        <keyPath>state\modeList</keyPath>
+        <parameterId>MODE_LIST</parameterId>
+      </element>
+      </jsonPayload>
+    </packet>
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\activeMode</keyPath>
+          <parameterId>ACTIVE_MODE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\operatingMode</keyPath>
+          <parameterId>OPERATING_MODE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\prepareState</keyPath>
+          <parameterId>PREPARE_STATE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\overrideReason</keyPath>
+          <parameterId>OVERRIDE_REASON</parameterId>
+        </element>
+        <element>
+          <keyPath>state\tempActual</keyPath>
+          <parameterId>TEMP_ACTUAL</parameterId>
+        </element>
+        <element>
+          <keyPath>state\tempTarget</keyPath>
+          <parameterId>TEMP_TARGET</parameterId>
+        </element>
+        <element>
+          <keyPath>state\comfortTemperature</keyPath>
+          <parameterId>COMFORT_TEMPERATURE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\comfortTolerance</keyPath>
+          <parameterId>COMFORT_TOLERANCE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\absentMinOffset</keyPath>
+          <parameterId>ABSENT_MIN_OFFSET</parameterId>
+        </element>
+        <element>
+          <keyPath>state\absentMaxOffset</keyPath>
+          <parameterId>ABSENT_MAX_OFFSET</parameterId>
+        </element>
+        <element>
+          <keyPath>state\frostProtectTemperature</keyPath>
+          <parameterId>FROST_PROTECT_TEMPERATURE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\heatProtectTemperature</keyPath>
+          <parameterId>HEAT_PROTECT_TEMPERATURE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\comfortTemperatureOffset</keyPath>
+          <parameterId>COMFORT_TEMPERATUR_OFFSET</parameterId>
+        </element>
+        <element>
+          <keyPath>state\openWindow</keyPath>
+          <parameterId>OPEN_WINDOW</parameterId>
+        </element>
+        <element>
+          <keyPath>state\useOutdoor</keyPath>
+          <parameterId>USE_OUTDOOR</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="override">
+      <direction>fromCentral</direction>
+      <function1>3valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>override</constValueString>
+        </element>
+        <element>
+          <parameterId>MODE_ID</parameterId>
+        </element>
+        <element>
+          <parameterId>UNTIL</parameterId>
+        </element>
+        <element>
+          <parameterId>TEMP</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="stopOverride">
+      <direction>fromCentral</direction>
+      <function1>activeSetOff</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>stopOverride</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setComfortTemperature">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setComfortTemperature</constValueString>
+        </element>
+        <element>
+          <parameterId>COMFORT_TEMPERATURE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setComfortTolerance">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setComfortTolerance</constValueString>
+        </element>
+        <element>
+          <parameterId>COMFORT_TOLERANCE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setAbsentMinTemperature">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setAbsentMinTemperature</constValueString>
+        </element>
+        <element>
+          <parameterId>ABSENT_MIN_OFFSET</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setAbsentMaxTemperature">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setAbsentMaxTemperature</constValueString>
+        </element>
+        <element>
+          <parameterId>ABSENT_MAX_OFFSET</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setManualTemperature">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setManualTemperature</constValueString>
+        </element>
+        <element>
+          <parameterId>TEMP_TARGET</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setOperatingMode">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setOperatingMode</constValueString>
+        </element>
+        <element>
+          <parameterId>OPERATING_MODE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setComfortModeTemp">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setComfortModeTemp</constValueString>
+        </element>
+        <element>
+          <parameterId>COMFORT_TEMPERATUR</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="TIMER_MODES">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="FORMAT">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CONNECTED_INPUTS">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalDecimal/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="IntelligentRoomControllerV2_valueset--1">
+      <parameter id="ACTIVE_MODE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <id>Economy</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Comfort Temperatur</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Building Protection</id>
+            <index>2</index>
+          </value>
+          <value>
+            <id>Manual</id>
+            <index>3</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="ACTIVE_MODE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="OPERATING_MODE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>false</defaultValue>
+          <value>
+            <id>Automatic, heating and cooling allowed</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Automatic, only heating allowed</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Automatic, only cooling allowed</id>
+            <index>2</index>
+          </value>
+          <value>
+            <id>Manuel, heating and cooling allowed</id>
+            <index>3</index>
+          </value>
+          <value>
+            <id>Manuel, only heating allowed</id>
+            <index>4</index>
+          </value>
+          <value>
+            <id>Manuel, only cooling allowed</id>
+            <index>5</index>
+          </value>
+        </logicalEnumeration>
+        <physicalInteger groupId="OPERATING_MODE">
+          <operationType>command</operationType>
+        </physicalInteger>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="setOperatingMode">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="OVERRIDE_ENTRIES">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="OVERRIDE_ENTRIES">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="MODE_LIST">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="MODE_LIST">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PREPARE_STATE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <id>Cooling down</id>
+            <index>-1</index>
+          </value>
+          <value>
+            <id>No Action</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Heating up</id>
+            <index>1</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="PREPARE_STATE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="OVERRIDE_REASON">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <id>None</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Someone is present -> Comfort mode is active</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Window open -> Eco+ mode is active</id>
+            <index>2</index>
+          </value>
+          <value>
+            <id>Comfort overrid</id>
+            <index>3</index>
+          </value>
+          <value>
+            <id>Eco override</id>
+            <index>4</index>
+          </value>
+          <value>
+            <id>Eco+ override</id>
+            <index>5</index>
+          </value>
+          <value>
+            <id>Prepare State Heat Up</id>
+            <index>6</index>
+          </value>
+          <value>
+            <id>Prepare State Heat Down</id>
+            <index>7</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="OVERRIDE_REASON">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="TEMP_ACTUAL">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="TEMP_ACTUAL">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="TEMP_TARGET">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="TEMP_TARGET">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="setManualTemperature">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="COMFORT_TEMPERATURE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="COMFORT_TEMPERATURE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="setComfortTemperature">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="COMFORT_TOLERANCE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="COMFORT_TOLERANCE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="setComfortTolerance">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ABSENT_MIN_OFFSET">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="ABSENT_MIN_OFFSET">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="setAbsentMinTemperature">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ABSENT_MAX_OFFSET">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="ABSENT_MAX_OFFSET">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="setAbsentMaxTemperature">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="FROST_PROTECT_TEMPERATURE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="FROST_PROTECT_TEMPERATURE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="HEAT_PROTECT_TEMPERATURE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="HEAT_PROTECT_TEMPERATURE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="COMFORT_TEMPERATUR_OFFSET">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="COMFORT_TEMPERATUR_OFFSET">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="OPEN_WINDOW">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <falseValue>0</falseValue>
+              <trueValue>1</trueValue>
+              <threshold>1</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="OPEN_WINDOW">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="USE_OUTDOOR">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <falseValue>0</falseValue>
+              <trueValue>1</trueValue>
+              <threshold>1</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="USE_OUTDOOR">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>
