@@ -320,6 +320,27 @@ namespace Loxone
 		}
 		return 0;
 	}
+
+	bool LoxoneControl::getValueFromVariable(BaseLib::PVariable variable, std::string& command)
+    {
+        if(variable->type == VariableType::tString)
+        {
+            command += variable->stringValue;
+            return true;
+        }
+        else if (variable->type == VariableType::tInteger)
+        {
+            command += std::to_string(variable->integerValue);
+            return true;
+        }
+        else if (variable->type == VariableType::tFloat)
+        {
+            command += std::to_string(variable->floatValue);
+            return true;
+        }
+        return false;
+    }
+
     bool LoxoneControl::setValue(PPacket frame, BaseLib::PVariable parameters, std::string& command)
     {
         try
@@ -361,12 +382,6 @@ namespace Loxone
                 command += doCommand;
                 return true;
             }
-            else if(frame->function1 == "valueSet")
-            {
-                if (parameters->arrayValue->at(0)->type != VariableType::tFloat) return false;
-                command += std::to_string(parameters->arrayValue->at(0)->floatValue);
-                return true;
-            }
             else if(frame->function1 == "booleanSet")
             {
                 if (parameters->arrayValue->at(0)->type != VariableType::tFloat) return false;
@@ -378,28 +393,45 @@ namespace Loxone
                 command += doCommand;
                 return true;
             }
+            else if(frame->function1 == "valueSet")
+            {
+                if (!getValueFromVariable(parameters->arrayValue->at(0), command)) return false;
+                return true;
+            }
             else if(frame->function1 == "valueSetToPath")
             {
                 if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
-                if (parameters->arrayValue->at(1)->type != VariableType::tInteger) return false;
-                command += parameters->arrayValue->at(0)->stringValue + "/" + std::to_string(parameters->arrayValue->at(1)->integerValue);
+                command += parameters->arrayValue->at(0)->stringValue + "/";
+                if (!getValueFromVariable(parameters->arrayValue->at(1), command)) return false;
                 return true;
             }
             else if(frame->function1 == "2valueSetToPath")
             {
                 if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
-                if (parameters->arrayValue->at(1)->type != VariableType::tInteger) return false;
-                if (parameters->arrayValue->at(2)->type != VariableType::tInteger) return false;
-                command += parameters->arrayValue->at(0)->stringValue + "/" + std::to_string(parameters->arrayValue->at(1)->integerValue)+ "/" + std::to_string(parameters->arrayValue->at(2)->integerValue);
+                command += parameters->arrayValue->at(0)->stringValue + "/";
+                if (!getValueFromVariable(parameters->arrayValue->at(1), command)) return false;
+                command += "/";
+                if (!getValueFromVariable(parameters->arrayValue->at(2), command)) return false;
+                return true;
+            }
+            else if(frame->function1 == "3valueSetToPath")
+            {
+                if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
+                command += parameters->arrayValue->at(0)->stringValue + "/";
+                if (!getValueFromVariable(parameters->arrayValue->at(1), command)) return false;
+                command += "/";
+                if (!getValueFromVariable(parameters->arrayValue->at(2), command)) return false;
+                command += "/";
+                if (!getValueFromVariable(parameters->arrayValue->at(3), command)) return false;
                 return true;
             }
             else if(frame->function1 == "valueStringSetToPath") {
                 if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
-                if (parameters->arrayValue->at(1)->type != VariableType::tInteger) return false;
+                command += parameters->arrayValue->at(0)->stringValue + "/";
+                if (!getValueFromVariable(parameters->arrayValue->at(1), command)) return false;
+                command += "/";
                 if (parameters->arrayValue->at(2)->type != VariableType::tString) return false;
-                command += parameters->arrayValue->at(0)->stringValue + "/" +
-                           std::to_string(parameters->arrayValue->at(1)->integerValue) + "/" +
-                           parameters->arrayValue->at(2)->stringValue;
+                command += parameters->arrayValue->at(2)->stringValue;
                 return true;
             }
         }
