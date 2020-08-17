@@ -447,9 +447,9 @@
             <index>1</index>
           </value>
         </logicalEnumeration>
-        <physicalNone groupId="PREPARE_STATE">
+        <physicalInteger groupId="PREPARE_STATE">
           <operationType>command</operationType>
-        </physicalNone>
+        </physicalInteger>
         <packets>
           <packet id="on.valueSet">
             <type>event</type>
@@ -499,9 +499,9 @@
             <index>7</index>
           </value>
         </logicalEnumeration>
-        <physicalNone groupId="OVERRIDE_REASON">
+        <physicalInteger groupId="OVERRIDE_REASON">
           <operationType>command</operationType>
-        </physicalNone>
+        </physicalInteger>
         <packets>
           <packet id="on.valueSet">
             <type>event</type>
@@ -518,6 +518,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>-100</minimumValue>
+          <maximumValue>100</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="TEMP_ACTUAL">
           <operationType>command</operationType>
@@ -538,6 +540,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>100</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="TEMP_TARGET">
           <operationType>command</operationType>
@@ -561,6 +565,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>28</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="COMFORT_TEMPERATURE">
           <operationType>command</operationType>
@@ -584,6 +590,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>0.5</minimumValue>
+          <maximumValue>3.0</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="COMFORT_TOLERANCE">
           <operationType>command</operationType>
@@ -607,6 +615,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>0.5</minimumValue>
+          <maximumValue>17.5</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="ABSENT_MIN_OFFSET">
           <operationType>command</operationType>
@@ -630,6 +640,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>0.5</minimumValue>
+          <maximumValue>5.5</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="ABSENT_MAX_OFFSET">
           <operationType>command</operationType>
@@ -653,6 +665,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>9</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="FROST_PROTECT_TEMPERATURE">
           <operationType>command</operationType>
@@ -673,6 +687,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>25</minimumValue>
+          <maximumValue>34</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="HEAT_PROTECT_TEMPERATURE">
           <operationType>command</operationType>
@@ -693,6 +709,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>-10</minimumValue>
+          <maximumValue>10</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="COMFORT_TEMPERATUR_OFFSET">
           <operationType>command</operationType>

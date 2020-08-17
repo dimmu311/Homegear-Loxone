@@ -168,6 +168,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>2048</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="POSITION">
           <operationType>command</operationType>
@@ -256,6 +258,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>2048</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="MIN">
           <operationType>command</operationType>
@@ -275,6 +279,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>2048</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="MAX">
           <operationType>command</operationType>
@@ -294,6 +300,8 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>2048</maximumValue>
         </logicalDecimal>
         <physicalNone groupId="STEP">
           <operationType>command</operationType>
