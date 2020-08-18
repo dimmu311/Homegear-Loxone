@@ -136,7 +136,7 @@ namespace Loxone
 						std::string subSerial = j->first;
 						if(subSerial.length() > 18)
 						{
-							if(subSerial.find("/"))
+							if(subSerial.find("/") != std::string::npos)
 							{
 								std::string sub = subSerial.substr(subSerial.find("/"));
 								subSerial = subSerial.substr(0, 18 -2 - sub.length());
@@ -144,6 +144,12 @@ namespace Loxone
 								subSerial.push_back('.');
 								subSerial.append(sub.begin(),sub.end());
 							}
+							else
+                            {
+                                subSerial = subSerial.substr(0,18);
+                                subSerial[17] = '.';
+                                subSerial[16] = '.';
+                            }
 						}
 						if (GD::bl->debugLevel >= 5) GD::out.printInfo("Loading subControl " + j->second->structValue->at("name")->stringValue + " with serial " + subSerial);
 						if (createInstance::_controlsMap.find(j->second->structValue->at("type")->stringValue) == createInstance::_controlsMap.end()) continue;
