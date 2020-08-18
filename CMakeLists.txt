@@ -45,7 +45,7 @@ set(SOURCE_FILES
 		src/controls/MediaClient.cpp
 		src/controls/MediaClient.h
 		src/controls/Jalousie.cpp
-		src/controls/Jalousie.h src/controls/IntelligentRoomControllerV2.cpp src/controls/IntelligentRoomControllerV2.h)
+		src/controls/Jalousie.h src/controls/IntelligentRoomControllerV2.cpp src/controls/IntelligentRoomControllerV2.h src/controls/AalEmergency.cpp src/controls/AalEmergency.h)
 
 add_custom_target(homegear COMMAND ../../makeAll.sh SOURCES ${SOURCE_FILES})
 set(CMAKE_SHARED_LIBRARY_PREFIX "mod_")
