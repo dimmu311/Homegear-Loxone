@@ -51,6 +51,8 @@ public:
     virtual std::string getFirmwareVersionString(int32_t firmwareVersion) { return "1.0"; }
     virtual bool firmwareUpdateAvailable() { return false; }
 
+    void homegearStarted();
+
 	void packetReceived(std::shared_ptr<LoxonePacket> packet);
 
 	//RPC methods

@@ -273,6 +273,7 @@ void LoxoneCentral::deletePeer(uint64_t id)
 
 std::string LoxoneCentral::handleCliCommand(std::string command)
 {
+    //todo cleanup
 	try
 	{
 		std::ostringstream stringStream;

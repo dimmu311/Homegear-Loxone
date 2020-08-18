@@ -27,6 +27,7 @@ LoxonePeer::LoxonePeer(uint32_t parentID, IPeerEventSink* eventHandler, std::sha
 	_binaryDecoder.reset(new BaseLib::Rpc::RpcDecoder(GD::bl));
 	_control = control;
 
+	//TODO make some changes in _uuidVariable_PeerIDMap. Maybe the best would be to change everyting to pointers, because then on every position changes can be made
 	_uuidVariable_PeerIdMap = _control->getVariables();
     for(auto i = _uuidVariable_PeerIdMap.begin(); i != _uuidVariable_PeerIdMap.end(); ++i)
     {
@@ -157,6 +158,11 @@ void LoxonePeer::setConfigParameters()
             }
         }
     }
+}
+void LoxonePeer::homegearStarted()
+{
+    Peer::homegearStarted();
+    serviceMessages->setUnreach(true,false);
 }
 void LoxonePeer::setPhysicalInterfaceId(std::string id)
 {
@@ -443,6 +449,7 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
         auto central = std::dynamic_pointer_cast<LoxoneCentral>(getCentral());
         if(!central) return;
         setLastPacketReceived();
+        serviceMessages->endUnreach();
         
 		std::vector<FrameValues> frameValues;
         getValuesFromPacket(packet, frameValues);
