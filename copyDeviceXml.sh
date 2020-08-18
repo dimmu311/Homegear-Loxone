@@ -1,2 +1,2 @@
 #!/bin/bash
-cp misc/Device\ Description\ Files/* /etc/homegear/devices/65/
+cp -r misc/Device\ Description\ Files/* /etc/homegear/devices/65/

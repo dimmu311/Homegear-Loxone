@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDeviceTranslation lang="en-US">
+  <supportedDevices>
+    <device id="Loxone AalEmergency">
+      <description>Loxone AalEmergency</description>
+      <longDescription></longDescription>
+    </device>
+  </supportedDevices>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <label>Room</label>
+        <description>Displays the room which is configured in Loxone Config.</description>
+      </parameter>
+      <parameter id="CATEGORY">
+        <label>Category</label>
+        <description>Displays the category which is configured in Loxone Config.</description>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <label>Unreachable</label>
+        <description>Set to "true" when the device is unreachable. This means that the associated control no longer exists in Loxone Config.</description>
+      </parameter>
+    </variables>
+    <variables id="aalEmergency_valueset--1">
+      <parameter id="STATUS">
+        <label>Unreachable</label>
+        <description>shows the current state of the control</description>
+      </parameter>
+      <parameter id="RESET_ACTIVE">
+        <label>Unreachable</label>
+        <description>text state with the active reset input (if control is in reset by programm logic in Loxone Config).</description>
+      </parameter>
+      <parameter id="TRIGGER_ALARM">
+        <label>Unreachable</label>
+        <description>trigger an alarm from the app.</description>
+      </parameter>
+      <parameter id="QUIT_ALARM">
+        <label>Unreachable</label>
+        <description>quit an active alarm.</description>
+      </parameter>
+      <parameter id="DISABLE_END_TIME">
+        <label>Unreachable</label>
+        <description>shows the end time (unix timestamp) when control will start to operate again. set to 0 for immediate re-activate the monitoring or give to for how long (sec) monitoring should be suspended.</description>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDeviceTranslation>
