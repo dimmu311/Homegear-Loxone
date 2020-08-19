@@ -8,8 +8,8 @@ case "$1" in
 		;;
 
 	purge)
-		rm -Rf /etc/homegear/devices/27 > /dev/null 2>&1
-		rm -f /var/lib/homegear/modules/mod_loxone_miniserver.so > /dev/null 2>&1
+		rm -Rf /etc/homegear/devices/65 > /dev/null 2>&1
+		rm -f /var/lib/homegear/modules/mod_loxone.so > /dev/null 2>&1
         ;;
 
 	disappear)
