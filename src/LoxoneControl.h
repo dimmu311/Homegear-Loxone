@@ -33,9 +33,7 @@ namespace Loxone
 		MandatoryFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
 		void overwriteName(std::string name);
 		std::string getName() { return _name; };
-		std::string getUuidAction() { return _uuidAction; };
-		std::string getType() { return _typeString; };
-		uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
+		virtual uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 	};
 	//TODO: maybe ther is no more need for the OptionalFields Class, because name and cat are now safed in a config parameter.
 	class OptionalFields
@@ -50,7 +48,7 @@ namespace Loxone
 		OptionalFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
 		std::string getRoom() { return _room; };
 		std::string getCat() { return _cat; };
-		uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
+		virtual uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 	};
 
 	class LoxoneControl : public MandatoryFields, public OptionalFields
@@ -61,7 +59,7 @@ namespace Loxone
 
 		uint32_t getType() { return _type; };
 		
-		std::unordered_map <std::string, variable_PeerId> getVariables() { return _uuidVariable_PeerIdMap; };
+		std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> getVariables() { return _uuidVariable_PeerIdMap; };
 
 		virtual bool processPacket(PLoxoneBinaryFilePacket loxonePacket);
 		virtual bool processPacket(PLoxoneTextmessagePacket loxonePacket);
@@ -77,8 +75,7 @@ namespace Loxone
 	protected:
 		uint32_t _type;
 
-		std::unordered_map <std::string, variable_PeerId> _uuidVariable_PeerIdMap;
-		std::unique_ptr<BaseLib::Rpc::JsonEncoder> _jsonEncoder;
+		std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> _uuidVariable_PeerIdMap;
 		PVariable _json;
 		uint32_t getStatesToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 

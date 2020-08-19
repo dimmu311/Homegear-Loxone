@@ -164,10 +164,10 @@ namespace Loxone
 
             for (auto i = control->structValue->at("states")->structValue->begin(); i != control->structValue->at("states")->structValue->end(); ++i)
 			{
-				variable_PeerId variable_PeerId;
-				variable_PeerId.variable = i->first;
-                variable_PeerId.peerId = 0;
-				_uuidVariable_PeerIdMap.emplace(i->second->stringValue, variable_PeerId);
+                std::shared_ptr<variable_PeerId> myVariable_PeerId(new variable_PeerId);
+                myVariable_PeerId->variable = i->first;
+                myVariable_PeerId->peerId = 0;
+				_uuidVariable_PeerIdMap.emplace(i->second->stringValue, myVariable_PeerId);
 			}
 		}
 		catch (const std::exception& ex)
@@ -191,11 +191,11 @@ namespace Loxone
 						auto uuid = row->second.at(5)->binaryValue;
 						std::string uuidString(uuid->begin(), uuid->end());
 
-						variable_PeerId variable_PeerId;
-						variable_PeerId.variable = row->second.at(4)->textValue;
-						variable_PeerId.peerId = row->second.at(1)->intValue;
+                        std::shared_ptr<variable_PeerId> myVariable_PeerId(new variable_PeerId);
+                        myVariable_PeerId->variable = row->second.at(4)->textValue;
+                        myVariable_PeerId->peerId = row->second.at(1)->intValue;
 
-						_uuidVariable_PeerIdMap.emplace(uuidString, variable_PeerId);
+						_uuidVariable_PeerIdMap.emplace(uuidString, myVariable_PeerId);
 						break;
 					}
 				}
@@ -214,11 +214,11 @@ namespace Loxone
 			if (_uuidVariable_PeerIdMap.find(loxonePacket->getUuid()) == _uuidVariable_PeerIdMap.end()) return false;
 			auto variable_PeerId = _uuidVariable_PeerIdMap.find(loxonePacket->getUuid());
 
-			GD::out.printDebug("LoxoneControl::LoxoneValueStatesPacket at " + variable_PeerId->second.variable + " of peer " + std::to_string(variable_PeerId->second.peerId) + " and value is " + std::to_string(loxonePacket->getDValue()));
+			GD::out.printDebug("LoxoneControl::LoxoneValueStatesPacket at " + variable_PeerId->second->variable + " of peer " + std::to_string(variable_PeerId->second->peerId) + " and value is " + std::to_string(loxonePacket->getDValue()));
 
 			_json = std::make_shared<Variable>(VariableType::tStruct);
 			_json->structValue->operator[]("state") = PVariable(new Variable(VariableType::tStruct));
-			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second.variable) = PVariable(new Variable(loxonePacket->getDValue()));
+			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second->variable) = PVariable(new Variable(loxonePacket->getDValue()));
 			loxonePacket->setJsonString(_json);
 			loxonePacket->setMethod("on.valueStatesPacket");
 			return true;
@@ -237,11 +237,11 @@ namespace Loxone
 			if (_uuidVariable_PeerIdMap.find(loxonePacket->getUuid()) == _uuidVariable_PeerIdMap.end()) return false;
 			auto variable_PeerId = _uuidVariable_PeerIdMap.find(loxonePacket->getUuid());
 
-			GD::out.printDebug("LoxoneControl::LoxoneTextStatesPacket at " + variable_PeerId->second.variable + " of peer " + std::to_string(variable_PeerId->second.peerId) + " and value is " + loxonePacket->getText());
+			GD::out.printDebug("LoxoneControl::LoxoneTextStatesPacket at " + variable_PeerId->second->variable + " of peer " + std::to_string(variable_PeerId->second->peerId) + " and value is " + loxonePacket->getText());
 
 			_json = std::make_shared<Variable>(VariableType::tStruct);
 			_json->structValue->operator[]("state") = PVariable(new Variable(VariableType::tStruct));
-			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second.variable) = PVariable(new Variable(loxonePacket->getText()));
+			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second->variable) = PVariable(new Variable(loxonePacket->getText()));
 
 			loxonePacket->setJsonString(_json);
             loxonePacket->setMethod("on.textStatesPacket");
@@ -306,7 +306,7 @@ namespace Loxone
 		uint32_t variableID = 201;
 		for(auto i = _uuidVariable_PeerIdMap.begin(); i != _uuidVariable_PeerIdMap.end(); ++i)
 		{
-			std::string variable = i->second.variable;
+			std::string variable = i->second->variable;
 			std::string uuid = i->first;
 
 			Database::DataRow data;
@@ -395,15 +395,13 @@ namespace Loxone
             }
             else if(frame->function1 == "valueSet")
             {
-                if (!getValueFromVariable(parameters->arrayValue->at(0), command)) return false;
-                return true;
+                return getValueFromVariable(parameters->arrayValue->at(0), command);
             }
             else if(frame->function1 == "valueSetToPath")
             {
                 if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
                 command += parameters->arrayValue->at(0)->stringValue + "/";
-                if (!getValueFromVariable(parameters->arrayValue->at(1), command)) return false;
-                return true;
+                return getValueFromVariable(parameters->arrayValue->at(1), command);
             }
             else if(frame->function1 == "2valueSetToPath")
             {
@@ -411,8 +409,7 @@ namespace Loxone
                 command += parameters->arrayValue->at(0)->stringValue + "/";
                 if (!getValueFromVariable(parameters->arrayValue->at(1), command)) return false;
                 command += "/";
-                if (!getValueFromVariable(parameters->arrayValue->at(2), command)) return false;
-                return true;
+                return getValueFromVariable(parameters->arrayValue->at(2), command);
             }
             else if(frame->function1 == "3valueSetToPath")
             {
@@ -422,8 +419,7 @@ namespace Loxone
                 command += "/";
                 if (!getValueFromVariable(parameters->arrayValue->at(2), command)) return false;
                 command += "/";
-                if (!getValueFromVariable(parameters->arrayValue->at(3), command)) return false;
-                return true;
+                return getValueFromVariable(parameters->arrayValue->at(3), command);
             }
             else if(frame->function1 == "valueStringSetToPath") {
                 if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;

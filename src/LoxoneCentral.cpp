@@ -64,9 +64,9 @@ bool LoxoneCentral::onPacketReceived(std::string& senderId, std::shared_ptr<Base
 
 		if (_uuidVariable_PeerIdMap.find(loxonePacket->getUuid()) == _uuidVariable_PeerIdMap.end()) return false;
 		auto variable_PeerId = _uuidVariable_PeerIdMap.find(loxonePacket->getUuid());
-		uint32_t peerId = variable_PeerId->second.peerId;
+		uint32_t peerId = variable_PeerId->second->peerId;
 
-		GD::out.printDebug("Loxone Central: Parse peermap -> has " + variable_PeerId->second.variable + " and id " + std::to_string(peerId));
+		GD::out.printDebug("Loxone Central: Parse peermap -> has " + variable_PeerId->second->variable + " and id " + std::to_string(peerId));
 
 		auto peer = getPeer(peerId);
 		if (peer)
@@ -273,8 +273,7 @@ void LoxoneCentral::deletePeer(uint64_t id)
 
 std::string LoxoneCentral::handleCliCommand(std::string command)
 {
-    //todo cleanup
-	try
+    try
 	{
 		std::ostringstream stringStream;
 		
@@ -287,12 +286,9 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 			stringStream << "For more information about the individual command type: COMMAND help" << std::endl << std::endl;
 			stringStream << "peers list (ls)\t\tList all peers" << std::endl;
 			stringStream << "peers remove (prm)\tRemove a peer (without unpairing)" << std::endl;
-			stringStream << "peers select (ps)\tSelect a peer" << std::endl;
 			stringStream << "peers setname (pn)\tName a peer" << std::endl;
 			stringStream << "search (sp)\t\tSearches for new devices" << std::endl;
-			stringStream << "peers create (pc)\t\tCreates a new peer" << std::endl;
 			stringStream << "unselect (u)\t\tUnselect this device" << std::endl;
-			stringStream << "show controls (sc)\t\tShows the controls in the LoxAPP3.json" << std::endl;
 			return stringStream.str();
 		}
 		if(command.compare(0, 12, "peers remove") == 0 || command.compare(0, 3, "prm") == 0)
@@ -610,172 +606,6 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 			stringStream << "Search completed. Found " << result->integerValue64 << " new peers." << std::endl;
 			return stringStream.str();
 		}
-		/*
-		else if (BaseLib::HelperFunctions::checkCliCommand(command, "peers create", "pc", "", 3, arguments, showHelp))
-		{
-			if (showHelp)
-			{
-				stringStream << "Description: This command creates a new peer." << std::endl;
-				stringStream << "Usage: peers create INTERFACE TYPE ADDRESS" << std::endl << std::endl;
-				stringStream << "Parameters:" << std::endl;
-				stringStream << "  INTERFACE: The id of the interface to associate the new device to as defined in the familie's configuration file." << std::endl;
-				stringStream << "  TYPE:      The 1 byte hexadecimal device type. Example: 0x40" << std::endl;
-				stringStream << "  Serial:	  The UUID out of the Loxone StructFile. Example: 0e6d35e6-0286-b929-ffff1239b12ff514" << std::endl;
-				return stringStream.str();
-			}
-
-			std::string interfaceId = arguments.at(0);
-			if (GD::physicalInterfaces.find(interfaceId) == GD::physicalInterfaces.end()) return "Unknown physical interface.\n";
-			uint16_t deviceType = BaseLib::Math::getUnsignedNumber(arguments.at(1), true);
-			if (deviceType == 0) return "Invalid device type. Device type has to be provided in hexadecimal format.\n";
-			std::string serial = arguments.at(2);
-
-			if (peerExists(serial)) stringStream << "A peer with this address is already paired to this central." << std::endl;
-			else
-			{
-				auto& interface = GD::physicalInterfaces[interfaceId];
-
-				std::shared_ptr<LoxonePeer> peer = createPeer(deviceType, serial, interface, true);
-				if (!peer || !peer->getRpcDevice()) return "Device type not supported.\n";
-
-				GD::out.printMessage("Added peer " + std::to_string(peer->getID()) + ".");
-				stringStream << "Added peer " << std::to_string(peer->getID()) << " with serial number " << peer->getSerialNumber() << "." << std::dec << std::endl;
-
-				return stringStream.str();
-			}
-		}
-		*/
-		else if (command.compare(0, 13, "show controls") == 0 || command.compare(0, 2, "sc") == 0)
-		{
-			std::string bar(" │ ");
-			const int32_t idWidth = 11;
-			const int32_t nameWidth = 25;
-			const int32_t serialWidth = 17;
-			const int32_t roomWidth = 25;
-			const int32_t catWidth = 25;
-			const int32_t unreachWidth = 7;
-			stringStream << std::setfill(' ')
-				<< std::setw(idWidth) << "ID" << bar
-				<< std::setw(nameWidth) << "Name" << bar
-				<< std::setw(serialWidth) << "Serial Number" << bar
-				<< std::setw(roomWidth) << "Room" << bar
-				<< std::setw(catWidth) << "Cathegory" << bar
-				<< std::setw(unreachWidth) << "Unreach"
-				<< std::endl;
-			stringStream << "────────────┼───────────────────────────┼───────────────────┼───────────────────────────┼───────────────────────────┼─────────" << std::endl;
-			stringStream << std::setfill(' ')
-				<< std::setw(idWidth) << " " << bar
-				<< std::setw(nameWidth) << " " << bar
-				<< std::setw(serialWidth) << " " << bar
-				<< std::setw(roomWidth) << " " << bar
-				<< std::setw(catWidth) << " " << bar
-				<< std::setw(unreachWidth) << " "
-				<< std::endl;
-
-			uint32_t id = 1;
-
-			auto controls = _LoxApp3.getControls();
-
-			for (auto i = _peersBySerial.begin(); i != _peersBySerial.end(); ++i)
-			{
-				if (controls.find(i->first) != controls.end()) continue;
-
-				stringStream << std::setw(idWidth) << std::setfill(' ') << std::to_string(id++) << bar;
-				stringStream << std::setw(nameWidth) << std::setfill(' ') << i->second->getName() << bar;
-				stringStream << std::setw(serialWidth) << std::setfill(' ') << i->first << bar;
-				stringStream << std::setw(roomWidth) << std::setfill(' ') << bar;//i->second->getRoom() << bar;
-				stringStream << std::setw(catWidth) << std::setfill(' ') << bar;//i->second->getCat() << bar;
-				stringStream << std::setw(unreachWidth) << std::setfill(' ') << "unreachable";
-
-				stringStream << std::endl;
-			}
-			
-			for (auto i = controls.begin(); i != controls.end(); ++i)
-			{
-				stringStream << std::setw(idWidth) << std::setfill(' ') << std::to_string(id++) << bar;
-				stringStream << std::setw(nameWidth) << std::setfill(' ') << i->second->getName() << bar;
-				stringStream << std::setw(serialWidth) << std::setfill(' ') << i->first << bar;
-				stringStream << std::setw(roomWidth) << std::setfill(' ') << i->second->getRoom() << bar;
-				stringStream << std::setw(catWidth) << std::setfill(' ') << i->second->getCat() << bar;
-								
-				if (_peersBySerial.find(i->first) != _peersBySerial.end())
-				{
-					stringStream << std::setw(unreachWidth) << std::setfill(' ') << "reachable";
-				}
-				else
-				{
-					stringStream << std::setw(unreachWidth) << std::setfill(' ') << "no Homegear ID";
-				}
-				
-				stringStream << std::endl;
-			}
-
-			
-
-			return stringStream.str();
-		}
-		else if (command.compare(0, 23, "create peer of controls") == 0 || command.compare(0, 4, "cpoc") == 0)
-		{
-			uint64_t id = 0;
-
-			std::stringstream stream(command);
-			std::string element;
-			int32_t offset = (command.at(3) == 'c') ? 0 : 1;
-			int32_t index = 0;
-			while (std::getline(stream, element, ' '))
-			{
-				if (index < 1 + offset)
-				{
-					index++;
-					continue;
-				}
-				else if (index == 1 + offset)
-				{
-					if (element == "help") break;
-					id = BaseLib::Math::getNumber(element, false);
-					if (id == 0) return "Invalid id.\n";
-				}
-				index++;
-			}
-			if (index == 1 + offset)
-			{
-				stringStream << "Description: This command creates a peer out of the Loxone Struct File." << std::endl;
-				stringStream << "Usage: create peer of controls ID" << std::endl << std::endl;
-				stringStream << "Parameters:" << std::endl;
-				stringStream << "  id:\tThe id of the Control. See show controls for the id" << std::endl;
-				return stringStream.str();
-			}
-
-			uint32_t controlId = 1;
-			auto controls = _LoxApp3.getControls();
-			for (auto i = controls.begin(); i != controls.end(); ++i)
-			{
-				if (controlId == id)
-				{
-					for (auto& interface : GD::physicalInterfaces)
-					{
-						//auto& interface = GD::physicalInterfaces[interfaceId];
-						//auto& interface = GD::physicalInterfaces["My-Loxone-Miniserver"];
-
-						auto deviceType = i->second->getType();
-						auto serial = i->first;
-
-
-						std::shared_ptr<LoxonePeer> peer = createPeer(deviceType, serial, interface.second, i->second, true);
-						if (!peer || !peer->getRpcDevice()) return "Device type not supported.\n";
-
-						GD::out.printMessage("Added peer " + std::to_string(peer->getID()) + ".");
-						stringStream << "Added peer " << std::to_string(peer->getID()) << " with serial number " << peer->getSerialNumber() << "." << std::dec << std::endl;
-
-						return stringStream.str();
-					}
-				}
-				controlId++;
-			}
-			stringStream << "This id is not part of the Loxone Struct File." << std::endl;
-			
-			return stringStream.str();
-		}
 		else return "Unknown command.\n";
 	}
 	catch(const std::exception& ex)
@@ -790,6 +620,7 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::createPeer(uint32_t deviceType, const
 	try
 	{
 		std::shared_ptr<LoxonePeer> peer(new LoxonePeer(_deviceId, this, control));
+		//TODO check if this is needed to be set
 		//peer->setAddress(nodeId);
 		//peer->setFirmwareVersion(firmwareVersion);
 		peer->setDeviceType(deviceType);
@@ -802,7 +633,8 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::createPeer(uint32_t deviceType, const
 		peer->setPhysicalInterfaceId(interface->getID());
 		peer->initializeCentralConfig();
 
-		peer->setConfigParameters();
+		peer->setPeerIdToVariableList();
+        peer->setConfigParameters();
 		return peer;
 	}
     catch(const std::exception& ex)

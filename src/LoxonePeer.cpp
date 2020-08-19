@@ -26,13 +26,6 @@ LoxonePeer::LoxonePeer(uint32_t parentID, IPeerEventSink* eventHandler, std::sha
 	_binaryEncoder.reset(new BaseLib::Rpc::RpcEncoder(GD::bl));
 	_binaryDecoder.reset(new BaseLib::Rpc::RpcDecoder(GD::bl));
 	_control = control;
-
-	//TODO make some changes in _uuidVariable_PeerIDMap. Maybe the best would be to change everyting to pointers, because then on every position changes can be made
-	_uuidVariable_PeerIdMap = _control->getVariables();
-    for(auto i = _uuidVariable_PeerIdMap.begin(); i != _uuidVariable_PeerIdMap.end(); ++i)
-    {
-        i->second.peerId = _peerID;
-    }
 }
 //wird aufgerufen wenn ein vorhandener peer neu geladen wird
 //danach siehe LoxonePeer::load()
@@ -109,12 +102,18 @@ void LoxonePeer::loadUuids()
         _control = std::shared_ptr<LoxoneControl>(createInstance::_uintControlsMap.at(_deviceType)(rows));
         if(!_control)return ;
         _uuidVariable_PeerIdMap = _control->getVariables();
-        //_control->setValuesCentral(valuesCentral);
-        //_control->setConfigCentral(configCentral);
     }
     catch(const std::exception& ex)
     {
         GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+}
+void LoxonePeer::setPeerIdToVariableList()
+{
+    _uuidVariable_PeerIdMap = _control->getVariables();
+    for(auto i = _uuidVariable_PeerIdMap.begin(); i != _uuidVariable_PeerIdMap.end(); ++i)
+    {
+        i->second->peerId = _peerID;
     }
 }
 void LoxonePeer::setConfigParameters()
@@ -808,10 +807,7 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 		if(!_control->setValue(frame, parameters, command)) return Variable::createError(-32500, "Loxone Control can not create packet");
         GD::out.printDebug(command);
         std::shared_ptr<LoxonePacket> packet (new LoxonePacket(command));
-
-		//std::shared_ptr<LoxonePacket> packet (new LoxonePacket());
-		//if(!_control->setValue(frame->function1, parameters, packet )) return Variable::createError(-32500, "Loxone Control can not set value to packet");
-        _physicalInterface->sendPacket(packet);
+		_physicalInterface->sendPacket(packet);
 
 		if (!valueKeys->empty())
 		{

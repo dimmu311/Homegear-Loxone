@@ -20,45 +20,7 @@ class Miniserver;
 class LoxoneCentral : public BaseLib::Systems::ICentral
 {
 public:
-	/*
-	struct LoxoneControl
-	{
-	public:
-		
-		//The UUID to identify the control.
-		//The Beginning of this uuid has to be the same as the Homegear Serial
-		
-		std::string uuidAction;
-		std::string name;
-		std::string type;
-		std::string room;
-		std::string cat;
-		uint32_t defaultRating;
-		bool isFavorite;
-		bool isSecured;
-
-		std::map<std::string, PVariable> variableNames;
-	};
-	struct Switch : LoxoneControl
-	{
-	public:
-		std::string active;
-	};
-	struct WindowMonitor : LoxoneControl
-	{
-	public:
-		PVariable details;
-		std::string numOpen;
-		std::string numClosed;
-		std::string numTilted;
-		std::string numOffline;
-		std::string numLocked;
-		std::string numUnlocked;
-		std::string windowStates;
-	};
-	*/
-
-	//In table variables
+		//In table variables
 	int32_t getFirmwareVersion() { return _firmwareVersion; }
 	void setFirmwareVersion(int32_t value) { _firmwareVersion = value; saveVariable(0, value); }
 	//End
@@ -86,11 +48,7 @@ public:
 	virtual PVariable deleteDevice(BaseLib::PRpcClientInfo clientInfo, uint64_t peerID, int32_t flags);
 //    virtual PVariable getPairingState(BaseLib::PRpcClientInfo clientInfo);
 	virtual PVariable searchDevices(BaseLib::PRpcClientInfo clientInfo);
-	
-	//std::unordered_map<std::string, std::string> _cats;
-	//std::unordered_map<std::string, std::string> _rooms;
-	//std::unordered_map<std::string, std::shared_ptr<LoxoneControl>> _controls;
-	//std::unordered_map<std::string, std::string> _uuidSerialPairs;
+
 protected:
 	//In table variables
 	int32_t _firmwareVersion = 0;
@@ -121,7 +79,7 @@ protected:
 	void init();
 
 	LoxoneLoxApp3 _LoxApp3;
-	std::unordered_map <std::string, variable_PeerId> _uuidVariable_PeerIdMap;
+	std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> _uuidVariable_PeerIdMap;
 };
 
 }
