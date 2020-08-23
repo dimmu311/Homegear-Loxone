@@ -20,7 +20,7 @@ class Miniserver;
 class LoxoneCentral : public BaseLib::Systems::ICentral
 {
 public:
-		//In table variables
+    //In table variables
 	int32_t getFirmwareVersion() { return _firmwareVersion; }
 	void setFirmwareVersion(int32_t value) { _firmwareVersion = value; saveVariable(0, value); }
 	//End
@@ -46,8 +46,7 @@ public:
 
 	virtual PVariable deleteDevice(BaseLib::PRpcClientInfo clientInfo, std::string serialNumber, int32_t flags);
 	virtual PVariable deleteDevice(BaseLib::PRpcClientInfo clientInfo, uint64_t peerID, int32_t flags);
-//    virtual PVariable getPairingState(BaseLib::PRpcClientInfo clientInfo);
-	virtual PVariable searchDevices(BaseLib::PRpcClientInfo clientInfo);
+	virtual PVariable searchDevices(BaseLib::PRpcClientInfo clientInfo, const std::string& interfaceId);
 
 protected:
 	//In table variables
@@ -77,6 +76,8 @@ protected:
 	void deletePeer(uint64_t id);
 
 	void init();
+	void checkUnreach();
+	std::thread _unreachThread;
 
 	LoxoneLoxApp3 _LoxApp3;
 	std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> _uuidVariable_PeerIdMap;

@@ -26,10 +26,12 @@ void LoxoneCentral::init()
 	{
 		_physicalInterfaceEventhandlers[physicalInterface.first] = physicalInterface.second->addEventHandler((BaseLib::Systems::IPhysicalInterface::IPhysicalInterfaceEventSink*)this);
 	}
+    _bl->threadManager.start(_unreachThread, true, &LoxoneCentral::checkUnreach, this);
 }
 
 LoxoneCentral::~LoxoneCentral()
 {
+    _bl->threadManager.join(_unreachThread);
 	dispose();
 }
 
@@ -50,6 +52,24 @@ void LoxoneCentral::dispose(bool wait)
     {
         GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
+}
+
+void LoxoneCentral::checkUnreach()
+{
+    //todo: check why this not work
+    //this function checks every second if the physicalInterface is still connected. If the Interface is not connected anymore the correspondig Peers are set to unreach.
+    for(auto& physicalInterface : GD::physicalInterfaces)
+    {
+        if(!physicalInterface.second->isOpen())
+        {
+            GD::out.printDebug("Loxone Central: physicalInterface -> " + physicalInterface.first + "is not connected anymore. set every peer to unreach");
+            for(auto i = _peersById.begin(); i != _peersById.end(); ++i)
+            {
+                if(!i->second->serviceMessages->getUnreach()) i->second->serviceMessages->setUnreach(true,false);
+            }
+        }
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //Sleep for 1sec
 }
 
 bool LoxoneCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib::Systems::Packet> packet)
@@ -602,7 +622,7 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 				}
 				index++;
 			}
-			auto result = searchDevices(nullptr);
+			auto result = searchDevices(nullptr, "");
 			stringStream << "Search completed. Found " << result->integerValue64 << " new peers." << std::endl;
 			return stringStream.str();
 		}
@@ -694,66 +714,7 @@ PVariable LoxoneCentral::deleteDevice(BaseLib::PRpcClientInfo clientInfo, uint64
     }
     return Variable::createError(-32500, "Unknown application error.");
 }
-/*
-PVariable LoxoneCentral::getPairingState(BaseLib::PRpcClientInfo clientInfo)
-{
-    try
-    {
-        auto states = std::make_shared<BaseLib::Variable>(BaseLib::VariableType::tStruct);
-
-		states->structValue->emplace("pairingModeEnabled", std::make_shared<BaseLib::Variable>(_searching));
-		states->structValue->emplace("pairingModeEndTime", std::make_shared<BaseLib::Variable>(-1));
-
-        {
-            std::lock_guard<std::mutex> newPeersGuard(_newPeersMutex);
-
-            auto pairingMessages = std::make_shared<BaseLib::Variable>(BaseLib::VariableType::tArray);
-            pairingMessages->arrayValue->reserve(_pairingMessages.size());
-            for(auto& message : _pairingMessages)
-            {
-                auto pairingMessage = std::make_shared<BaseLib::Variable>(BaseLib::VariableType::tStruct);
-                pairingMessage->structValue->emplace("messageId", std::make_shared<BaseLib::Variable>(message->messageId));
-                auto variables = std::make_shared<BaseLib::Variable>(BaseLib::VariableType::tArray);
-                variables->arrayValue->reserve(message->variables.size());
-                for(auto& variable : message->variables)
-                {
-                    variables->arrayValue->emplace_back(std::make_shared<BaseLib::Variable>(variable));
-                }
-                pairingMessage->structValue->emplace("variables", variables);
-                pairingMessages->arrayValue->push_back(pairingMessage);
-            }
-            states->structValue->emplace("general", std::move(pairingMessages));
-
-            for(auto& element : _newPeers)
-            {
-                for(auto& peer : element.second)
-                {
-                    auto peerState = std::make_shared<BaseLib::Variable>(BaseLib::VariableType::tStruct);
-                    peerState->structValue->emplace("state", std::make_shared<BaseLib::Variable>(peer->state));
-                    peerState->structValue->emplace("messageId", std::make_shared<BaseLib::Variable>(peer->messageId));
-                    auto variables = std::make_shared<BaseLib::Variable>(BaseLib::VariableType::tArray);
-                    variables->arrayValue->reserve(peer->variables.size());
-                    for(auto& variable : peer->variables)
-                    {
-						variables->arrayValue->emplace_back(std::make_shared<BaseLib::Variable>(variable));
-                    }
-                    peerState->structValue->emplace("variables", variables);
-                    states->structValue->emplace(std::to_string(peer->peerId), std::move(peerState));
-                }
-            }
-        }
-
-        return states;
-    }
-    catch(const std::exception& ex)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-    return Variable::createError(-32500, "Unknown application error.");
-}
-*/
-
-PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo)
+PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const std::string& interfaceId)
 {
 	try
 	{
@@ -769,24 +730,13 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo)
 				break;
 			}
 		}
-		
-		//_physicalInterface->sendPacket(packet);
 		for (auto& interface : GD::physicalInterfaces)
 		{
-					GD::out.printMessage("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++loop durch alle interfaces");
-					auto x = interface.first;
-					GD::out.printMessage("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++loop durch alle interfaces " +x);
-					auto y = interface.second;
-					GD::out.printMessage("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++test "+ y->getLoxApp3Version()->stringValue);
-		
-            std::string aktualVersion = interface.second->getLoxApp3Version()->stringValue;
-
-            if(cashedVersion == aktualVersion) return std::make_shared<BaseLib::Variable>(0);
-
-            GD::out.printMessage("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++get new Struct File");
+            std::string actualVersion = interface.second->getLoxApp3Version()->stringValue;
+            if(cashedVersion == actualVersion) return std::make_shared<BaseLib::Variable>(0);
+            GD::out.printMessage("get new Struct File from Interface:" + interface.first);
 
             PVariable structfile = interface.second->getNewStructfile();
-
             _LoxApp3.parseStructFile(structfile);
             std::string lastModified = _LoxApp3.getlastModified();
 
@@ -805,7 +755,6 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo)
 
                 auto variables = peer->getVariables();
                 _uuidVariable_PeerIdMap.insert(variables.begin(), variables.end());
-
                 {
 					std::lock_guard<std::mutex> peersGuard(_peersMutex);
 					_peersBySerial[control->first] = peer;
@@ -844,7 +793,6 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo)
 						_newPeers[BaseLib::HelperFunctions::getTime()].emplace_back(std::move(pairingState));
 					}
 				}
-
 				raiseRPCNewDevices(newIds, deviceDescriptions);
             }
             return std::make_shared<BaseLib::Variable>(newPeers.size());
