@@ -4,7 +4,6 @@ namespace Loxone
 {
     Jalousie::Jalousie(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x0104)
     {
-        getValueFromStructFile("isFavorite", "", _isFavorite);
         getValueFromStructFile("isAutomatic", "details", _isAutomatic);
         uint32_t animation;
         getValueFromStructFile("animation", "details", animation);
@@ -12,7 +11,6 @@ namespace Loxone
     }
     Jalousie::Jalousie(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x0104)
     {
-        getValueFromDataTable(107, _isFavorite);
         getValueFromDataTable(111, _isAutomatic);
         uint32_t animation;
         getValueFromDataTable(112, animation);
@@ -21,15 +19,6 @@ namespace Loxone
     uint32_t Jalousie::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
     {
         LoxoneControl::getDataToSave(list, peerID);
-        {
-            Database::DataRow data;
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(107)));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_isFavorite)));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("isFavorite")));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-            list.push_back(data);
-        }
         //TODO, maybe this must not be safed anymore because it is safed to a config variable.
         {
             Database::DataRow data;

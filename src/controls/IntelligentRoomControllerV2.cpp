@@ -4,16 +4,12 @@ namespace Loxone
 {
     IntelligentRoomControllerV2::IntelligentRoomControllerV2(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x0301)
     {
-        getValueFromStructFile("isFavorite", "", _isFavorite);
-
         getValueFromStructFile("timerModes", "details", _timerModes);
         getValueFromStructFile("format", "details", _format);
         getValueFromStructFile("connectedInputs", "details", _connectedInputs);
     }
     IntelligentRoomControllerV2::IntelligentRoomControllerV2(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x0301)
     {
-        getValueFromDataTable(107, _isFavorite);
-
         getBinaryValueFromDataTable(111, _timerModes);
         getBinaryValueFromDataTable(112, _format);
         getValueFromDataTable(113, _connectedInputs);
@@ -21,15 +17,6 @@ namespace Loxone
     uint32_t IntelligentRoomControllerV2::getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID)
     {
         LoxoneControl::getDataToSave(list, peerID);
-        {
-            Database::DataRow data;
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(107)));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_isFavorite)));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("isFavorite")));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-            list.push_back(data);
-        }
         //TODO, maybe this must not be safed anymore because it is safed to a config variable.
         {
             Database::DataRow data;

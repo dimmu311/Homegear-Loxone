@@ -37,7 +37,6 @@ namespace Loxone
         uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
         uint32_t getExtraData(std::list<extraData> &extraData);
     protected:
-        bool _isFavorite;
         std::string _defaultIcon;
 
         std::string _format;

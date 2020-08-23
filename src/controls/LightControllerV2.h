@@ -139,9 +139,9 @@ namespace Loxone {
         uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
     protected:
         bool _isFavorite;
-        uint32_t _detMovementScene;
-        std::string _detMasterValue;
-        std::string _detMasterColor;
+        uint32_t _MovementScene;
+        std::string _MasterValue;
+        std::string _MasterColor;
     };
 }
 

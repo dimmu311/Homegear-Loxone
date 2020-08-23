@@ -4,7 +4,6 @@ namespace Loxone
 {
     Slider::Slider(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x0101)
     {
-        getValueFromStructFile("isFavorite", "", _isFavorite);
         getValueFromStructFile("defaultIcon", "", _defaultIcon);
 
         getValueFromStructFile("format", "details", _format);
@@ -14,8 +13,7 @@ namespace Loxone
     }
     Slider::Slider(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x0101)
     {
-        getValueFromDataTable(107, _isFavorite);
-        getBinaryValueFromDataTable(108, _defaultIcon);
+        getBinaryValueFromDataTable(109, _defaultIcon);
         getBinaryValueFromDataTable(111, _format);
         getValueFromDataTable(112, _min);
         getValueFromDataTable(113, _max);
@@ -27,16 +25,7 @@ namespace Loxone
         {
             Database::DataRow data;
             data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(107)));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_isFavorite)));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("isFavorite")));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
-            list.push_back(data);
-        }
-        {
-            Database::DataRow data;
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(108)));
+            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(109)));
             data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
             data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("defaultIcon")));
             std::vector<char> defaultIcon(_defaultIcon.begin(), _defaultIcon.end());
