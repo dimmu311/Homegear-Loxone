@@ -9,6 +9,7 @@ namespace Loxone
 		_uuidAction = mandatoryFields->structValue->at("uuidAction")->stringValue;
 		_defaultRating = mandatoryFields->structValue->at("defaultRating")->integerValue;
 		_isSecured = mandatoryFields->structValue->at("isSecured")->booleanValue;
+		_isFavorite = mandatoryFields->structValue->at("isFavorite")->booleanValue;
     }
     void MandatoryFields::overwriteName(std::string name)
     {
@@ -48,6 +49,10 @@ namespace Loxone
 					_isSecured = row->second.at(3)->intValue;
 					break;
 				}
+			    case 106:
+                {
+                    _isFavorite = row->second.at(3)->intValue;
+                }
 			}
 		}
     }
@@ -101,6 +106,15 @@ namespace Loxone
 			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
 			list.push_back(data);
 		}
+        {
+            Database::DataRow data;
+            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
+            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(106)));
+            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(_isFavorite)));
+            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("isFavorite")));
+            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
+            list.push_back(data);
+        }
 		return 0;
     }
 
@@ -115,13 +129,13 @@ namespace Loxone
 		{
 			switch(row->second.at(2)->intValue)
 			{
-				case 106:
+				case 107:
 				{
 					auto room = row->second.at(5)->binaryValue;
 					_room = std::string (room->begin(), room->end());
 					break;
 				}
-				case 107:
+				case 108:
 				{
 					auto cat = row->second.at(5)->binaryValue;
 					_cat = std::string (cat->begin(), cat->end());
@@ -135,7 +149,7 @@ namespace Loxone
     	{
 			Database::DataRow data;
 			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(106)));
+			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(107)));
 			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
 			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("room")));
 			std::vector<char> room(_room.begin(), _room.end());
@@ -145,7 +159,7 @@ namespace Loxone
 		{
 			Database::DataRow data;
 			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
-			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(107)));
+			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(108)));
 			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
 			data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn("cat")));
 			std::vector<char> cat(_cat.begin(), _cat.end());

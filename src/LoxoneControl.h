@@ -29,6 +29,8 @@ namespace Loxone
 		std::string _uuidAction;
 		uint32_t _defaultRating;
 		bool _isSecured;
+		//isFavorite is not described as a mandatoryFild in the documentation, but so far I have not found a control where isFavorit is not available
+        bool _isFavorite;
 		MandatoryFields(PVariable mandatoryFields, std::string room, std::string cat);
 		MandatoryFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
 		void overwriteName(std::string name);
