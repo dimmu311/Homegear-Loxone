@@ -83,9 +83,12 @@ public:
 	 * {@inheritDoc}
 	 */
 	virtual PVariable setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t channel, std::string valueKey, PVariable value, bool wait);
-	//End RPC methods
 
-	std::string _uuid;
+    /**
+	 * {@inheritDoc}
+	 */
+    virtual PVariable getDeviceDescription(PRpcClientInfo clientInfo, int32_t channel, std::map<std::string, bool> fields);
+    //End RPC methods
 protected:
     struct FrameValue
     {

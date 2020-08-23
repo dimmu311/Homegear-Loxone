@@ -540,6 +540,27 @@ PVariable LoxonePeer::getDeviceInfo(BaseLib::PRpcClientInfo clientInfo, std::map
     return PVariable();
 }
 
+PVariable LoxonePeer::getDeviceDescription(PRpcClientInfo clientInfo, int32_t channel, std::map<std::string, bool> fields)
+{
+    try
+    {
+        PVariable description(Peer::getDeviceDescription(clientInfo, channel, fields));
+        if(description->errorStruct || description->structValue->empty()) return description;
+
+        //todo: find a way to display the additional information in the admin ui. till now it looks like the admin ui needs to be changed to diseplay the additional infoarmtions
+        description->structValue->emplace("ROOMNAME", std::make_shared<Variable>(_control->getRoom()));
+        description->structValue->emplace("CATEGORIES", std::make_shared<Variable>(_control->getCat()));
+        description->structValue->emplace("LOXONE_UUID", std::make_shared<Variable>(_control->_uuidAction));
+
+        return description;
+    }
+    catch(const std::exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    return PVariable();
+}
+
 PVariable LoxonePeer::getParamsetDescription(BaseLib::PRpcClientInfo clientInfo, int32_t channel, ParameterGroup::Type::Enum type, uint64_t remoteID, int32_t remoteChannel, bool checkAcls)
 {
 	try
