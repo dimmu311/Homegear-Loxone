@@ -49,12 +49,7 @@ namespace Loxone
         Jalousie(PVariable control, std::string room, std::string cat);
         Jalousie(std::shared_ptr<BaseLib::Database::DataTable> rows);
         uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
-        uint32_t getExtraData(std::list<extraData> &extraData);
     protected:
-        bool _isFavorite;
-
-        bool _isAutomatic;
-        animation _animation;
     };
 }
 

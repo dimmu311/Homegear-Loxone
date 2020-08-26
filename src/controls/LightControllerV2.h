@@ -138,10 +138,6 @@ namespace Loxone {
         LightControllerV2(std::shared_ptr<BaseLib::Database::DataTable> rows);
         uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
     protected:
-        bool _isFavorite;
-        uint32_t _MovementScene;
-        std::string _MasterValue;
-        std::string _MasterColor;
     };
 }
 

@@ -173,7 +173,9 @@ namespace Loxone
 	{
 		try
 		{
-			_type = typeNr;
+            _RpcEncoder = std::make_shared<BaseLib::Rpc::RpcEncoder>();
+
+            _type = typeNr;
 			_control = control;
 
             for (auto i = control->structValue->at("states")->structValue->begin(); i != control->structValue->at("states")->structValue->end(); ++i)
@@ -183,6 +185,15 @@ namespace Loxone
                 myVariable_PeerId->peerId = 0;
 				_uuidVariable_PeerIdMap.emplace(i->second->stringValue, myVariable_PeerId);
 			}
+
+            if(control->structValue->find("details") != control->structValue->end())
+            {
+                auto details = control->structValue->at("details");
+                for(auto j = details->structValue->begin(); j != details->structValue->end(); ++j)
+                {
+                    _detailsMap.emplace(j->first, j->second);
+                }
+            }
 		}
 		catch (const std::exception& ex)
 		{
@@ -193,13 +204,21 @@ namespace Loxone
 	{
 		try
 		{
-			_type = typeNr;
+            _RpcDecoder = std::make_shared<BaseLib::Rpc::RpcDecoder>();
+		    _type = typeNr;
 			_rows = rows;
 
 			for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
 			{
 				switch(row->second.at(2)->intValue)
 				{
+				    case 121 ... 200:
+				    {
+                        std::vector<char> binData = *row->second.at(5)->binaryValue;
+                        auto value = _RpcDecoder->decodeResponse(binData);
+                        _detailsMap.emplace(row->second.at(4)->textValue, value);
+				        break;
+				    }
 					case 201 ... 300:
 					{
 						auto uuid = row->second.at(5)->binaryValue;
@@ -315,6 +334,48 @@ namespace Loxone
 			return false;
 		}
 	}
+    uint32_t LoxoneControl::getExtraData(std::list<extraData> &extraData)
+    {
+        for(auto i = _detailsMap.begin(); i!= _detailsMap.end(); ++i)
+        {
+            struct extraData data;
+            for(char c : i->first)
+            {
+                if(islower(c))
+                {
+                    data.variable.push_back(toupper(c));
+                }
+                else
+                {
+                    data.variable.push_back('_');
+                    data.variable.push_back(c);
+                }
+            }
+
+            data.channel = 1;
+            data.value = i->second;
+            extraData.push_back(data);
+        }
+        return 0;
+    }
+	uint32_t LoxoneControl::getDetailsToSave(std::list<Database::DataRow> &list, uint32_t peerID)
+    {
+        //TODO, maybe this must not be safed anymore because it is safed to a config variable.
+        uint32_t variableID = 121;
+        for(auto i = _detailsMap.begin(); i!= _detailsMap.end(); ++i)
+        {
+            Database::DataRow data;
+            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(peerID)));
+            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(variableID++)));
+            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn()));
+            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(i->first)));
+            std::vector<uint8_t> binData;
+            _RpcEncoder->encodeResponse(i->second, binData);
+            data.push_back(std::shared_ptr<Database::DataColumn>(new Database::DataColumn(binData)));
+            list.push_back(data);
+        }
+        return 0;
+    }
 	uint32_t LoxoneControl::getStatesToSave(std::list<Database::DataRow> &list, uint32_t peerID)
 	{
 		uint32_t variableID = 201;
@@ -457,6 +518,7 @@ namespace Loxone
 		MandatoryFields::getDataToSave(list, peerID);
 		OptionalFields::getDataToSave(list, peerID);
 		getStatesToSave(list, peerID);
+		getDetailsToSave(list, peerID);
 		return 1;
 	}
 	bool LoxoneControl::getValueFromStructFile(const std::string& variableId, const std::string& path, bool& value)

@@ -83,13 +83,7 @@ namespace Loxone
         IntelligentRoomControllerV2(PVariable control, std::string room, std::string cat);
         IntelligentRoomControllerV2(std::shared_ptr<BaseLib::Database::DataTable> rows);
         uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
-        uint32_t getExtraData(std::list<extraData> &extraData);
     protected:
-        bool _isFavorite;
-
-        std::string _timerModes;
-        std::string _format;
-        uint32_t _connectedInputs;
     };
 }
 

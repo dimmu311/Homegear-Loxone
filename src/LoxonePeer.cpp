@@ -79,8 +79,7 @@ void LoxonePeer::saveUuids()
 	try
 	{
 		std::list<Database::DataRow> list;
-		auto x = _control->getDataToSave(list, _peerID);
-		if(x < 0) return;
+		if(_control->getDataToSave(list, _peerID) != 0) return;
 
 		for(auto i = list.begin(); i != list.end(); ++i)
 		{

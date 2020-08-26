@@ -35,14 +35,8 @@ namespace Loxone
         Slider(PVariable control, std::string room, std::string cat);
         Slider(std::shared_ptr<BaseLib::Database::DataTable> rows);
         uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
-        uint32_t getExtraData(std::list<extraData> &extraData);
     protected:
         std::string _defaultIcon;
-
-        std::string _format;
-        float _min;
-        float _max;
-        float _step;
     };
 }
 #endif //HOMEGEAR_LOXONE_MINISERVER_SLIDER_H

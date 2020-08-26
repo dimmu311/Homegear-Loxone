@@ -3,6 +3,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <regex>
 #include "GD.h"
 #include "LoxonePacket.h"
 #include "homegear-base/Encoding/JsonEncoder.h"
@@ -73,12 +74,16 @@ namespace Loxone
         bool getValueFromVariable(BaseLib::PVariable variable, std::string& command);
         bool setValue(PPacket frame, PVariable parameters, std::string &command);
         virtual uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
-        virtual uint32_t getExtraData(std::list<extraData> &extraData){return -1;};
-	protected:
+        uint32_t getExtraData(std::list<extraData> &extraData);
+        protected:
 		uint32_t _type;
 
 		std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> _uuidVariable_PeerIdMap;
+		std::unordered_map <std::string, PVariable> _detailsMap;
 		PVariable _json;
+        std::shared_ptr<BaseLib::Rpc::RpcEncoder>_RpcEncoder;
+        std::shared_ptr<BaseLib::Rpc::RpcDecoder>_RpcDecoder;
+        uint32_t getDetailsToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 		uint32_t getStatesToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 
 		PVariable _control;

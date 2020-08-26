@@ -13,9 +13,4 @@ namespace Loxone
         LoxoneControl::getDataToSave(list, peerID);
         return 0;
     }
-
-    uint32_t AalEmergency::getExtraData(std::list<extraData> &extraData)
-    {
-        return -1;
-    }
 }
