@@ -9,6 +9,7 @@
 #include "MediaClient.h"
 #include "IntelligentRoomControllerV2.h"
 #include "AalEmergency.h"
+#include "AalSmartAlarm.h"
 
 namespace Loxone
 {
@@ -25,6 +26,7 @@ namespace Loxone
             {"MediaClient", &createInstance3<MediaClient>},
             {"IRoomControllerV2", &createInstance3<IntelligentRoomControllerV2>},
             {"AalEmergency", &createInstance3<AalEmergency>},
+            {"AalSmartAlarm", &createInstance3<AalSmartAlarm>},
     };
 
     template<typename T> LoxoneControl* createInstance2(std::shared_ptr<BaseLib::Database::DataTable> rows) { return new T(rows); }
@@ -40,5 +42,6 @@ namespace Loxone
             {0x201, &createInstance2<MediaClient>},
             {0x301, &createInstance2<IntelligentRoomControllerV2>},
             {0x400, &createInstance2<AalEmergency>},
+            {0x401, &createInstance2<AalSmartAlarm>},
     };
 }

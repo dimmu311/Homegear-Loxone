@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDeviceTranslation lang="en-US">
+  <supportedDevices>
+    <device id="Loxone AalSmartAlarm">
+      <description>Loxone AalSmartAlarm</description>
+      <longDescription></longDescription>
+    </device>
+  </supportedDevices>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <label>Room</label>
+        <description>Displays the room which is configured in Loxone Config.</description>
+      </parameter>
+      <parameter id="CATEGORY">
+        <label>Category</label>
+        <description>Displays the category which is configured in Loxone Config.</description>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <label>Unreachable</label>
+        <description>Set to "true" when the device is unreachable. This means that the associated control no longer exists in Loxone Config.</description>
+      </parameter>
+    </variables>
+    <variables id="aalEmergency_valueset--1">
+      <parameter id="ALARM_LEVEL">
+        <label>Alarm Level</label>
+        <description>shows the current alarm level</description>
+      </parameter>
+      <parameter id="ALARM_CAUSE">
+        <label>Alarm Cause</label>
+        <description>representing the last cause for an alarm.</description>
+      </parameter>
+      <parameter id="ALARM_TIME">
+        <label>Alarm Time</label>
+        <description>at this time (unix timestamp) the alarm was triggered.</description>
+      </parameter>
+      <parameter id="IS_LOCKED">
+        <label>Is Locked</label>
+        <description>quit an active alarm.</description>
+      </parameter>
+      <parameter id="IS_LEAVE_ACTIVE">
+        <label>Unreachable</label>
+        <description>Reset active, inputs will be ignored and therefore no alarms will be executed.</description>
+      </parameter>
+      <parameter id="DISABLE_END_TIME">
+        <label>Disable End Time</label>
+        <description>shows the end time (unix timestamp) when control will start to operate again. set to 0 for immediate re-activate the monitoring or give to for how long (sec) monitoring should be suspended.</description>
+      </parameter>
+      <parameter id="TRIGGER_TEST_ALARM">
+        <label>Trigger Test Alarm</label>
+        <description>execute test alarm.</description>
+      </parameter>
+      <parameter id="CONFIRM_ALARM">
+        <label>Confirm Alarm</label>
+        <description>confirm pending alarm.</description>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDeviceTranslation>
