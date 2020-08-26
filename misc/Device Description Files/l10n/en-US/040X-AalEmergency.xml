@@ -26,23 +26,23 @@
     </variables>
     <variables id="aalEmergency_valueset--1">
       <parameter id="STATUS">
-        <label>Unreachable</label>
+        <label>Status</label>
         <description>shows the current state of the control</description>
       </parameter>
       <parameter id="RESET_ACTIVE">
-        <label>Unreachable</label>
+        <label>Reset Active</label>
         <description>text state with the active reset input (if control is in reset by programm logic in Loxone Config).</description>
       </parameter>
       <parameter id="TRIGGER_ALARM">
-        <label>Unreachable</label>
+        <label>Trigger Alarm</label>
         <description>trigger an alarm from the app.</description>
       </parameter>
       <parameter id="QUIT_ALARM">
-        <label>Unreachable</label>
+        <label>Quit Alarm</label>
         <description>quit an active alarm.</description>
       </parameter>
       <parameter id="DISABLE_END_TIME">
-        <label>Unreachable</label>
+        <label>Disable End Time</label>
         <description>shows the end time (unix timestamp) when control will start to operate again. set to 0 for immediate re-activate the monitoring or give to for how long (sec) monitoring should be suspended.</description>
       </parameter>
     </variables>
