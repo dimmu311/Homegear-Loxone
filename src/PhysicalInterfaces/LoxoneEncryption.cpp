@@ -5,11 +5,12 @@ namespace Loxone
 {
 	GCRY_THREAD_OPTION_PTHREAD_IMPL;
 	
-	LoxoneEncryption::LoxoneEncryption(const std::string user, const std::string password, BaseLib::SharedObjects* bl)
+	LoxoneEncryption::LoxoneEncryption(const std::string user, const std::string password, const std::string visuPassword, BaseLib::SharedObjects* bl)
 	{
 	    _bl = bl;
 	    _user = user;
 	    _password = password;
+	    _visuPassword = visuPassword;
 
 	    initGnuTls();
 
@@ -105,7 +106,6 @@ namespace Loxone
 
 	void LoxoneEncryption::setKey(std::string hexKey)
 	{
-        _loxKey.clear();
         std::vector<uint8_t> x = BaseLib::HelperFunctions::hexToBin(hexKey);
         _loxKey = std::string(x.begin(), x.end());
 	}
@@ -134,6 +134,47 @@ namespace Loxone
             GD::out.printError("given Hash Algorithm not support.");
             return -1;
         }
+    }
+
+    void LoxoneEncryption::setVisuKey(std::string hexKey)
+    {
+        std::vector<uint8_t> x = BaseLib::HelperFunctions::hexToBin(hexKey);
+        _loxVisuKey = std::string(x.begin(), x.end());
+    }
+
+    void LoxoneEncryption::setVisuSalt(const std::string salt)
+    {
+        _loxVisuSalt = salt;
+    }
+
+    uint32_t LoxoneEncryption::setVisuHashAlgorithm(std::string algorithm)
+    {
+        if(algorithm == "SHA1")
+        {
+            _visuDigestAlgorithm = GNUTLS_DIG_SHA1;
+            _visuMacAlgorithm = GNUTLS_MAC_SHA1;
+            return 0;
+        }
+        else if(algorithm == "SHA256")
+        {
+            _visuDigestAlgorithm = GNUTLS_DIG_SHA256;
+            _visuMacAlgorithm = GNUTLS_MAC_SHA256;
+            return 0;
+        }
+        else
+        {
+            GD::out.printError("given Hash Algorithm not support.");
+            return -1;
+        }
+    }
+
+    void LoxoneEncryption::setHashedVisuPassword(const std::string hashedPassword)
+    {
+	    _hashedVisuPassword = hashedPassword;
+    }
+    std::string LoxoneEncryption::getHashedVisuPassword()
+    {
+	    return _hashedVisuPassword;
     }
 
 	uint32_t LoxoneEncryption::buildSessionKey(std::string& rsaEncrypted)
@@ -250,6 +291,43 @@ namespace Loxone
                 unsigned char hashed[hashedLen];
                 std::string ptext = _user + ":" + hashedPassword;
                 if(gnutls_hmac_fast(_macAlgorithm, _loxKey.c_str(), _loxKey.size(), ptext.c_str(), ptext.size(), &hashed)<0)
+                {
+                    GD::out.printError("GNUTLS_MAC_xxx failed");
+                    return -1;
+                }
+
+                hashedPassword = BaseLib::HelperFunctions::getHexString(hashed, hashedLen);
+                hashedPassword = BaseLib::HelperFunctions::toLower(hashedPassword);
+            }
+            return 0;
+        }
+        catch (const std::exception &ex) {
+            GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+            return -1;
+        }
+    }
+
+    uint32_t LoxoneEncryption::hashVisuPassword(std::string& hashedPassword)
+    {
+        try
+        {
+            {
+                int hashedLen = gnutls_hash_get_len(_visuDigestAlgorithm);
+                unsigned char hashed[hashedLen];
+                //ToDo, change to visu password when error in baslib is fixed
+                std::string ptext = _password + ":" + _loxVisuSalt;
+                if(gnutls_hash_fast(_visuDigestAlgorithm, ptext.c_str(), ptext.size(), &hashed)<0)
+                {
+                    GD::out.printError("GNUTLS_DIG_xxx failed");
+                    return -1;
+                }
+                hashedPassword = BaseLib::HelperFunctions::getHexString(hashed, hashedLen);
+            }
+            {
+                int hashedLen = gnutls_hmac_get_len(_visuMacAlgorithm);
+                unsigned char hashed[hashedLen];
+                std::string ptext = hashedPassword;
+                if(gnutls_hmac_fast(_visuMacAlgorithm, _loxVisuKey.c_str(), _loxVisuKey.size(), ptext.c_str(), ptext.size(), &hashed)<0)
                 {
                     GD::out.printError("GNUTLS_MAC_xxx failed");
                     return -1;

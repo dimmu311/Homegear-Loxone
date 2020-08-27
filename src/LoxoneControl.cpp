@@ -416,10 +416,12 @@ namespace Loxone
         return false;
     }
 
-    bool LoxoneControl::setValue(PPacket frame, BaseLib::PVariable parameters, std::string& command)
+    bool LoxoneControl::setValue(PPacket frame, BaseLib::PVariable parameters, std::string& command, bool &isSecured)
     {
         try
         {
+            isSecured = _isSecured;
+
             if(parameters->type != VariableType::tArray) return false;
             command = "jdev/sps/io/" + _uuidAction + "/";
             if(frame->function1 == "activeSetOn" || frame->function1 == "activeSetOff")

@@ -13,7 +13,7 @@ namespace Loxone
 	class LoxoneEncryption
 	{
 	public:
-		LoxoneEncryption(const std::string user, const std::string password, BaseLib::SharedObjects* bl);
+		LoxoneEncryption(const std::string user, const std::string password, const std::string visuPassword, BaseLib::SharedObjects* bl);
         ~LoxoneEncryption();
 
 		uint32_t buildSessionKey(std::string& rsaEncrypted);
@@ -21,6 +21,7 @@ namespace Loxone
 		uint32_t encryptCommand(const std::string command, std::string& encryptedCommand);
         uint32_t decryptCommand(const std::string encryptedCommand, std::string& command);
         uint32_t hashPassword(std::string& hashedPassword);
+        uint32_t hashVisuPassword(std::string& hashedPassword);
         uint32_t hashToken(std::string& hashedToken);
 
 		void setPublicKey(const std::string certificate);
@@ -30,6 +31,12 @@ namespace Loxone
         uint32_t setToken(const BaseLib::PVariable value);
         uint32_t setToken(const std::string jwt);
         uint32_t getToken(std::string& token, std::time_t& lifeTime);
+
+        void setVisuKey(const std::string hexKey);
+        void setVisuSalt(const std::string salt);
+        uint32_t setVisuHashAlgorithm(const std::string algorithm);
+        void setHashedVisuPassword(const std::string hashedPassword);
+        std::string getHashedVisuPassword();
 
 	private:
         BaseLib::SharedObjects* _bl;
@@ -42,6 +49,8 @@ namespace Loxone
 
         std::string _user;
         std::string _password;
+        std::string _visuPassword;
+        std::string _hashedVisuPassword;
 
         std::string _loxKey;
         std::string _loxSalt;
@@ -49,6 +58,11 @@ namespace Loxone
 
         gnutls_digest_algorithm_t _digestAlgorithm;
         gnutls_mac_algorithm_t _macAlgorithm;
+
+        std::string _loxVisuKey;
+        std::string _loxVisuSalt;
+        gnutls_digest_algorithm_t _visuDigestAlgorithm;
+        gnutls_mac_algorithm_t _visuMacAlgorithm;
 
         gnutls_cipher_hd_t _Aes256Handle;
         std::string _mySalt;

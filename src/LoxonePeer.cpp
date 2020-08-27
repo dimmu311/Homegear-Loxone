@@ -824,9 +824,10 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 		}
 
 		std::string command;
-		if(!_control->setValue(frame, parameters, command)) return Variable::createError(-32500, "Loxone Control can not create packet");
+		bool isSecured;
+		if(!_control->setValue(frame, parameters, command, isSecured)) return Variable::createError(-32500, "Loxone Control can not create packet");
         GD::out.printDebug(command);
-        std::shared_ptr<LoxonePacket> packet (new LoxonePacket(command));
+        std::shared_ptr<LoxonePacket> packet (new LoxonePacket(command, isSecured));
 		_physicalInterface->sendPacket(packet);
 
 		if (!valueKeys->empty())

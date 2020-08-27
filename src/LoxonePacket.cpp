@@ -12,15 +12,17 @@ namespace Loxone
 		"jdev/sys/gettoken/",
         "jdev/sys/getjwt/",
         "dev/sys/refreshjwt/",
+        "dev/sys/getvisusalt/",
         "authwithtoken/",
 		"dev/sps/enablebinstatusupdate",
 
 		"jdev/sys/enc/",
 	};
 
-    LoxonePacket::LoxonePacket(std::string& command)
+    LoxonePacket::LoxonePacket(std::string& command, bool isSecured)
     {
         _command = command;
+        _isSecured = isSecured;
     }
 	std::string LoxonePacket::getUuidFromPacket(char* packet)
 	{

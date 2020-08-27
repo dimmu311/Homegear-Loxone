@@ -23,9 +23,8 @@ Miniserver::Miniserver(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettin
     if(_port < 1 || _port > 65535) _port = 80;
 
 	_user = settings->user;
-	_password = settings->password;
     //_msVersion = settings->type;
-	_loxoneEncryption = std::make_shared<LoxoneEncryption>(_user, _password, _bl);
+	_loxoneEncryption = std::make_shared<LoxoneEncryption>(_user, settings->password, settings->passwordS21, _bl);
 
     std::string token;
     {
@@ -56,8 +55,16 @@ void Miniserver::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
         PLoxonePacket loxonePacket(std::dynamic_pointer_cast<LoxonePacket>(packet));
         if(!loxonePacket) return;
 
+        std::string commandToEncrypt = loxonePacket->getCommand();
+        if(loxonePacket->needToSecure())
+        {
+            //ToDo: maybe find a better solution than just insert the hashed passwort into the command
+            prepareSecuredCommand();
+            commandToEncrypt.insert(11 ,"s/" + _loxoneEncryption->getHashedVisuPassword());
+        }
+
         std::string command;
-        if(_loxoneEncryption->encryptCommand(loxonePacket->getCommand(),command)<0)
+        if(_loxoneEncryption->encryptCommand(commandToEncrypt,command)<0)
         {
             _out.printError("Error: Could not encrypt Command.");
             _stopped = true;
@@ -269,6 +276,8 @@ void Miniserver::init()
             }
             else acquireToken();
 
+            prepareSecuredCommand();
+
 			{
                 if (GD::bl->debugLevel >= 5) _out.printDebug("Step 6: enableUpdates");
 
@@ -368,8 +377,6 @@ void Miniserver:: authenticateUsingTokens()
             _stopped = true;
             return;
         }
-
-
     }
 }
 void Miniserver:: acquireToken()
@@ -455,6 +462,54 @@ void Miniserver:: acquireToken()
         saveToken();
     }
 }
+
+    void Miniserver::prepareSecuredCommand()
+    {
+        {
+            if (GD::bl->debugLevel >= 5) _out.printDebug("Step 1: Request Visu Salt");
+            std::string command;
+            if (_loxoneEncryption->encryptCommand("jdev/sys/getvisusalt/" + _user,command) < 0) {
+                _out.printError("Error: Could not encrypt command.");
+                _stopped = true;
+                return;
+            }
+            auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
+            auto responsePacket = getResponse("dev/sys/getvisusalt/", webSocket);
+            if (!responsePacket)
+            {
+                _out.printError("Error: Could get Visu Salt.");
+                _stopped = true;
+                return;
+            }
+            auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+            if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
+            {
+                _out.printError("Error: Could get Visu Salt.");
+                _stopped = true;
+                return;
+            }
+
+            _loxoneEncryption->setVisuKey(loxoneWsPacket->getValue()->structValue->at("key")->stringValue);
+            _loxoneEncryption->setVisuSalt(loxoneWsPacket->getValue()->structValue->at("salt")->stringValue);
+            if(_loxoneEncryption->setVisuHashAlgorithm(loxoneWsPacket->getValue()->structValue->at("hashAlg")->stringValue)<0)
+            {
+                _out.printError("Error: Could not set Hash Algorithm.");
+                _stopped = true;
+                return;
+            }
+        }
+        {
+            if (GD::bl->debugLevel >= 5) _out.printDebug("Step 2: create Visu Password Hash");
+            std::string hashedPassword;
+            if(_loxoneEncryption->hashVisuPassword(hashedPassword)<0)
+            {
+                _out.printError("Error: Could not hash password.");
+                _stopped = true;
+                return;
+            }
+            _loxoneEncryption->setHashedVisuPassword(hashedPassword);
+        }
+     }
 
 void Miniserver::saveToken()
 {

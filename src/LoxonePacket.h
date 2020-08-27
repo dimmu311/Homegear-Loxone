@@ -35,7 +35,7 @@ class LoxonePacket : public BaseLib::Systems::Packet
 {
 public:
     LoxonePacket() = default;
-    LoxonePacket(std::string& command);
+    LoxonePacket(std::string& command, bool isSecured = false);
 	virtual ~LoxonePacket() = default;
 	static const std::list<std::string> _responseCommands;
 
@@ -48,6 +48,7 @@ public:
 
 	LoxonePacketType getPacketType() { return _packetType; };
 	std::string getUuid() { return _uuid; };
+	bool needToSecure(){return _isSecured;};
 
 protected:
 	std::string _command;
@@ -59,6 +60,7 @@ protected:
 
 	std::string _uuid;
 	LoxonePacketType _packetType;
+    bool _isSecured = false;
 
 	std::string getUuidFromPacket(char* data);
 	double getValueFromPacket(char* data);
