@@ -296,9 +296,7 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
     try
 	{
 		std::ostringstream stringStream;
-		
 		std::vector<std::string> arguments;
-		bool showHelp = false;
 
 		if(command == "help" || command == "h")
 		{
