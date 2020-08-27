@@ -16,8 +16,8 @@ namespace Loxone {
             "defaultRating":0,
             "isFavorite":false,
             "isSecured":true,
-            "details":{"
-                alert":true,
+            "details":{
+                "alert":true,
                 "presenceConnected":true
             },
             "states":{

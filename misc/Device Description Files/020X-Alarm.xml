@@ -18,13 +18,28 @@
     <function channel="1" type="ALARM" channelCount="1">
       <properties/>
       <configParameters>config--1</configParameters>
-      <variables>switch_valueset--1</variables>
+      <variables>alarm_valueset--1</variables>
     </function>
   </functions>
   <packets>
-    <packet id="on.stateSet">
+    <packet id="on.textSet">
       <direction>toCentral</direction>
-      <function1>StateSet</function1>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\sensors</keyPath>
+          <parameterId>SENSORS</parameterId>
+        </element>
+        <element>
+          <keyPath>state\startTime</keyPath>
+          <parameterId>ALARM_TIME</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
       <channel>1</channel>
       <jsonPayload>
         <element>
@@ -48,10 +63,6 @@
           <parameterId>LEVEL</parameterId>
         </element>
         <element>
-          <keyPath>state\startTime</keyPath>
-          <parameterId>START_TIME</parameterId>
-        </element>
-        <element>
           <keyPath>state\armedDelay</keyPath>
           <parameterId>ARMED_DELAY</parameterId>
         </element>
@@ -60,27 +71,137 @@
           <parameterId>ARMED_DELAY_TOTAL</parameterId>
         </element>
         <element>
-          <keyPath>state\sensors</keyPath>
-          <parameterId>SENSORS</parameterId>
-        </element>
-        <element>
           <keyPath>state\disabledMove</keyPath>
           <parameterId>DISABLED_MOVE</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="stateSet">
+    <packet id="armed">
       <direction>fromCentral</direction>
-      <function1>Arm</function1>
+      <function1>activeSet</function1>
       <jsonPayload>
         <element>
-          <parameterId>ARM</parameterId>
+          <parameterId>ARMED</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="arm">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>on</constValueString>
+        </element>
+        <element>
+          <parameterId>ARM_MODE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="delayedon">
+      <direction>fromCentral</direction>
+      <function1>activeSetOn</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>delayedon</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="delayedonMode">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>delayedon</constValueString>
+        </element>
+        <element>
+          <parameterId>ARM_DELAY_MODE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="quit">
+      <direction>fromCentral</direction>
+      <function1>activeSetOn</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>quit</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="dismv">
+      <direction>fromCentral</direction>
+      <function1>booleanSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>DISABLED_MOVE</parameterId>
+        </element>
+        <element>
+          <constValueString>dismv/1</constValueString>
+        </element>
+        <element>
+          <constValueString>dismv/0</constValueString>
         </element>
       </jsonPayload>
     </packet>
   </packets>
   <parameterGroups>
-    <configParameters id="config--1"/>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="ALERT">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="PRESENCE_CONNECTED">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+    </configParameters>
     <configParameters id="maint_ch_master--0"/>
     <variables id="maint_ch_values--0">
       <parameter id="UNREACH">
@@ -94,11 +215,17 @@
         </physicalInteger>
       </parameter>
     </variables>
-    <variables id="switch_valueset--1">
+    <variables id="alarm_valueset--1">
       <parameter id="ARMED">
         <properties>
-          <writeable>false</writeable>
+          <readable>true</readable>
+          <writeable>true</writeable>
           <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
             <rpcBinary/>
           </casts>
         </properties>
@@ -109,8 +236,11 @@
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="on.stateSet">
+          <packet id="on.valueSet">
             <type>event</type>
+          </packet>
+          <packet id="armed">
+            <type>set</type>
           </packet>
         </packets>
       </parameter>
@@ -121,14 +251,42 @@
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalDecimal>
+        <logicalEnumeration>
           <defaultValue>0</defaultValue>
-        </logicalDecimal>
+          <value>
+            <index>none</index>
+            <id>0</id>
+          </value>
+          <value>
+            <index>Silent</index>
+            <id>1</id>
+          </value>
+          <value>
+            <index>Acustic</index>
+            <id>2</id>
+          </value>
+          <value>
+            <index>Optical</index>
+            <id>3</id>
+          </value>
+          <value>
+            <index>Internal</index>
+            <id>4</id>
+          </value>
+          <value>
+            <index>External</index>
+            <id>5</id>
+          </value>
+          <value>
+            <index>Remote</index>
+            <id>6</id>
+          </value>
+        </logicalEnumeration>
         <physicalNone groupId="NEXT_LEVEL">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="on.stateSet">
+          <packet id="on.valueSet">
             <type>event</type>
           </packet>
         </packets>
@@ -147,7 +305,7 @@
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="on.stateSet">
+          <packet id="on.valueSet">
             <type>event</type>
           </packet>
         </packets>
@@ -166,7 +324,7 @@
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="on.stateSet">
+          <packet id="on.valueSet">
             <type>event</type>
           </packet>
         </packets>
@@ -178,39 +336,49 @@
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalDecimal>
+        <logicalEnumeration>
           <defaultValue>0</defaultValue>
-        </logicalDecimal>
+          <value>
+            <index>none</index>
+            <id>0</id>
+          </value>
+          <value>
+            <index>Silent</index>
+            <id>1</id>
+          </value>
+          <value>
+            <index>Acustic</index>
+            <id>2</id>
+          </value>
+          <value>
+            <index>Optical</index>
+            <id>3</id>
+          </value>
+          <value>
+            <index>Internal</index>
+            <id>4</id>
+          </value>
+          <value>
+            <index>External</index>
+            <id>5</id>
+          </value>
+          <value>
+            <index>Remote</index>
+            <id>6</id>
+          </value>
+        </logicalEnumeration>
         <physicalNone groupId="LEVEL">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="on.stateSet">
+          <packet id="on.valueSet">
             <type>event</type>
           </packet>
         </packets> 
       </parameter>
-      <parameter id="START_TIME">
-        <properties>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalString>
-          <defaultValue></defaultValue>
-        </logicalString>
-        <physicalNone groupId="START_TIME">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.stateSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
       <parameter id="ARMED_DELAY">
         <properties>
+          <readable>true</readable>
           <writeable>false</writeable>
           <casts>
             <rpcBinary/>
@@ -223,7 +391,7 @@
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="on.stateSet">
+          <packet id="on.valueSet">
             <type>event</type>
           </packet>
         </packets>
@@ -242,7 +410,7 @@
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="on.stateSet">
+          <packet id="on.valueSet">
             <type>event</type>
           </packet>
         </packets>
@@ -254,22 +422,26 @@
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalString>
-          <defaultValue></defaultValue>
-        </logicalString>
+        <logicalString/>
         <physicalNone groupId="SENSORS">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="on.stateSet">
+          <packet id="on.textSet">
             <type>event</type>
           </packet>
         </packets>
       </parameter>
       <parameter id="DISABLED_MOVE">
         <properties>
-          <writeable>false</writeable>
+          <readable>true</readable>
+          <writeable>true</writeable>
           <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
             <rpcBinary/>
           </casts>
         </properties>
@@ -280,13 +452,34 @@
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="on.stateSet">
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="dismv">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ALARM_TIME">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="ALARM_TIME">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
             <type>event</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="ARM">
+      <parameter id="ARM_MODE">
         <properties>
+          <readable>false</readable>
           <writeable>true</writeable>
           <casts>
             <rpcBinary/>
@@ -307,11 +500,81 @@
             <index>1</index>
           </value>
         </logicalEnumeration>
-        <physicalNone groupId="ARM">
+        <physicalNone groupId="ARM_MODE">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="stateSet">
+          <packet id="arm">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ARM_DELAY">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction/>
+        <physicalNone groupId="ARM_DELAY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="delayedon">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ARM_DELAY_MODE">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>-1</defaultValue>
+          <value>
+            <id>none</id>
+            <index>-1</index>
+          </value>
+          <value>
+            <id>without movement</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>with movement</id>
+            <index>1</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="ARM_DELAY_MODE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="delayedonMode">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="QUIT">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction/>
+        <physicalNone groupId="QUIT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="quit">
             <type>set</type>
           </packet>
         </packets>

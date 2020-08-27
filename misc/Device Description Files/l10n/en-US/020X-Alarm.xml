@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDeviceTranslation lang="en-US">
+  <supportedDevices>
+    <device id="Loxone Alarm">
+      <description>Loxone Alarm</description>
+      <longDescription></longDescription>
+    </device>
+  </supportedDevices>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <label>Room</label>
+        <description>Displays the room which is configured in Loxone Config.</description>
+      </parameter>
+      <parameter id="CATEGORY">
+        <label>Category</label>
+        <description>Displays the category which is configured in Loxone Config.</description>
+      </parameter>
+      <parameter id="ALERT">
+        <label>Alert</label>
+        <description>Not used.</description>
+      </parameter>
+      <parameter id="PRESENCE_CONNECTED">
+        <label>Presence connected</label>
+        <description>TRUE if a presence detector is connected to DisMv in Loxone Config.</description>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <label>Unreachable</label>
+        <description>Set to "true" when the device is unreachable. This means that the associated control no longer exists in Loxone Config.</description>
+      </parameter>
+    </variables>
+    <variables id="aalEmergency_valueset--1">
+      <parameter id="ARMED">
+        <label>Armed</label>
+        <description>shows if the AlarmControl is armed. set to true to arm, set to false to disable</description>
+      </parameter>
+      <parameter id="NEXT_LEVEL">
+        <label>Next level</label>
+        <description>the ID of the next alarm level.</description>
+      </parameter>
+      <parameter id="NEXT_LEVEL_DELAY">
+        <label>Next level delay</label>
+        <description>The delay of the next level in seconds, this can be specified with the parameters D1 - D6 in Loxone Config. This increments every second.</description>
+      </parameter>
+      <parameter id="NEXT_LEVEL_DELAY_TOTAL">
+        <label>next level delay total</label>
+        <description>The total delay of the next level in seconds, this can be specified with the parameters D1 - D6 in Loxone Config.</description>
+      </parameter>
+      <parameter id="LEVEL">
+        <label>level</label>
+        <description>The ID of the current alarm level.</description>
+      </parameter>
+      <parameter id="ARMED_DELAY">
+        <label>Armed delay</label>
+        <description>The delay of the alarm control being armed.</description>
+      </parameter>
+      <parameter id="ARMED_DELAY_TOTAL">
+        <label>Armed delay total</label>
+        <description>The total delay of the alarm control being armed.</description>
+      </parameter>
+      <parameter id="SENSORS">
+        <label>Sensors</label>
+        <description>A string of sensors that triggered a alarm separated by a pipe ("|").</description>
+      </parameter>
+      <parameter id="DISABLED_MOVE">
+        <label>Disabled move</label>
+        <description>If the movement is disabled or not.</description>
+      </parameter>
+      <parameter id="ALARM_TIME">
+        <label>alarm time</label>
+        <description>timestamp when alarm started.</description>
+      </parameter>
+      <parameter id="ARM_MODE">
+        <label>Arm mode</label>
+        <description>set to 0 or 1 to arm with/without movement.</description>
+      </parameter>
+      <parameter id="ARM_DELAY">
+        <label>Arm delay</label>
+        <description>Arms the AlarmControl with the given delay (Parameter "Da" in Loxone Config).</description>
+      </parameter>
+      <parameter id="ARM_DELAY_MODE">
+        <label>Arm delay mode</label>
+        <description>set to 0 or 1 to arm with/without movement after the given delay (Parameter "Da" in Loxone Config).</description>
+      </parameter>
+      <parameter id="QUIT">
+        <label>Quit</label>
+        <description>Acknowledge the alarm (quit the alarm).</description>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDeviceTranslation>
