@@ -45,10 +45,16 @@ set(SOURCE_FILES
 		src/controls/MediaClient.cpp
 		src/controls/MediaClient.h
 		src/controls/Jalousie.cpp
-		src/controls/Jalousie.h src/controls/IntelligentRoomControllerV2.cpp src/controls/IntelligentRoomControllerV2.h src/controls/AalEmergency.cpp src/controls/AalEmergency.h src/controls/AalSmartAlarm.h src/controls/AalSmartAlarm.cpp)
+		src/controls/Jalousie.h
+		src/controls/IntelligentRoomControllerV2.cpp
+		src/controls/IntelligentRoomControllerV2.h
+		src/controls/AalEmergency.cpp
+		src/controls/AalEmergency.h
+		src/controls/AalSmartAlarm.h
+		src/controls/AalSmartAlarm.cpp)
 
 add_custom_target(homegear COMMAND ../../makeAll.sh SOURCES ${SOURCE_FILES})
 set(CMAKE_SHARED_LIBRARY_PREFIX "mod_")
 
-add_library(loxone_miniserver SHARED ${SOURCE_FILES})
-install(TARGETS loxone_miniserver DESTINATION /var/lib/homegear/modules)
+add_library(loxone SHARED ${SOURCE_FILES})
+install(TARGETS loxone DESTINATION /var/lib/homegear/modules)
