@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone Slider">
+      <description>Loxone Slider</description>
+      <typeNumber>0x0101</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="SLIDER" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>slider_valueset--1</variables>
+    </function>
+  </functions>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\value</keyPath>
+          <parameterId>VALUE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\value</keyPath>
+          <parameterId>ACTIVE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\error</keyPath>
+          <parameterId>ERROR</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="valueSet">
+      <direction>fromCentral</direction>
+      <function1>valueSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>VALUE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="stepUp">
+      <direction>fromCentral</direction>
+      <function1>stepUp</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>VALUE</parameterId>
+        </element>
+        <element>
+          <parameterId>STEP</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="stepDown">
+      <direction>fromCentral</direction>
+      <function1>stepDown</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>VALUE</parameterId>
+        </element>
+        <element>
+          <parameterId>STEP</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="FORMAT">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="MAX">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalDecimal/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="MIN">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalDecimal/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="STEP">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalDecimal/>
+        <physicalNone groupId="STEP">
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="slider_valueset--1">
+      <parameter id="VALUE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+          <maximumValue>2147483647</maximumValue>
+          <minimumValue>-2147483647</minimumValue>
+        </logicalDecimal>
+        <physicalNone groupId="VALUE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="valueSet">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ACTIVE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="ACTIVE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="STEP_UP">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="STEP_UP">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="stepUp">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="STEP_DOWN">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="STEP_DOWN">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="stepDown">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ERROR">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="ERROR">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>
