@@ -276,7 +276,11 @@ namespace Loxone
 			_json->structValue->operator[]("state") = PVariable(new Variable(VariableType::tStruct));
 			_json->structValue->at("state")->structValue->operator[](variable_PeerId->second->variable) = PVariable(new Variable(loxonePacket->getText()));
 
-			loxonePacket->setJsonString(_json);
+            auto value = BaseLib::Rpc::JsonDecoder::decode(loxonePacket->getText());
+            _json->structValue->operator[]("json") = PVariable(new Variable(VariableType::tStruct));
+            _json->structValue->at("json")->structValue->operator[](variable_PeerId->second->variable) = value;
+
+            loxonePacket->setJsonString(_json);
             loxonePacket->setMethod("on.textStatesPacket");
 			return true;
 		}
@@ -360,7 +364,6 @@ namespace Loxone
     }
 	uint32_t LoxoneControl::getDetailsToSave(std::list<Database::DataRow> &list, uint32_t peerID)
     {
-        //TODO, maybe this must not be safed anymore because it is safed to a config variable.
         uint32_t variableID = 121;
         for(auto i = _detailsMap.begin(); i!= _detailsMap.end(); ++i)
         {
@@ -521,7 +524,7 @@ namespace Loxone
 		OptionalFields::getDataToSave(list, peerID);
 		getStatesToSave(list, peerID);
 		getDetailsToSave(list, peerID);
-		return 1;
+		return 0;
 	}
 	bool LoxoneControl::getValueFromStructFile(const std::string& variableId, const std::string& path, bool& value)
 	{
@@ -749,6 +752,4 @@ namespace Loxone
 		if (GD::bl->debugLevel >= 5) GD::out.printInfo("could not get binary variable from database. variable id= " + std::to_string(variableId));
 		return false;
 	}
-
-
 }

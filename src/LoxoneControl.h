@@ -25,42 +25,50 @@ namespace Loxone
 	class MandatoryFields
 	{
 		public:
-		std::string _name;
-		std::string _typeString;
-		std::string _uuidAction;
-		uint32_t _defaultRating;
-		bool _isSecured;
-		//isFavorite is not described as a mandatoryFild in the documentation, but so far I have not found a control where isFavorit is not available
-        bool _isFavorite;
 		MandatoryFields(PVariable mandatoryFields, std::string room, std::string cat);
-		MandatoryFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
+		explicit MandatoryFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
 		void overwriteName(std::string name);
 		std::string getName() { return _name; };
+		std::string getUuidAction() {return _uuidAction;};
 		virtual uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
+	protected:
+        std::string _name;
+        std::string _typeString;
+        std::string _uuidAction;
+        uint32_t _defaultRating;
+        bool _isSecured;
+        //isFavorite is not described as a mandatoryFild in the documentation, but so far I have not found a control where isFavorit is not available
+        bool _isFavorite;
 	};
-	//TODO: maybe ther is no more need for the OptionalFields Class, because name and cat are now safed in a config parameter.
 	class OptionalFields
 	{
 		public:
-		std::string _room;
-		std::string _cat;
-		//securedDetails -> see derived classes of the controls
-		//details -> see derived classes of the controls
-		//statistic -> see derived classes of the controls
+
 		OptionalFields(PVariable optionalFields, std::string room, std::string cat);
-		OptionalFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
+		explicit OptionalFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
 		std::string getRoom() { return _room; };
 		std::string getCat() { return _cat; };
 		virtual uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
+	protected:
+        std::string _room;
+        std::string _cat;
+        std::unordered_map <std::string, PVariable> _detailsMap;
+        //states ->see controls class
+
+        //todo: implement the following
+        //securedDetails
+        //statistic
+        //restrictions
+        //hasControlNotes
 	};
 
 	class LoxoneControl : public MandatoryFields, public OptionalFields
 	{
 	public:
-		LoxoneControl(PVariable control, std::string room, std::string cat, uint32_t typeNr);
+        LoxoneControl(PVariable control, std::string room, std::string cat, uint32_t typeNr);
 		LoxoneControl(std::shared_ptr<BaseLib::Database::DataTable> rows, uint32_t typeNr);
 
-		uint32_t getType() { return _type; };
+        uint32_t getType() { return _type; };
 		
 		std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> getVariables() { return _uuidVariable_PeerIdMap; };
 
@@ -79,12 +87,12 @@ namespace Loxone
 		uint32_t _type;
 
 		std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> _uuidVariable_PeerIdMap;
-		std::unordered_map <std::string, PVariable> _detailsMap;
 		PVariable _json;
         std::shared_ptr<BaseLib::Rpc::RpcEncoder>_RpcEncoder;
         std::shared_ptr<BaseLib::Rpc::RpcDecoder>_RpcDecoder;
-        uint32_t getDetailsToSave(std::list<Database::DataRow> &list, uint32_t peerID);
+
 		uint32_t getStatesToSave(std::list<Database::DataRow> &list, uint32_t peerID);
+        uint32_t getDetailsToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 
 		PVariable _control;
 		bool getValueFromStructFile(const std::string& variableId, const std::string& path, bool& value);
