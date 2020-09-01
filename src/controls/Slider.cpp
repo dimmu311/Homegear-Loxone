@@ -2,11 +2,11 @@
 
 namespace Loxone
 {
-    Slider::Slider(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x0101)
+    Slider::Slider(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x101)
     {
         getValueFromStructFile("defaultIcon", "", _defaultIcon);
     }
-    Slider::Slider(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x0101)
+    Slider::Slider(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x101)
     {
         getBinaryValueFromDataTable(109, _defaultIcon);
     }

@@ -34,7 +34,6 @@ class Pushbutton : public LoxoneControl
         Pushbutton(std::shared_ptr<BaseLib::Database::DataTable> rows);
         uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
     protected:
-        bool _isFavorite;
         std::string _defaultIcon;
     };
 }
