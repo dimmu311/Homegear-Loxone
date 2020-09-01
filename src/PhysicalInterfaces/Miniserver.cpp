@@ -260,6 +260,42 @@ void Miniserver::init()
 					return;
 				}
 			}
+            {
+                if (GD::bl->debugLevel >= 5) _out.printDebug("Step 4: getkey2");
+
+                std::string command;
+                if(_loxoneEncryption->encryptCommand("jdev/sys/getkey2/" + _user, command)<0)
+                {
+                    _out.printError("Error: Could not encrypt command.");
+                    _stopped = true;
+                    return;
+                }
+
+                auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
+                auto responsePacket = getResponse("jdev/sys/getkey2/", webSocket);
+                if (!responsePacket)
+                {
+                    _out.printError("Error: Could not get Key from Miniserver.");
+                    _stopped = true;
+                    return;
+                }
+                auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+                if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
+                {
+                    _out.printError("Error: Could not get Key from Miniserver.");
+                    _stopped = true;
+                    return;
+                }
+
+                _loxoneEncryption->setKey(loxoneWsPacket->getValue()->structValue->at("key")->stringValue);
+                _loxoneEncryption->setSalt(loxoneWsPacket->getValue()->structValue->at("salt")->stringValue);
+                if(_loxoneEncryption->setHashAlgorithm(loxoneWsPacket->getValue()->structValue->at("hashAlg")->stringValue)<0)
+                {
+                    _out.printError("Error: Could not set Hash Algorithm.");
+                    _stopped = true;
+                    return;
+                }
+            }
 
             if (GD::bl->debugLevel >= 5) _out.printDebug("Step 4: Check if there is a valid token that can be used for authentication");
             std::string token;
@@ -313,41 +349,6 @@ void Miniserver::init()
 void Miniserver:: authenticateUsingTokens()
 {
     if (GD::bl->debugLevel >= 5) _out.printDebug("authenticateUsingTokens");
-    if (GD::bl->debugLevel >= 5) _out.printDebug("Step 1: getkey2");
-    {
-        std::string command;
-        if(_loxoneEncryption->encryptCommand("jdev/sys/getkey2/" + _user, command)<0)
-        {
-            _out.printError("Error: Could not encrypt command.");
-            _stopped = true;
-            return;
-        }
-
-        auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
-        auto responsePacket = getResponse("jdev/sys/getkey2/", webSocket);
-        if (!responsePacket)
-        {
-            _out.printError("Error: Could not get Key from Miniserver.");
-            _stopped = true;
-            return;
-        }
-        auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-        if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
-        {
-            _out.printError("Error: Could not get Key from Miniserver.");
-            _stopped = true;
-            return;
-        }
-
-        _loxoneEncryption->setKey(loxoneWsPacket->getValue()->structValue->at("key")->stringValue);
-        _loxoneEncryption->setSalt(loxoneWsPacket->getValue()->structValue->at("salt")->stringValue);
-        if(_loxoneEncryption->setHashAlgorithm(loxoneWsPacket->getValue()->structValue->at("hashAlg")->stringValue)<0)
-        {
-            _out.printError("Error: Could not set Hash Algorithm.");
-            _stopped = true;
-            return;
-        }
-    }
     {
         if (GD::bl->debugLevel >= 5) _out.printDebug("Step 2: authenticate");
         std::string hashedToken;
@@ -374,6 +375,7 @@ void Miniserver:: authenticateUsingTokens()
         if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
         {
             _out.printError("Error: Could not authenticate with token.");
+            if(loxoneWsPacket->getResponseCode() == 401) _loxoneEncryption->setToken("");
             _stopped = true;
             return;
         }
@@ -382,44 +384,7 @@ void Miniserver:: authenticateUsingTokens()
 void Miniserver:: acquireToken()
 {
     {
-        if (GD::bl->debugLevel >= 5) _out.printDebug("Step 4: getkey2");
-
-        std::string command;
-        if(_loxoneEncryption->encryptCommand("jdev/sys/getkey2/" + _user, command)<0)
-        {
-            _out.printError("Error: Could not encrypt command.");
-            _stopped = true;
-            return;
-        }
-
-        auto webSocket = encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text);
-        auto responsePacket = getResponse("jdev/sys/getkey2/", webSocket);
-        if (!responsePacket)
-        {
-            _out.printError("Error: Could not get Key from Miniserver.");
-            _stopped = true;
-            return;
-        }
-        auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
-        if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200)
-        {
-            _out.printError("Error: Could not get Key from Miniserver.");
-            _stopped = true;
-            return;
-        }
-
-        _loxoneEncryption->setKey(loxoneWsPacket->getValue()->structValue->at("key")->stringValue);
-        _loxoneEncryption->setSalt(loxoneWsPacket->getValue()->structValue->at("salt")->stringValue);
-        if(_loxoneEncryption->setHashAlgorithm(loxoneWsPacket->getValue()->structValue->at("hashAlg")->stringValue)<0)
-        {
-            _out.printError("Error: Could not set Hash Algorithm.");
-            _stopped = true;
-            return;
-        }
-    }
-    {
         if (GD::bl->debugLevel >= 5) _out.printDebug("Step 5: getToken");
-
         std::string hashedPassword;
         if(_loxoneEncryption->hashPassword(hashedPassword)<0)
         {
@@ -803,6 +768,7 @@ void Miniserver::listen()
                                 if (GD::bl->debugLevel >= 5) _out.printDebug("Websocket Opcode is typ CLOSE");
 								if (GD::bl->debugLevel >= 5) _out.printDebug("Opcode CLOSE -> " + std::string(content.begin(), content.end()));
 								_stopped = true;
+								_loxoneEncryption->setToken("");
 								websocket.reset();
 								break;
 							}
@@ -815,6 +781,7 @@ void Miniserver::listen()
             catch(const std::exception& ex)
             {
                 _stopped = true;
+                _loxoneEncryption->setToken("");
                 _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
             }
         }

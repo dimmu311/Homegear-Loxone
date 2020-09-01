@@ -384,6 +384,7 @@ namespace Loxone
         try
         {
             _loxToken = jwt;
+            _tokenValidUntil = 0;
 
             std::stringstream ss(jwt);
             std::string part;
@@ -441,7 +442,7 @@ namespace Loxone
 
     uint32_t LoxoneEncryption::getToken(std::string& token, std::time_t& lifeTime)
     {
-	    if(_loxToken.size() <= 0) return -1;
+	    if(_loxToken.size() == 0) return -1;
 	    if(_tokenValidUntil == 0) return -1;
 	    token = _loxToken;
 	    lifeTime = _tokenValidUntil;
