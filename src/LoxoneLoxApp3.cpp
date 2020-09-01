@@ -122,10 +122,11 @@ namespace Loxone
 				}
 
 				if (GD::bl->debugLevel >= 5) GD::out.printInfo("Loading Control " + i->second->structValue->at("name")->stringValue + " with serial " + serial);
-				if (createInstance::_controlsMap.find(i->second->structValue->at("type")->stringValue) == createInstance::_controlsMap.end()) continue;
-
-				std::shared_ptr<LoxoneControl> control(createInstance::_controlsMap.at(i->second->structValue->at("type")->stringValue)(i->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second));
-				_controls.insert({ serial, control });
+				//if (createInstance::_controlsMap.find(i->second->structValue->at("type")->stringValue) == createInstance::_controlsMap.end()) continue;
+				//std::shared_ptr<LoxoneControl> control(createInstance::_controlsMap.at(i->second->structValue->at("type")->stringValue)(i->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second));
+                std::shared_ptr<LoxoneControl> control = createInstance::createInstanceFromTypeString(i->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second);
+				if(!control) continue;
+                _controls.insert({ serial, control });
 
 				if (i->second->structValue->find("subControls") != i->second->structValue->end())
 				{
@@ -152,10 +153,11 @@ namespace Loxone
                             }
 						}
 						if (GD::bl->debugLevel >= 5) GD::out.printInfo("Loading subControl " + j->second->structValue->at("name")->stringValue + " with serial " + subSerial);
-						if (createInstance::_controlsMap.find(j->second->structValue->at("type")->stringValue) == createInstance::_controlsMap.end()) continue;
-
-						std::shared_ptr<LoxoneControl> subControl(createInstance::_controlsMap.at(j->second->structValue->at("type")->stringValue)(j->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second));
-						subControl->overwriteName(i->second->structValue->at("name")->stringValue + " ||| " + j->second->structValue->at("name")->stringValue);
+						//if (createInstance::_controlsMap.find(j->second->structValue->at("type")->stringValue) == createInstance::_controlsMap.end()) continue;
+						//std::shared_ptr<LoxoneControl> subControl(createInstance::_controlsMap.at(j->second->structValue->at("type")->stringValue)(j->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second));
+                        std::shared_ptr<LoxoneControl> subControl = createInstance::createInstanceFromTypeString(j->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second);
+                        if(!subControl) continue;
+                        subControl->overwriteName(i->second->structValue->at("name")->stringValue + " ||| " + j->second->structValue->at("name")->stringValue);
 						_controls.insert({ subSerial, subControl });
 					}
 				}

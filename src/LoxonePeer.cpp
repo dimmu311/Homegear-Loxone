@@ -98,7 +98,8 @@ void LoxonePeer::loadUuids()
     {
         std::shared_ptr<BaseLib::Database::DataTable> rows = _bl->db->getPeerVariables(_peerID);
         if(!rows) return;
-        _control = std::shared_ptr<LoxoneControl>(createInstance::_uintControlsMap.at(_deviceType)(rows));
+        //_control = std::shared_ptr<LoxoneControl>(createInstance::_uintControlsMap.at(_deviceType)(rows));
+        _control = createInstance::createInstanceFromTypeNr(_deviceType, rows);
         if(!_control)return ;
         _uuidVariable_PeerIdMap = _control->getVariables();
     }
@@ -549,7 +550,7 @@ PVariable LoxonePeer::getDeviceDescription(PRpcClientInfo clientInfo, int32_t ch
         //todo: find a way to display the additional information in the admin ui. till now it looks like the admin ui needs to be changed to diseplay the additional infoarmtions
         description->structValue->emplace("ROOMNAME", std::make_shared<Variable>(_control->getRoom()));
         description->structValue->emplace("CATEGORIES", std::make_shared<Variable>(_control->getCat()));
-        description->structValue->emplace("LOXONE_UUID", std::make_shared<Variable>(_control->_uuidAction));
+        description->structValue->emplace("LOXONE_UUID", std::make_shared<Variable>(_control->getUuidAction()));
 
         return description;
     }
