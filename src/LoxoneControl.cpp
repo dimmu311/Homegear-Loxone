@@ -464,14 +464,28 @@ namespace Loxone
             }
             else if(frame->function1 == "booleanSet")
             {
-                if (parameters->arrayValue->at(0)->type != VariableType::tFloat) return false;
+                if (parameters->arrayValue->at(0)->type != VariableType::tFloat)
+                {
+                    if(parameters->arrayValue->at(0)->type != VariableType::tString) return false;
+                }
                 if (parameters->arrayValue->at(1)->type != VariableType::tString) return false;
                 if (parameters->arrayValue->at(2)->type != VariableType::tString) return false;
 
-                std::string doCommand = parameters->arrayValue->at(1)->stringValue;
-                if (!(bool)parameters->arrayValue->at(0)->floatValue) doCommand = parameters->arrayValue->at(2)->stringValue;
-                command += doCommand;
-                return true;
+                if(parameters->arrayValue->at(0)->type == VariableType::tFloat)
+                {
+                    std::string doCommand = parameters->arrayValue->at(1)->stringValue;
+                    if (!(bool)parameters->arrayValue->at(0)->floatValue) doCommand = parameters->arrayValue->at(2)->stringValue;
+                    command += doCommand;
+                    return true;
+                }
+                if(parameters->arrayValue->at(0)->type == VariableType::tString)
+                {
+                    std::string doCommand = parameters->arrayValue->at(1)->stringValue;
+                    if (parameters->arrayValue->at(0)->stringValue == "false") doCommand = parameters->arrayValue->at(2)->stringValue;
+                    command += doCommand;
+                    return true;
+                }
+                return false;
             }
             else if(frame->function1 == "valueSet")
             {
