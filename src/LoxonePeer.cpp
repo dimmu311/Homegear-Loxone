@@ -161,7 +161,7 @@ void LoxonePeer::setConfigParameters()
 void LoxonePeer::homegearStarted()
 {
     Peer::homegearStarted();
-    serviceMessages->setUnreach(true,false);
+    //serviceMessages->setUnreach(true,false);
 }
 void LoxonePeer::setPhysicalInterfaceId(std::string id)
 {

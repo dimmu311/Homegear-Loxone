@@ -62,10 +62,10 @@ void LoxoneCentral::checkUnreach()
     {
         if(!physicalInterface.second->isOpen())
         {
-            GD::out.printDebug("Loxone Central: physicalInterface -> " + physicalInterface.first + "is not connected anymore. set every peer to unreach");
+            GD::out.printDebug("Loxone Central: physicalInterface -> " + physicalInterface.first + " is not connected anymore. set every peer to unreach");
             for(auto i = _peersById.begin(); i != _peersById.end(); ++i)
             {
-                if(!i->second->serviceMessages->getUnreach()) i->second->serviceMessages->setUnreach(true,false);
+                //if(!i->second->serviceMessages->getUnreach()) i->second->serviceMessages->setUnreach(true,false);
             }
         }
     }
@@ -81,6 +81,12 @@ bool LoxoneCentral::onPacketReceived(std::string& senderId, std::shared_ptr<Base
         if(!loxonePacket) return false;
 
 		GD::out.printDebug("Loxone Central: onPacketReceived-> " + loxonePacket->getUuid());
+
+		if(loxonePacket->getPacketType() == LoxonePacketType::LoxoneValueStatesPacket)
+        {
+            auto cPacket = std::dynamic_pointer_cast<LoxoneValueStatesPacket>(packet);
+            GD::out.printDebug("Loxone Central: onPacketReceived-> " + std::to_string(cPacket->getDValue()));
+        }
 
 		if (_uuidVariable_PeerIdMap.find(loxonePacket->getUuid()) == _uuidVariable_PeerIdMap.end()) return false;
 		auto variable_PeerId = _uuidVariable_PeerIdMap.find(loxonePacket->getUuid());

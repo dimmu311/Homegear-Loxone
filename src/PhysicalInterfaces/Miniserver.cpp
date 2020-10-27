@@ -33,6 +33,8 @@ Miniserver::Miniserver(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettin
         if(setting) token = setting->stringValue;
     }
     if(token.size() >0) _loxoneEncryption->setToken(token);
+
+    //_musicserver = std::make_shared<Musicserver>(settings);
 }
 
 Miniserver::~Miniserver()
