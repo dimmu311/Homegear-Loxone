@@ -314,8 +314,7 @@ namespace Loxone
             {
                 int hashedLen = gnutls_hash_get_len(_visuDigestAlgorithm);
                 unsigned char hashed[hashedLen];
-                //ToDo, change to visu password when error in baslib is fixed
-                std::string ptext = _password + ":" + _loxVisuSalt;
+                std::string ptext = _visuPassword + ":" + _loxVisuSalt;
                 if(gnutls_hash_fast(_visuDigestAlgorithm, ptext.c_str(), ptext.size(), &hashed)<0)
                 {
                     GD::out.printError("GNUTLS_DIG_xxx failed");
