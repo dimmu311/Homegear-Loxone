@@ -3,6 +3,7 @@
 
 #include "../LoxonePacket.h"
 #include "LoxoneEncryption.h"
+#include "Musicserver.h"
 
 namespace Loxone
 {
@@ -70,6 +71,8 @@ protected:
 	uint32_t _msVersion = 11;
     std::shared_ptr<BaseLib::TcpSocket> _tcpSocket;
     std::shared_ptr<LoxoneEncryption> _loxoneEncryption;
+
+    std::shared_ptr<Musicserver> _musicserver;
 
     std::atomic<uint16_t> _messageCounter{ 0 };
 

@@ -36,22 +36,7 @@ set(SOURCE_FILES
 		src/controls/createInstance.h
 		src/controls/Slider.cpp
 		src/controls/Slider.h
-		src/controls/Dimmer.cpp
-		src/controls/Dimmer.h
-		src/controls/LightControllerV2.cpp
-		src/controls/LightControllerV2.h
-		src/controls/Alarm.cpp
-		src/controls/Alarm.h
-		src/controls/MediaClient.cpp
-		src/controls/MediaClient.h
-		src/controls/Jalousie.cpp
-		src/controls/Jalousie.h
-		src/controls/IntelligentRoomControllerV2.cpp
-		src/controls/IntelligentRoomControllerV2.h
-		src/controls/AalEmergency.cpp
-		src/controls/AalEmergency.h
-		src/controls/AalSmartAlarm.h
-		src/controls/AalSmartAlarm.cpp)
+		)
 
 add_custom_target(homegear COMMAND ../../makeAll.sh SOURCES ${SOURCE_FILES})
 set(CMAKE_SHARED_LIBRARY_PREFIX "mod_")
