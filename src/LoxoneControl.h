@@ -80,7 +80,7 @@ namespace Loxone
 		virtual bool processPacket(PLoxoneWeatherStatesPacket loxonePacket);
 
         bool getValueFromVariable(BaseLib::PVariable variable, std::string& command);
-        bool setValue(PPacket frame, PVariable parameters, std::string &command, bool &isSecured);
+        virtual bool setValue(PPacket frame, PVariable parameters, std::string &command, bool &isSecured);
         virtual uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
         uint32_t getExtraData(std::list<extraData> &extraData);
         protected:

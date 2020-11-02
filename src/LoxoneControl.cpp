@@ -515,6 +515,11 @@ namespace Loxone
                 command += "/";
                 return getValueFromVariable(parameters->arrayValue->at(3), command);
             }
+            else if (frame->function1 == "stringSetToPath"){
+                if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
+                command += parameters->arrayValue->at(0)->stringValue + "/";
+                return getValueFromVariable(parameters->arrayValue->at(1), command);
+            }
             else if(frame->function1 == "valueStringSetToPath") {
                 if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
                 command += parameters->arrayValue->at(0)->stringValue + "/";
