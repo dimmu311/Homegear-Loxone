@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone CarCharger">
+      <description>Loxone CarCharger</description>
+      <typeNumber>0x0402</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="CAR_CHARGER" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>carCharger_valueset--1</variables>
+    </function>
+  </functions>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\profiles</keyPath>
+          <parameterId>PROFILES</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\status</keyPath>
+          <parameterId>STATUS</parameterId>
+        </element>
+        <element>
+          <keyPath>state\charging</keyPath>
+          <parameterId>CHARGING</parameterId>
+        </element>
+        <element>
+          <keyPath>state\connected</keyPath>
+          <parameterId>CONNECTED</parameterId>
+        </element>
+        <element>
+          <keyPath>state\charging_finished</keyPath>
+          <parameterId>CHARGING_FINISHED</parameterId>
+        </element>
+        <element>
+          <keyPath>state\energieSession</keyPath>
+          <parameterId>ENERGIE_SESSION</parameterId>
+        </element>
+        <element>
+          <keyPath>state\limitMode</keyPath>
+          <parameterId>LIMIT_MODE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\currentLimit</keyPath>
+          <parameterId>CURRENT_LIMIT</parameterId>
+        </element>
+        <element>
+          <keyPath>state\minLimit</keyPath>
+          <parameterId>MIN_LIMIT</parameterId>
+        </element>
+        <element>
+          <keyPath>state\maxLimit</keyPath>
+          <parameterId>MAX_LIMIT</parameterId>
+        </element>
+        <element>
+          <keyPath>state\chargeDuration</keyPath>
+          <parameterId>CHARGE_DURATION</parameterId>
+        </element>
+        <element>
+          <keyPath>state\showLoadManagement</keyPath>
+          <parameterId>SHOW_LOAD_MANAGEMENT</parameterId>
+        </element>
+        <element>
+          <keyPath>state\currentProfile</keyPath>
+          <parameterId>CURRENT_PROFILE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="charge">
+      <direction>fromCentral</direction>
+      <function1>booleanSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>CHARGING</parameterId>
+        </element>
+        <element>
+          <constValueString>charge/on</constValueString>
+        </element>
+        <element>
+          <constValueString>charge/off</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="limitMode">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>limitMode</constValueString>
+        </element>
+        <element>
+          <parameterId>LIMIT_MODE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="limit">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>limit</constValueString>
+        </element>
+        <element>
+          <parameterId>CURRENT_LIMIT</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="profile">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>profile</constValueString>
+        </element>
+        <element>
+          <parameterId>CURRENT_PROFILE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CHARGER_TYPE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalDecimal/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="LIMIT_ALLOWED">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="carCharger_valueset--1">
+      <parameter id="STATUS">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <id>Offline</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Initializing</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Online</id>
+            <index>2</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="STATUS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CHARGING">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="CHARGING">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="charge">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CONNECTED">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="CONNECTED">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CHARGING_FINISHED">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="CHARGING_FINISHED">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ENERGIE_SESSION">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="ENERGIE_SESSION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="LIMIT_MODE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <id>Off</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Manuak</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Autopilot</id>
+            <index>2</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="LIMIT_MODE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="limitMode">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CURRENT_LIMIT">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="CURRENT_LIMIT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="limit">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="MIN_LIMIT">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="MIN_LIMIT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="MAX_LIMIT">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="MAX_LIMIT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CHARGE_DURATION">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="CHARGE_DURATION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SHOW_LOAD_MANAGEMENT">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="SHOW_LOAD_MANAGEMENT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PROFILES">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString>
+          <defaultValue>0</defaultValue>
+        </logicalString>
+        <physicalString groupId="PROFILES">
+          <operationType>store</operationType>
+        </physicalString>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CURRENT_PROFILE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="CURRENT_PROFILE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="profile">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>

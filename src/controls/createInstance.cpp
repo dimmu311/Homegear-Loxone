@@ -22,6 +22,7 @@ namespace Loxone
         else if(type == "IRoomControllerV2") return std::make_shared<LoxoneControl>(control, room, cat, 0x301);
         else if(type == "AalEmergency") return std::make_shared<LoxoneControl>(control, room, cat, 0x400);
         else if(type == "AalSmartAlarm") return std::make_shared<LoxoneControl>(control, room, cat, 0x401);
+        else if(type == "CarCharger") return std::make_shared<LoxoneControl>(control, room, cat, 0x402);
         //Alarm Sequence, this in in Doku, but not shown in struct file. don't know if this is a Loxone issu
 
         return nullptr;
@@ -41,6 +42,7 @@ namespace Loxone
         else if(typeNr == 0x301) return std::make_shared<LoxoneControl>(rows, typeNr); //IntelligentRoomControllerV2
         else if(typeNr == 0x400) return std::make_shared<LoxoneControl>(rows, typeNr); //AalEmergency
         else if(typeNr == 0x401) return std::make_shared<LoxoneControl>(rows, typeNr); //AalSmartAlarm
+        else if(typeNr == 0x402) return std::make_shared<LoxoneControl>(rows, typeNr); //CarCharger
         //Alarm Sequence, this in in Doku, but not shown in struct file. don't know if this is a Loxone issu
 
         return nullptr;
