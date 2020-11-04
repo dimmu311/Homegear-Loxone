@@ -36,7 +36,12 @@ set(SOURCE_FILES
 		src/controls/createInstance.h
 		src/controls/Slider.cpp
 		src/controls/Slider.h
-        src/controls/ColorPickerV2.cpp src/controls/ColorPickerV2.h src/helper/KelvinRgb.cpp src/helper/KelvinRgb.h)
+        src/controls/ColorPickerV2.cpp
+		src/controls/ColorPickerV2.h
+		src/helper/KelvinRgb.cpp
+		src/helper/KelvinRgb.h
+		src/controls/Central.cpp
+		src/controls/Central.h)
 
 add_custom_target(homegear COMMAND ../../makeAll.sh SOURCES ${SOURCE_FILES})
 set(CMAKE_SHARED_LIBRARY_PREFIX "mod_")

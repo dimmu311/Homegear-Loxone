@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone Central Light Controller">
+      <description>Loxone Central Light Controller</description>
+      <typeNumber>0x0504</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="CENTRAL" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>central_valueset--1</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="2" type="CONTROLS" channelCount="10">
+      <properties/>
+      <configParameters>config--2</configParameters>
+      <variables>control_valueset--1</variables>
+    </function>
+  </functions>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="on">
+      <direction>fromCentral</direction>
+      <function1>valueSet</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>on</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="reset">
+      <direction>fromCentral</direction>
+      <function1>valueSet</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>reset</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="controlsOn">
+      <direction>fromCentral</direction>
+      <function1>special</function1>
+      <function2>setControls</function2>
+      <jsonPayload>
+        <element>
+          <constValueString>on</constValueString>
+        </element>
+        <element>
+          <parameterId>IDS</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="controlsReset">
+      <direction>fromCentral</direction>
+      <function1>special</function1>
+      <function2>setControls</function2>
+      <jsonPayload>
+        <element>
+          <constValueString>reset</constValueString>
+        </element>
+        <element>
+          <parameterId>IDS</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="controlOn">
+      <direction>fromCentral</direction>
+      <function1>special</function1>
+      <function2>setControl</function2>
+      <jsonPayload>
+        <element>
+          <constValueString>on</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="controlReset">
+      <direction>fromCentral</direction>
+      <function1>special</function1>
+      <function2>setControl</function2>
+      <jsonPayload>
+        <element>
+          <constValueString>reset</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+    </configParameters>
+    <configParameters id="config--2">
+      <parameter id="CONTROL">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="central_valueset--1">
+      <parameter id="ALL_ON">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="ALL_ON">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ALL_RESET">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="ALL_RESET">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="reset">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SELECTED_ON">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SELECTED_ON">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="controlsOn">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SELECTED_RESET">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SELECTED_RESET">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="controlsReset">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="IDS">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString>
+          <defaultValue>0</defaultValue>
+        </logicalString>
+        <physicalString groupId="IDS">
+          <operationType>store</operationType>
+        </physicalString>
+      </parameter>
+    </variables>
+  <variables id="control_valueset--1">
+    <parameter id="ON">
+      <properties>
+        <writeable>true</writeable>
+        <readable>false</readable>
+        <casts>
+          <optionString/>
+          <rpcBinary/>
+        </casts>
+      </properties>
+      <logicalAction />
+      <physicalNone groupId="ON">
+        <operationType>command</operationType>
+      </physicalNone>
+      <packets>
+        <packet id="controlOn">
+          <type>set</type>
+        </packet>
+      </packets>
+    </parameter>
+    <parameter id="RESET">
+      <properties>
+        <writeable>true</writeable>
+        <readable>false</readable>
+        <casts>
+          <optionString/>
+          <rpcBinary/>
+        </casts>
+      </properties>
+      <logicalAction />
+      <physicalNone groupId="RESET">
+        <operationType>command</operationType>
+      </physicalNone>
+      <packets>
+        <packet id="controlReset">
+          <type>set</type>
+        </packet>
+      </packets>
+    </parameter>
+  </variables>
+</parameterGroups>
+</homegearDevice>

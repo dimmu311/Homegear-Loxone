@@ -3,6 +3,7 @@
 #include "Pushbutton.h"
 #include "Slider.h"
 #include "ColorPickerV2.h"
+#include "Central.h"
 
 namespace Loxone
 {
@@ -23,6 +24,11 @@ namespace Loxone
         else if(type == "AalEmergency") return std::make_shared<LoxoneControl>(control, room, cat, 0x400);
         else if(type == "AalSmartAlarm") return std::make_shared<LoxoneControl>(control, room, cat, 0x401);
         else if(type == "CarCharger") return std::make_shared<LoxoneControl>(control, room, cat, 0x402);
+        else if(type == "CentralAlarm") return std::make_shared<Central>(control, room, cat, 0x500);
+        else if(type == "CentralAudioZone") return std::make_shared<Central>(control, room, cat, 0x501);
+        else if(type == "CentralGate") return std::make_shared<Central>(control, room, cat, 0x502);
+        else if(type == "CentralJalousie") return std::make_shared<Central>(control, room, cat, 0x503);
+        else if(type == "CentralLightController") return std::make_shared<Central>(control, room, cat, 0x504);
         //Alarm Sequence, this in in Doku, but not shown in struct file. don't know if this is a Loxone issu
 
         return nullptr;
@@ -43,6 +49,11 @@ namespace Loxone
         else if(typeNr == 0x400) return std::make_shared<LoxoneControl>(rows, typeNr); //AalEmergency
         else if(typeNr == 0x401) return std::make_shared<LoxoneControl>(rows, typeNr); //AalSmartAlarm
         else if(typeNr == 0x402) return std::make_shared<LoxoneControl>(rows, typeNr); //CarCharger
+        else if(typeNr == 0x500) return std::make_shared<Central>(rows, typeNr); //CentralAlarm
+        else if(typeNr == 0x501) return std::make_shared<Central>(rows, typeNr); //CentralAudioZone
+        else if(typeNr == 0x502) return std::make_shared<Central>(rows, typeNr); //CentralGate
+        else if(typeNr == 0x503) return std::make_shared<Central>(rows, typeNr); //CentralJalousie
+        else if(typeNr == 0x504) return std::make_shared<Central>(rows, typeNr); //CentralLightController
         //Alarm Sequence, this in in Doku, but not shown in struct file. don't know if this is a Loxone issu
 
         return nullptr;
