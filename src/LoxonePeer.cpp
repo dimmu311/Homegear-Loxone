@@ -146,6 +146,9 @@ void LoxonePeer::setConfigParameters()
         {
             for(auto i = data.begin(); i != data.end(); ++i)
             {
+                if(configCentral.find(i->channel) == configCentral.end()) continue;
+                if(configCentral[i->channel].find(i->variable) == configCentral[i->channel].end()) continue;
+
                 BaseLib::Systems::RpcConfigurationParameter &parameter = configCentral[i->channel][i->variable];
                 std::vector<uint8_t> parameterData;
                 parameter.rpcParameter->convertToPacket(i->value, parameter.mainRole(), parameterData);
@@ -826,7 +829,7 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 
 		std::string command;
 		bool isSecured;
-		if(!_control->setValue(frame, parameters, command, isSecured)) return Variable::createError(-32500, "Loxone Control can not create packet");
+		if(!_control->setValue(frame, parameters, channel, command, isSecured)) return Variable::createError(-32500, "Loxone Control can not create packet");
         GD::out.printDebug(command);
         std::shared_ptr<LoxonePacket> packet (new LoxonePacket(command, isSecured));
 		_physicalInterface->sendPacket(packet);

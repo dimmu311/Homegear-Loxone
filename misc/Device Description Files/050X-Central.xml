@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone Central Alarm">
+      <description>Loxone Central Alarm</description>
+      <typeNumber>0x0500</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+    <device id="Loxone Central Audio Zone">
+      <description>Loxone Central Audio Zone</description>
+      <typeNumber>0x0501</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+    <device id="Loxone Central Gate">
+      <description>Loxone Central Gate</description>
+      <typeNumber>0x0502</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+    <device id="Loxone Central Jalousie">
+      <description>Loxone Central Jalousie</description>
+      <typeNumber>0x0503</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+    <device id="Loxone Central Light Controller">
+      <description>Loxone Central Light Controller</description>
+      <typeNumber>0x0504</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="CENTRAL" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>central_valueset--1</variables>
+    </function>
+  </functions>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CONTROLS">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="central_valueset--1">
+    </variables>
+  </parameterGroups>
+</homegearDevice>
