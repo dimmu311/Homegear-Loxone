@@ -35,7 +35,7 @@ namespace Loxone
         bool processPacket(PLoxoneTextStatesPacket loxonePacket);
         //bool processPacket(PLoxoneValueStatesPacket loxonePacket);
 
-        bool setValue(PPacket frame, PVariable parameters, std::string &command, bool &isSecured);
+        bool setValue(PPacket frame, PVariable parameters, uint32_t channel, std::string &command, bool &isSecured);
     protected:
     };
 }

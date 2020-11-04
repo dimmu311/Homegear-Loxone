@@ -178,13 +178,15 @@ namespace Loxone
             _type = typeNr;
 			_control = control;
 
-            for (auto i = control->structValue->at("states")->structValue->begin(); i != control->structValue->at("states")->structValue->end(); ++i)
-			{
-                std::shared_ptr<variable_PeerId> myVariable_PeerId(new variable_PeerId);
-                myVariable_PeerId->variable = i->first;
-                myVariable_PeerId->peerId = 0;
-				_uuidVariable_PeerIdMap.emplace(i->second->stringValue, myVariable_PeerId);
-			}
+            if(control->structValue->find("states") != control->structValue->end()) {
+                for (auto i = control->structValue->at("states")->structValue->begin();
+                     i != control->structValue->at("states")->structValue->end(); ++i) {
+                    std::shared_ptr<variable_PeerId> myVariable_PeerId(new variable_PeerId);
+                    myVariable_PeerId->variable = i->first;
+                    myVariable_PeerId->peerId = 0;
+                    _uuidVariable_PeerIdMap.emplace(i->second->stringValue, myVariable_PeerId);
+                }
+            }
 
             if(control->structValue->find("details") != control->structValue->end())
             {
@@ -419,7 +421,7 @@ namespace Loxone
         return false;
     }
 
-    bool LoxoneControl::setValue(PPacket frame, BaseLib::PVariable parameters, std::string& command, bool &isSecured)
+    bool LoxoneControl::setValue(PPacket frame, BaseLib::PVariable parameters, uint32_t channel, std::string& command, bool &isSecured)
     {
         try
         {

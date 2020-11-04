@@ -86,11 +86,11 @@ namespace Loxone
         return false;
     }
 
-    bool ColorPickerV2::setValue(PPacket frame, PVariable parameters, std::string &command, bool &isSecured)
+    bool ColorPickerV2::setValue(PPacket frame, PVariable parameters, uint32_t channel, std::string &command, bool &isSecured)
     {
         try
         {
-            if(LoxoneControl::setValue(frame, parameters, command, isSecured)) return true;
+            if(LoxoneControl::setValue(frame, parameters, channel, command, isSecured)) return true;
             if(parameters->type != VariableType::tArray) return false;
             if(frame->function1 != "special") return false;
 
