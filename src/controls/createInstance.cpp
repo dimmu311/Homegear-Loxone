@@ -2,7 +2,7 @@
 
 #include "Pushbutton.h"
 #include "Slider.h"
-#include "ColorPickerV2.h"
+#include "ColorPicker.h"
 #include "Central.h"
 
 namespace Loxone
@@ -16,7 +16,8 @@ namespace Loxone
         else if(type == "Dimmer") return std::make_shared<LoxoneControl>(control, room, cat, 0x102);
         else if(type == "LightControllerV2") return std::make_shared<LoxoneControl>(control, room, cat, 0x103);
         else if(type == "Jalousie") return std::make_shared<LoxoneControl>(control, room, cat, 0x104);
-        else if(type == "ColorPickerV2") return std::make_shared<ColorPickerV2>(control, room, cat);
+        else if(type == "ColorPickerV2") return std::make_shared<ColorPicker>(control, room, cat, 0x105);
+        else if(type == "ColorPicker") return std::make_shared<ColorPicker>(control, room, cat, 0x106);
         else if(type == "Alarm") return std::make_shared<LoxoneControl>(control, room, cat, 0x200);
         else if(type == "MediaClient") return std::make_shared<LoxoneControl>(control, room, cat, 0x201);
         else if(type == "AlarmClock") return std::make_shared<LoxoneControl>(control, room, cat, 0x202);
@@ -42,7 +43,8 @@ namespace Loxone
         else if(typeNr == 0x102) return std::make_shared<LoxoneControl>(rows, typeNr); //Dimmer
         else if(typeNr == 0x103) return std::make_shared<LoxoneControl>(rows, typeNr); //LightControllerV2
         else if(typeNr == 0x104) return std::make_shared<LoxoneControl>(rows, typeNr); //Jalousie
-        else if(typeNr == 0x105) return std::make_shared<ColorPickerV2>(rows); //ColorPickerV2
+        else if(typeNr == 0x105) return std::make_shared<ColorPicker>(rows, typeNr); //ColorPickerV2
+        else if(typeNr == 0x106) return std::make_shared<ColorPicker>(rows, typeNr); //ColorPicker
         else if(typeNr == 0x200) return std::make_shared<LoxoneControl>(rows, typeNr); //Alarm
         else if(typeNr == 0x201) return std::make_shared<LoxoneControl>(rows, typeNr); //MediaClient
         else if(typeNr == 0x202) return std::make_shared<LoxoneControl>(rows, typeNr); //AlarmClock

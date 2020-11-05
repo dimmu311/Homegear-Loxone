@@ -1,15 +1,15 @@
-#include "ColorPickerV2.h"
+#include "ColorPicker.h"
 #include "../helper/KelvinRgb.h"
 
 namespace Loxone
 {
-    ColorPickerV2::ColorPickerV2(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x105)
+    ColorPicker::ColorPicker(PVariable control, std::string room, std::string cat, uint32_t typeNr) : LoxoneControl(control, room, cat, typeNr)
     {
     }
-    ColorPickerV2::ColorPickerV2(std::shared_ptr<BaseLib::Database::DataTable> rows) : LoxoneControl(rows, 0x105)
+    ColorPicker::ColorPicker(std::shared_ptr<BaseLib::Database::DataTable> rows, uint32_t typeNr) : LoxoneControl(rows, typeNr)
     {
     }
-    bool ColorPickerV2::processPacket(PLoxoneTextStatesPacket loxonePacket) {
+    bool ColorPicker::processPacket(PLoxoneTextStatesPacket loxonePacket) {
         try
         {
             if(!LoxoneControl::processPacket(loxonePacket)) return false;
@@ -86,7 +86,7 @@ namespace Loxone
         return false;
     }
 
-    bool ColorPickerV2::setValue(PPacket frame, PVariable parameters, uint32_t channel, std::string &command, bool &isSecured)
+    bool ColorPicker::setValue(PPacket frame, PVariable parameters, uint32_t channel, std::string &command, bool &isSecured)
     {
         try
         {
@@ -99,6 +99,13 @@ namespace Loxone
                 if (parameters->arrayValue->at(0)->type != VariableType::tInteger) return false;
                 if (parameters->arrayValue->at(1)->type != VariableType::tInteger) return false;
                 command += "temp(" + std::to_string(parameters->arrayValue->at(1)->integerValue) + "," + std::to_string(parameters->arrayValue->at(0)->integerValue) + ")";
+                return true;
+            }
+            if(frame->function2 == "setLumitech")
+            {
+                if (parameters->arrayValue->at(0)->type != VariableType::tInteger) return false;
+                if (parameters->arrayValue->at(1)->type != VariableType::tInteger) return false;
+                command += "lumitech(" + std::to_string(parameters->arrayValue->at(1)->integerValue) + "," + std::to_string(parameters->arrayValue->at(0)->integerValue) + ")";
                 return true;
             }
             if(frame->function2 == "setHsv")
