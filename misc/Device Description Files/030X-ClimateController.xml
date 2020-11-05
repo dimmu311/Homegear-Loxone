@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone ClimateController">
+      <description>Loxone ClimateController</description>
+      <typeNumber>0x0300</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="CLIMATE_CONTROLLER" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>climateController_valueset--1</variables>
+    </function>
+  </functions>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\controls</keyPath>
+          <parameterId>CONTROLS</parameterId>
+        </element>
+        <element>
+          <keyPath>state\infoText</keyPath>
+          <parameterId>INFO_TEXT</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\currentMode</keyPath>
+          <parameterId>CURRENT_MODE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\autoMode</keyPath>
+          <parameterId>AUTO_MODE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\currentAutomatic</keyPath>
+          <parameterId>CURRENT_AUTOMATIC</parameterId>
+        </element>
+        <element>
+          <keyPath>state\temperatureBoundaryInfo</keyPath>
+          <parameterId>TEMPERATURE_BOUNDARY_INFO</parameterId>
+        </element>
+        <element>
+          <keyPath>state\heatingTempBoundary</keyPath>
+          <parameterId>HEATING_TEMP_BOUNDARY</parameterId>
+        </element>
+        <element>
+          <keyPath>state\coolingTempBoundary</keyPath>
+          <parameterId>COOLING_TEMP_BOUNDARY</parameterId>
+        </element>
+        <element>
+          <keyPath>state\actualOutdoorTemp</keyPath>
+          <parameterId>ACTUAL_OUTDOOR_TEMP</parameterId>
+        </element>
+        <element>
+          <keyPath>state\averageOutdoorTemp</keyPath>
+          <parameterId>AVERAGE_OUTDOOR_TEMP</parameterId>
+        </element>
+        <element>
+          <keyPath>state\overwriteReason</keyPath>
+          <parameterId>OVERWRITE_REASON</parameterId>
+        </element>
+        <element>
+          <keyPath>state\nextMaintenance</keyPath>
+          <parameterId>NEXT_MAINTENANCE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\serviceMode</keyPath>
+          <parameterId>SERVICE_MODE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\ventilation</keyPath>
+          <parameterId>VENTILATION</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="resetMaintenance">
+      <direction>fromCentral</direction>
+      <function1>valueSet</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>resetMaintenance</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setServiceMode">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setServiceMode</constValueString>
+        </element>
+        <element>
+          <parameterId>SERVICE_MODE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="ventilation">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>ventilation</constValueString>
+        </element>
+        <element>
+          <parameterId>VENTILATION</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="autoMode">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>autoMode</constValueString>
+        </element>
+        <element>
+          <parameterId>AUTO_MODE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setHeatingBoundary">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setHeatingBoundary</constValueString>
+        </element>
+        <element>
+          <parameterId>HEATING_BOUNDARY</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setCoolingBoundary">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setCoolingBoundary</constValueString>
+        </element>
+        <element>
+          <parameterId>COOLING_BOUNDARY</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CAPABILITIES">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <id>None</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Only heating</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Only cooling</id>
+            <index>2</index>
+          </value>
+          <value>
+            <id>Heating and cooling</id>
+            <index>3</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="climateController_valueset--1">
+      <parameter id="CONTROLS">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="CONTROLS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CURRENT_MODE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>false</defaultValue>
+          <value>
+            <id>No requirement</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Heating</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Cooling</id>
+            <index>2</index>
+          </value>
+          <value>
+            <id>Heating boost</id>
+            <index>3</index>
+          </value>
+          <value>
+            <id>Cooling boost</id>
+            <index>4</index>
+          </value>
+          <value>
+            <id>Service mode</id>
+            <index>5</index>
+          </value>
+          <value>
+            <id>External heater</id>
+            <index>6</index>
+          </value>
+        </logicalEnumeration>
+        <physicalInteger groupId="CURRENT_MODE">
+          <operationType>command</operationType>
+        </physicalInteger>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="AUTO_MODE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>false</defaultValue>
+          <value>
+            <id>Heating and cooling</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Heating</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Cooling</id>
+            <index>2</index>
+          </value>
+        </logicalEnumeration>
+        <physicalInteger groupId="AUTO_MODE">
+          <operationType>command</operationType>
+        </physicalInteger>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="autoMode">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CURRENT_AUTOMATIC">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>false</defaultValue>
+          <value>
+            <id>Automatic like conditions</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Automatic like average temperatur</id>
+            <index>1</index>
+          </value>
+        </logicalEnumeration>
+        <physicalInteger groupId="CURRENT_AUTOMATIC">
+          <operationType>command</operationType>
+        </physicalInteger>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="TEMPERATURE_BOUNDARY_INFO">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>false</defaultValue>
+          <value>
+            <id>Not enough data</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Ok</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>No data at all</id>
+            <index>2</index>
+          </value>
+        </logicalEnumeration>
+        <physicalInteger groupId="TEMPERATURE_BOUNDARYE_INFO">
+          <operationType>command</operationType>
+        </physicalInteger>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="HEATING_TEMP_BOUNDARY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="HEATING_TEMP_BOUNDARY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="setHeatingBoundary">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="COOLING_TEMP_BOUNDARY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="COOLING_TEMP_BOUNDARY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="setCoolingBoundary">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ACTUAL_OUTDOOR_TEMP">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+          <specialValues>
+            <specialValue id="No temperature available">-1000</specialValue>
+          </specialValues>
+        </logicalDecimal>
+        <physicalNone groupId="ACTUAL_OUTDOOR_TEMP">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="AVERAGE_OUTDOOR_TEMP">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+          <specialValues>
+            <specialValue id="No 48h average available yet">-1000</specialValue>
+          </specialValues>
+        </logicalDecimal>
+        <physicalNone groupId="AVERAGE_OUTDOOR_TEMP">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="OVERWRITE_REASON">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>false</defaultValue>
+          <value>
+            <id>Automatic</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Boost</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>External Heater</id>
+            <index>2</index>
+          </value>
+          <value>
+            <id>Stop</id>
+            <index>3</index>
+          </value>
+        </logicalEnumeration>
+        <physicalInteger groupId="OVERWRITE_REASON">
+          <operationType>command</operationType>
+        </physicalInteger>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="INFO_TEXT">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="INFO_TEXT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SERVICE_MODE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>false</defaultValue>
+          <value>
+            <id>Off</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Standby (Heating and Cooling off)</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Heating on</id>
+            <index>2</index>
+          </value>
+          <value>
+            <id>Heating 1+2 on</id>
+            <index>3</index>
+          </value>
+          <value>
+            <id>Emergency Heating on</id>
+            <index>4</index>
+          </value>
+          <value>
+            <id>Cooling on</id>
+            <index>5</index>
+          </value>
+          <value>
+            <id>Cooling 1+2 on</id>
+            <index>6</index>
+          </value>
+        </logicalEnumeration>
+        <physicalInteger groupId="SERVICE_MODE">
+          <operationType>command</operationType>
+        </physicalInteger>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="setServiceMode">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="NEXT_MAINTENANCE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="NEXT_MAINTENANCE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="RESET_MAINTENANCE">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="RESET_MAINTENANCE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="resetMaintenance">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="VENTILATION">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="VENTILATION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="ventilation">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>
