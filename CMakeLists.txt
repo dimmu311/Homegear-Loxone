@@ -36,8 +36,8 @@ set(SOURCE_FILES
 		src/controls/createInstance.h
 		src/controls/Slider.cpp
 		src/controls/Slider.h
-        src/controls/ColorPickerV2.cpp
-		src/controls/ColorPickerV2.h
+        src/controls/ColorPicker.cpp
+        src/controls/ColorPicker.h
 		src/helper/KelvinRgb.cpp
 		src/helper/KelvinRgb.h
 		src/controls/Central.cpp
