@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone Daytimer">
+      <description>Loxone Daytimer</description>
+      <typeNumber>0x0203</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="DAYTIMER" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>daytimer_valueset--1</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="3" type="DAYTIMER_ENTRY" channelCount="15">
+      <properties/>
+      <configParameters>config--2</configParameters>
+      <variables>entry_valueset--1</variables>
+    </function>
+  </functions>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\modeList</keyPath>
+          <parameterId>MODE_LIST</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="on.daytimerStatesPacket">
+      <direction>toCentral</direction>
+      <function1>on.daytimerStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\default</keyPath>
+          <parameterId>DEFAULT</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\mode</keyPath>
+          <parameterId>MODE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\override</keyPath>
+          <parameterId>OVERRIDE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\value</keyPath>
+          <parameterId>VALUE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\resetActive</keyPath>
+          <parameterId>RESET_ACTIVE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\needsActivation</keyPath>
+          <parameterId>NEEDS_ACTIVATION</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="pulse">
+      <direction>fromCentral</direction>
+      <function1>activeSetOn</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>pulse</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="default">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>default</constValueString>
+        </element>
+        <element>
+          <parameterId>DEFAULT</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setOverride">
+      <direction>fromCentral</direction>
+      <function1>special</function1>
+      <function2>setOverride</function2>
+      <jsonPayload>
+        <element>
+          <parameterId>SET_OVERRIDE</parameterId>
+        </element>
+        <element>
+          <parameterId>OVERRIDE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setModesList">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>modeslist</constValueString>
+        </element>
+        <element>
+          <parameterId>MODE_LIST</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="ANALOG">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone groupId="ANALOG">
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="TEXT">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="FORMAT">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="daytimer_valueset--1">
+      <parameter id="MODE_LIST">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="MODE_LIST">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="setModesList">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="MODE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="MODE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="OVERRIDE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="OVERRIDE">
+          <operationType>store</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="VALUE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="VALUE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="NEEDS_ACTIVATION">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="NEEDS_ACTIVATION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="RESET_ACTIVE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="RESET_ACTIVE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PULSE">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="PULSE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="pulse">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="DEFAULT">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="DEFAULT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.daytimerStatesPacket">
+            <type>event</type>
+          </packet>
+          <packet id="default">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SET_OVERRIDE">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="SET_OVERRIDE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="setOverride">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+    <variables id="entry_valueset--1">
+      <parameter id="ID">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="ID">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="FROM">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="FROM">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="TO">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="TO">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="MODE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="MODE">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="NEED_ACTIVATE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <booleanDecimal>
+              <falseValue>0</falseValue>
+              <trueValue>1</trueValue>
+              <threshold>1</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>0</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="NEED_ACTIVATE">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="VALUE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="VALUE">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>

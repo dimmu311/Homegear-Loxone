@@ -46,6 +46,7 @@ public:
     void loadUuids();
     void setPeerIdToVariableList();
     void setConfigParameters();
+    std::shared_ptr<LoxoneControl> getControl(){return _control;};
     std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> getVariables() { return _uuidVariable_PeerIdMap; };
 
 	virtual void savePeers() {};

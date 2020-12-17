@@ -41,7 +41,7 @@ set(SOURCE_FILES
 		src/helper/KelvinRgb.cpp
 		src/helper/KelvinRgb.h
 		src/controls/Central.cpp
-		src/controls/Central.h)
+		src/controls/Central.h src/controls/Daytimer.cpp src/controls/Daytimer.h)
 
 add_custom_target(homegear COMMAND ../../makeAll.sh SOURCES ${SOURCE_FILES})
 set(CMAKE_SHARED_LIBRARY_PREFIX "mod_")

@@ -151,6 +151,15 @@ void LoxonePeer::setConfigParameters()
 
                 BaseLib::Systems::RpcConfigurationParameter &parameter = configCentral[i->channel][i->variable];
                 std::vector<uint8_t> parameterData;
+
+                if(i->value->type == VariableType::tStruct)
+                {
+                    std::string val;
+                    BaseLib::Rpc::JsonEncoder::encode(i->value, val);
+                    i->value->stringValue = val;
+                    i->value->type = VariableType::tString;
+                }
+
                 parameter.rpcParameter->convertToPacket(i->value, parameter.mainRole(), parameterData);
                 parameter.setBinaryData(parameterData);
                 if (parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
@@ -440,6 +449,7 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
 				auto cPacket = std::dynamic_pointer_cast<LoxoneDaytimerStatesPacket>(packet);
 				if(!cPacket) return;
                 if(!_control->processPacket(cPacket)) return;
+                _control->packetReceived(_peerID, cPacket, valuesCentral);
 				break;
 			}
 		    default:
@@ -747,11 +757,29 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 			return PVariable(new Variable(VariableType::tVoid));
 		}
 		else if (rpcParameter->physical->operationType != IPhysical::OperationType::Enum::command) return Variable::createError(-6, "Parameter is not settable.");
+
+		//todo: maybe call control set value at this point. maybe it is easyer at this point because we dont need to form the json struct.
+        //{{{
+        if(channel > 2) {
+            std::string command;
+            bool isSecured;
+            if(!_control->setValue(channel, valueKey, value, valuesCentral, command, isSecured)) return Variable::createError(-32500, "Loxone Control can not create packet");
+            //if (!_control->setValue(frame, parameters, channel, command, isSecured)) return Variable::createError(-32500, "Loxone Control can not create packet");
+            GD::out.printDebug(command);
+            std::shared_ptr<LoxonePacket> packet(new LoxonePacket(command, isSecured));
+            _physicalInterface->sendPacket(packet);
+
+            return PVariable(new Variable(VariableType::tVoid));
+        }
+        //}}}
+
 		if (rpcParameter->setPackets.empty()) return Variable::createError(-6, "parameter is read only");
 		std::string setRequest = rpcParameter->setPackets.front()->id;
 		PacketsById::iterator packetIterator = _rpcDevice->packetsById.find(setRequest);
 		if (packetIterator == _rpcDevice->packetsById.end()) return Variable::createError(-6, "No frame was found for parameter " + valueKey);
 		PPacket frame = packetIterator->second;
+
+
 		std::vector<uint8_t> parameterData;
 		rpcParameter->convertToPacket(value, parameter.mainRole(), parameterData);
 		parameter.setBinaryData(parameterData);

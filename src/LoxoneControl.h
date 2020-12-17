@@ -79,8 +79,11 @@ namespace Loxone
 		virtual bool processPacket(PLoxoneDaytimerStatesPacket loxonePacket);
 		virtual bool processPacket(PLoxoneWeatherStatesPacket loxonePacket);
 
+        virtual bool packetReceived(uint32_t peerID, PLoxoneDaytimerStatesPacket loxonePacket, std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> &valuesCentral){return false;};
+
         bool getValueFromVariable(BaseLib::PVariable variable, std::string& command);
         virtual bool setValue(PPacket frame, PVariable parameters, uint32_t channel, std::string &command, bool &isSecured);
+        virtual bool setValue(uint32_t channel, std::string valueKey, PVariable value, std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> &valuesCentral, std::string &command, bool &isSecured){return false;};
         virtual uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
         virtual uint32_t getExtraData(std::list<extraData> &extraData);
         protected:

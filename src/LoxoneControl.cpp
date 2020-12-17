@@ -320,7 +320,44 @@ namespace Loxone
 	{
 		try
 		{
-			return false;
+            if (_uuidVariable_PeerIdMap.find(loxonePacket->getUuid()) == _uuidVariable_PeerIdMap.end()) return false;
+            auto variable_PeerId = _uuidVariable_PeerIdMap.find(loxonePacket->getUuid());
+
+            GD::out.printDebug("LoxoneControl::LoxoneDaytimerStatesPacket at " + variable_PeerId->second->variable + " of peer " + std::to_string(variable_PeerId->second->peerId));
+
+            _json = std::make_shared<Variable>(VariableType::tStruct);
+            _json->structValue->operator[]("state") = PVariable(new Variable(VariableType::tStruct));
+            _json->structValue->at("state")->structValue->operator[]("default") = PVariable(new Variable(loxonePacket->getDevValue()));
+
+            GD::out.printDebug("LoxoneControl::LoxoneDaytimerStatesPacket at default of peer " + std::to_string(variable_PeerId->second->peerId) + " and value " + std::to_string(loxonePacket->getDevValue()));
+
+            _json->structValue->at("state")->structValue->operator[]("entrys") = PVariable(new Variable(VariableType::tStruct));
+            _json->structValue->at("state")->structValue->at("entrys") = PVariable(new Variable(VariableType::tArray));
+
+            auto entrys = loxonePacket->getEntrys();
+            for(auto entry = entrys.begin(); entry != entrys.end(); ++entry)
+            {
+                auto data = new Variable(VariableType::tStruct);
+
+                data->structValue->operator[]("id") = PVariable(new Variable(entry->first));
+                data->structValue->operator[]("from") = PVariable(new Variable(entry->second->_from));
+                data->structValue->operator[]("to") = PVariable(new Variable(entry->second->_to));
+                data->structValue->operator[]("mode") = PVariable(new Variable(entry->second->_mode));
+                data->structValue->operator[]("needActivate") = PVariable(new Variable(entry->second->_needActivate));
+                data->structValue->operator[]("value") = PVariable(new Variable(entry->second->_value));
+
+                _json->structValue->at("state")->structValue->at("entrys")->arrayValue->push_back(
+                        static_cast<const std::shared_ptr<Variable>>(data));
+            }
+
+            loxonePacket->setJsonString(_json);
+            loxonePacket->setMethod("on.daytimerStatesPacket");
+
+            std::string jstr;
+            BaseLib::Rpc::JsonEncoder::encode(_json, jstr);
+            GD::out.printDebug("LoxoneControl::LoxoneDaytimerStatesPacket of peer " + std::to_string(variable_PeerId->second->peerId) + " json: " + jstr);
+
+            return true;
 		}
 		catch (const std::exception& ex)
 		{

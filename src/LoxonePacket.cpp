@@ -268,7 +268,8 @@ namespace Loxone
 			std::vector<uint8_t> entry;
 			entry.reserve(24);
 			entry.insert(entry.begin(), packet + 28 + i*24, packet + 28 + 24 + i*24);
-			_entrys.insert(std::pair<uint32_t, LoxoneTimeEntry>(i, LoxoneTimeEntry(entry)));
+            std::shared_ptr<LoxoneTimeEntry> myTimeEntry = std::make_shared<LoxoneTimeEntry>(entry);
+			_entrys.insert(std::pair<uint32_t, std::shared_ptr<LoxoneTimeEntry>>(i, myTimeEntry));
 		}
 	}
 	LoxoneWeatherStatesPacket::LoxoneWeatherEntry::LoxoneWeatherEntry(std::vector<uint8_t> data)
