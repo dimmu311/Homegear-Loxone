@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <memory>
-#include <cstdint>
+#include <string>
 
 #include <gnutls/gnutls.h>
 
