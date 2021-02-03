@@ -1,5 +1,5 @@
-#ifndef LOXONE_MINISERVER_CENTRAL_H
-#define LOXONE_MINISERVER_CENTRAL_H
+#ifndef CENTRAL_H
+#define CENTRAL_H
 
 #include "../LoxoneControl.h"
 
@@ -16,4 +16,4 @@ namespace Loxone {
     };
 }
 
-#endif //LOXONE_MINISERVER_CENTRAL_H
+#endif //CENTRAL_H

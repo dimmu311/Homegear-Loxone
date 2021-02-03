@@ -1,5 +1,5 @@
-#ifndef LOXONE_MINISERVER_DAYTIMER_H
-#define LOXONE_MINISERVER_DAYTIMER_H
+#ifndef DAYTIMER_H
+#define DAYTIMER_H
 
 #include "../LoxoneControl.h"
 
@@ -19,4 +19,4 @@ namespace Loxone {
 }
 
 
-#endif //LOXONE_MINISERVER_DAYTIMER_H
+#endif //DAYTIMER_H

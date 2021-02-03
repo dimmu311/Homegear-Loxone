@@ -1,5 +1,5 @@
-#ifndef HOMEGEAR_LOXONE_MINISERVER_PUSHBUTTON_H
-#define HOMEGEAR_LOXONE_MINISERVER_PUSHBUTTON_H
+#ifndef PUSHBUTTON_H
+#define PUSHBUTTON_H
 
 #include "../LoxoneControl.h"
 
@@ -38,4 +38,4 @@ class Pushbutton : public LoxoneControl
     };
 }
 
-#endif //HOMEGEAR_LOXONE_MINISERVER_PUSHBUTTON_H
+#endif //PUSHBUTTON_H

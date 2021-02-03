@@ -1,5 +1,5 @@
-#ifndef HOMEGEAR_LOXONE_MINISERVER_SLIDER_H
-#define HOMEGEAR_LOXONE_MINISERVER_SLIDER_H
+#ifndef SLIDER_H
+#define SLIDER_H
 
 #include "../LoxoneControl.h"
 
@@ -39,4 +39,4 @@ namespace Loxone
         std::string _defaultIcon;
     };
 }
-#endif //HOMEGEAR_LOXONE_MINISERVER_SLIDER_H
+#endif //SLIDER_H

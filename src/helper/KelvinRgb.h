@@ -1,5 +1,5 @@
-#ifndef LOXONE_MINISERVER_KELVINRGB_H
-#define LOXONE_MINISERVER_KELVINRGB_H
+#ifndef KELVINRGB_H
+#define KELVINRGB_H
 
 #include <string>
 #include <cmath>
@@ -34,4 +34,4 @@ private:
 };
 
 
-#endif //LOXONE_MINISERVER_KELVINRGB_H
+#endif //KELVINRGB_H

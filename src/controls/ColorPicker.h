@@ -1,5 +1,5 @@
-#ifndef HOMEGEAR_LOXONE_MINISERVER_COLORPICKERV2_H
-#define HOMEGEAR_LOXONE_MINISERVER_COLORPICKERV2_H
+#ifndef COLORPICKERV2_H
+#define COLORPICKERV2_H
 
 #include "../LoxoneControl.h"
 
@@ -18,4 +18,4 @@ namespace Loxone
     protected:
     };
 }
-#endif //HOMEGEAR_LOXONE_MINISERVER_COLORPICKERV2_H
+#endif //COLORPICKERV2_H
