@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>homegear_loxone_miniserver-Debug@Homegear-Loxone</name>
+	<name>homegear_loxone-Debug@Homegear-Loxone</name>
 	<comment></comment>
 	<projects></projects>
 	<buildSpec>
@@ -112,7 +112,7 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>[Targets]/[lib] homegear_loxone_miniserver</name>
+			<name>[Targets]/[lib] homegear_loxone</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>

@@ -1,10 +1,10 @@
-#ifndef HOMEGEAR_LOXONE_MINISERVER_GNUTLSDATA_H
-#define HOMEGEAR_LOXONE_MINISERVER_GNUTLSDATA_H
+#ifndef GNUTLSDATA_H
+#define GNUTLSDATA_H
 
 
 #include <vector>
 #include <memory>
-#include <cstdint>
+#include <string>
 
 #include <gnutls/gnutls.h>
 
@@ -21,4 +21,4 @@ public:
 };
 
 
-#endif //HOMEGEAR_LOXONE_MINISERVER_GNUTLSDATA_H
+#endif //GNUTLSDATA_H

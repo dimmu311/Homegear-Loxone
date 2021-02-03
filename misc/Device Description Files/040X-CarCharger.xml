@@ -1,39 +1,36 @@
-<homegearDevice version="1">
-  <supportedDevices>
-    <device id="Loxone Alarm">
-      <description>Loxone Alarm</description>
-      <typeNumber>0x0200</typeNumber>
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone CarCharger">
+      <description>Loxone CarCharger</description>
+      <typeNumber>0x0402</typeNumber>
       <minFirmwareVersion>0</minFirmwareVersion>
     </device>
   </supportedDevices>
   <properties/>
   <functions>
-    <function channel="0" type="MAINTENANCE" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
       <properties>
         <internal>true</internal>
       </properties>
       <configParameters>maint_ch_master--0</configParameters>
       <variables>maint_ch_values--0</variables>
     </function>
-    <function channel="1" type="ALARM" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="CAR_CHARGER" channelCount="1">
       <properties/>
       <configParameters>config--1</configParameters>
-      <variables>alarm_valueset--1</variables>
+      <variables>carCharger_valueset--1</variables>
     </function>
   </functions>
-  <packets>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
     <packet id="on.textSet">
       <direction>toCentral</direction>
       <function1>on.textStatesPacket</function1>
       <channel>1</channel>
       <jsonPayload>
         <element>
-          <keyPath>state\sensors</keyPath>
-          <parameterId>SENSORS</parameterId>
-        </element>
-        <element>
-          <keyPath>state\startTime</keyPath>
-          <parameterId>ALARM_TIME</parameterId>
+          <keyPath>state\profiles</keyPath>
+          <parameterId>PROFILES</parameterId>
         </element>
       </jsonPayload>
     </packet>
@@ -43,102 +40,103 @@
       <channel>1</channel>
       <jsonPayload>
         <element>
-          <keyPath>state\armed</keyPath>
-          <parameterId>ARMED</parameterId>
+          <keyPath>state\status</keyPath>
+          <parameterId>STATUS</parameterId>
         </element>
         <element>
-          <keyPath>state\nextLevel</keyPath>
-          <parameterId>NEXT_LEVEL</parameterId>
+          <keyPath>state\charging</keyPath>
+          <parameterId>CHARGING</parameterId>
         </element>
         <element>
-          <keyPath>state\nextLevelDelay</keyPath>
-          <parameterId>NEXT_LEVEL_DELAY</parameterId>
+          <keyPath>state\connected</keyPath>
+          <parameterId>CONNECTED</parameterId>
         </element>
         <element>
-          <keyPath>state\nextLevelDelayTotal</keyPath>
-          <parameterId>NEXT_LEVEL_DELAY_TOTAL</parameterId>
+          <keyPath>state\charging_finished</keyPath>
+          <parameterId>CHARGING_FINISHED</parameterId>
         </element>
         <element>
-          <keyPath>state\level</keyPath>
-          <parameterId>LEVEL</parameterId>
+          <keyPath>state\energieSession</keyPath>
+          <parameterId>ENERGIE_SESSION</parameterId>
         </element>
         <element>
-          <keyPath>state\armedDelay</keyPath>
-          <parameterId>ARMED_DELAY</parameterId>
+          <keyPath>state\limitMode</keyPath>
+          <parameterId>LIMIT_MODE</parameterId>
         </element>
         <element>
-          <keyPath>state\armedDelayTotal</keyPath>
-          <parameterId>ARMED_DELAY_TOTAL</parameterId>
+          <keyPath>state\currentLimit</keyPath>
+          <parameterId>CURRENT_LIMIT</parameterId>
         </element>
         <element>
-          <keyPath>state\disabledMove</keyPath>
-          <parameterId>DISABLED_MOVE</parameterId>
+          <keyPath>state\minLimit</keyPath>
+          <parameterId>MIN_LIMIT</parameterId>
+        </element>
+        <element>
+          <keyPath>state\maxLimit</keyPath>
+          <parameterId>MAX_LIMIT</parameterId>
+        </element>
+        <element>
+          <keyPath>state\chargeDuration</keyPath>
+          <parameterId>CHARGE_DURATION</parameterId>
+        </element>
+        <element>
+          <keyPath>state\showLoadManagement</keyPath>
+          <parameterId>SHOW_LOAD_MANAGEMENT</parameterId>
+        </element>
+        <element>
+          <keyPath>state\currentProfile</keyPath>
+          <parameterId>CURRENT_PROFILE</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="armed">
-      <direction>fromCentral</direction>
-      <function1>activeSet</function1>
-      <jsonPayload>
-        <element>
-          <parameterId>ARMED</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="arm">
-      <direction>fromCentral</direction>
-      <function1>valueSetToPath</function1>
-      <jsonPayload>
-        <element>
-          <constValueString>on</constValueString>
-        </element>
-        <element>
-          <parameterId>ARM_MODE</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="delayedon">
-      <direction>fromCentral</direction>
-      <function1>activeSetOn</function1>
-      <jsonPayload>
-        <element>
-          <constValueString>delayedon</constValueString>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="delayedonMode">
-      <direction>fromCentral</direction>
-      <function1>valueSetToPath</function1>
-      <jsonPayload>
-        <element>
-          <constValueString>delayedon</constValueString>
-        </element>
-        <element>
-          <parameterId>ARM_DELAY_MODE</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="quit">
-      <direction>fromCentral</direction>
-      <function1>activeSetOn</function1>
-      <jsonPayload>
-        <element>
-          <constValueString>quit</constValueString>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="dismv">
+    <packet id="charge">
       <direction>fromCentral</direction>
       <function1>booleanSet</function1>
       <jsonPayload>
         <element>
-          <parameterId>DISABLED_MOVE</parameterId>
+          <parameterId>CHARGING</parameterId>
         </element>
         <element>
-          <constValueString>dismv/1</constValueString>
+          <constValueString>charge/on</constValueString>
         </element>
         <element>
-          <constValueString>dismv/0</constValueString>
+          <constValueString>charge/off</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="limitMode">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>limitMode</constValueString>
+        </element>
+        <element>
+          <parameterId>LIMIT_MODE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="limit">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>limit</constValueString>
+        </element>
+        <element>
+          <parameterId>CURRENT_LIMIT</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="profile">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>profile</constValueString>
+        </element>
+        <element>
+          <parameterId>CURRENT_PROFILE</parameterId>
         </element>
       </jsonPayload>
     </packet>
@@ -175,7 +173,7 @@
           <operationType>config</operationType>
         </physicalString>
       </parameter>
-      <parameter id="ALERT">
+      <parameter id="CHARGER_TYPE">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -183,12 +181,12 @@
             <rpcBinary />
           </casts>
         </properties>
-        <logicalBoolean/>
+        <logicalDecimal/>
         <physicalNone>
           <operationType>config</operationType>
         </physicalNone>
       </parameter>
-      <parameter id="PRESENCE_CONNECTED">
+      <parameter id="LIMIT_ALLOWED">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -215,8 +213,40 @@
         </physicalInteger>
       </parameter>
     </variables>
-    <variables id="alarm_valueset--1">
-      <parameter id="ARMED">
+    <variables id="carCharger_valueset--1">
+      <parameter id="STATUS">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <id>Offline</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Initializing</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Online</id>
+            <index>2</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="STATUS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CHARGING">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -232,57 +262,35 @@
         <logicalBoolean>
           <defaultValue>false</defaultValue>
         </logicalBoolean>
-        <physicalNone groupId="ARMED">
+        <physicalNone groupId="CHARGING">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
           <packet id="on.valueSet">
             <type>event</type>
           </packet>
-          <packet id="armed">
+          <packet id="charge">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="NEXT_LEVEL">
+      <parameter id="CONNECTED">
         <properties>
+          <readable>true</readable>
           <writeable>false</writeable>
           <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalEnumeration>
-          <defaultValue>0</defaultValue>
-          <value>
-            <index>none</index>
-            <id>0</id>
-          </value>
-          <value>
-            <index>Silent</index>
-            <id>1</id>
-          </value>
-          <value>
-            <index>Acustic</index>
-            <id>2</id>
-          </value>
-          <value>
-            <index>Optical</index>
-            <id>3</id>
-          </value>
-          <value>
-            <index>Internal</index>
-            <id>4</id>
-          </value>
-          <value>
-            <index>External</index>
-            <id>5</id>
-          </value>
-          <value>
-            <index>Remote</index>
-            <id>6</id>
-          </value>
-        </logicalEnumeration>
-        <physicalNone groupId="NEXT_LEVEL">
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="CONNECTED">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
@@ -291,17 +299,23 @@
           </packet>
         </packets>
       </parameter>
-      <parameter id="NEXT_LEVEL_DELAY">
+      <parameter id="CHARGING_FINISHED">
         <properties>
+          <readable>true</readable>
           <writeable>false</writeable>
           <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalDecimal>
-          <defaultValue>0</defaultValue>
-        </logicalDecimal>
-        <physicalNone groupId="NEXT_LEVEL_DELAY">
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="CHARGING_FINISHED">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
@@ -310,73 +324,7 @@
           </packet>
         </packets>
       </parameter>
-      <parameter id="NEXT_LEVEL_DELAY_TOTAL">
-        <properties>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalDecimal>
-          <defaultValue>0</defaultValue>
-        </logicalDecimal>
-        <physicalNone groupId="NEXT_LEVEL_DELAY_TOTOAL">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="LEVEL">
-        <properties>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalEnumeration>
-          <defaultValue>0</defaultValue>
-          <value>
-            <index>none</index>
-            <id>0</id>
-          </value>
-          <value>
-            <index>Silent</index>
-            <id>1</id>
-          </value>
-          <value>
-            <index>Acustic</index>
-            <id>2</id>
-          </value>
-          <value>
-            <index>Optical</index>
-            <id>3</id>
-          </value>
-          <value>
-            <index>Internal</index>
-            <id>4</id>
-          </value>
-          <value>
-            <index>External</index>
-            <id>5</id>
-          </value>
-          <value>
-            <index>Remote</index>
-            <id>6</id>
-          </value>
-        </logicalEnumeration>
-        <physicalNone groupId="LEVEL">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets> 
-      </parameter>
-      <parameter id="ARMED_DELAY">
+      <parameter id="ENERGIE_SESSION">
         <properties>
           <readable>true</readable>
           <writeable>false</writeable>
@@ -387,7 +335,7 @@
         <logicalDecimal>
           <defaultValue>0</defaultValue>
         </logicalDecimal>
-        <physicalNone groupId="ARMED_DELAY">
+        <physicalNone groupId="ENERGIE_SESSION">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
@@ -396,8 +344,67 @@
           </packet>
         </packets>
       </parameter>
-      <parameter id="ARMED_DELAY_TOTAL">
+      <parameter id="LIMIT_MODE">
         <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <id>Off</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Manuak</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Autopilot</id>
+            <index>2</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="LIMIT_MODE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="limitMode">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CURRENT_LIMIT">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="CURRENT_LIMIT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="limit">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="MIN_LIMIT">
+        <properties>
+          <readable>true</readable>
           <writeable>false</writeable>
           <casts>
             <rpcBinary/>
@@ -406,7 +413,7 @@
         <logicalDecimal>
           <defaultValue>0</defaultValue>
         </logicalDecimal>
-        <physicalNone groupId="ARMED_DELAY_TOTAL">
+        <physicalNone groupId="MIN_LIMIT">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
@@ -415,24 +422,92 @@
           </packet>
         </packets>
       </parameter>
-      <parameter id="SENSORS">
+      <parameter id="MAX_LIMIT">
         <properties>
+          <readable>true</readable>
           <writeable>false</writeable>
           <casts>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalString/>
-        <physicalNone groupId="SENSORS">
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="MAX_LIMIT">
           <operationType>command</operationType>
         </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CHARGE_DURATION">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="CHARGE_DURATION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SHOW_LOAD_MANAGEMENT">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="SHOW_LOAD_MANAGEMENT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PROFILES">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString>
+          <defaultValue>0</defaultValue>
+        </logicalString>
+        <physicalString groupId="PROFILES">
+          <operationType>store</operationType>
+        </physicalString>
         <packets>
           <packet id="on.textSet">
             <type>event</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="DISABLED_MOVE">
+      <parameter id="CURRENT_PROFILE">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -446,135 +521,16 @@
           </casts>
         </properties>
         <logicalBoolean>
-          <defaultValue>0</defaultValue>
+          <defaultValue>false</defaultValue>
         </logicalBoolean>
-        <physicalNone groupId="DISABLED_MOVE">
+        <physicalNone groupId="CURRENT_PROFILE">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
           <packet id="on.valueSet">
             <type>event</type>
           </packet>
-          <packet id="dismv">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ALARM_TIME">
-        <properties>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalString/>
-        <physicalNone groupId="ALARM_TIME">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.textSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ARM_MODE">
-        <properties>
-          <readable>false</readable>
-          <writeable>true</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalEnumeration>
-          <defaultValue>-1</defaultValue>
-          <value>
-            <id>none</id>
-            <index>-1</index>
-          </value>
-          <value>
-            <id>without movement</id>
-            <index>0</index>
-          </value>
-          <value>
-            <id>with movement</id>
-            <index>1</index>
-          </value>
-        </logicalEnumeration>
-        <physicalNone groupId="ARM_MODE">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="arm">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ARM_DELAY">
-        <properties>
-          <readable>false</readable>
-          <writeable>true</writeable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction/>
-        <physicalNone groupId="ARM_DELAY">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="delayedon">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ARM_DELAY_MODE">
-        <properties>
-          <readable>false</readable>
-          <writeable>true</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalEnumeration>
-          <defaultValue>-1</defaultValue>
-          <value>
-            <id>none</id>
-            <index>-1</index>
-          </value>
-          <value>
-            <id>without movement</id>
-            <index>0</index>
-          </value>
-          <value>
-            <id>with movement</id>
-            <index>1</index>
-          </value>
-        </logicalEnumeration>
-        <physicalNone groupId="ARM_DELAY_MODE">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="delayedonMode">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="QUIT">
-        <properties>
-          <readable>false</readable>
-          <writeable>true</writeable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction/>
-        <physicalNone groupId="QUIT">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="quit">
+          <packet id="profile">
             <type>set</type>
           </packet>
         </packets>

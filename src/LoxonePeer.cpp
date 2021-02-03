@@ -79,8 +79,7 @@ void LoxonePeer::saveUuids()
 	try
 	{
 		std::list<Database::DataRow> list;
-		auto x = _control->getDataToSave(list, _peerID);
-		if(x < 0) return;
+		if(_control->getDataToSave(list, _peerID) != 0) return;
 
 		for(auto i = list.begin(); i != list.end(); ++i)
 		{
@@ -99,7 +98,8 @@ void LoxonePeer::loadUuids()
     {
         std::shared_ptr<BaseLib::Database::DataTable> rows = _bl->db->getPeerVariables(_peerID);
         if(!rows) return;
-        _control = std::shared_ptr<LoxoneControl>(createInstance::_uintControlsMap.at(_deviceType)(rows));
+        //_control = std::shared_ptr<LoxoneControl>(createInstance::_uintControlsMap.at(_deviceType)(rows));
+        _control = createInstance::createInstanceFromTypeNr(_deviceType, rows);
         if(!_control)return ;
         _uuidVariable_PeerIdMap = _control->getVariables();
     }
@@ -146,8 +146,20 @@ void LoxonePeer::setConfigParameters()
         {
             for(auto i = data.begin(); i != data.end(); ++i)
             {
+                if(configCentral.find(i->channel) == configCentral.end()) continue;
+                if(configCentral[i->channel].find(i->variable) == configCentral[i->channel].end()) continue;
+
                 BaseLib::Systems::RpcConfigurationParameter &parameter = configCentral[i->channel][i->variable];
                 std::vector<uint8_t> parameterData;
+
+                if(i->value->type == VariableType::tStruct)
+                {
+                    std::string val;
+                    BaseLib::Rpc::JsonEncoder::encode(i->value, val);
+                    i->value->stringValue = val;
+                    i->value->type = VariableType::tString;
+                }
+
                 parameter.rpcParameter->convertToPacket(i->value, parameter.mainRole(), parameterData);
                 parameter.setBinaryData(parameterData);
                 if (parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
@@ -161,7 +173,7 @@ void LoxonePeer::setConfigParameters()
 void LoxonePeer::homegearStarted()
 {
     Peer::homegearStarted();
-    serviceMessages->setUnreach(true,false);
+    //serviceMessages->setUnreach(true,false);
 }
 void LoxonePeer::setPhysicalInterfaceId(std::string id)
 {
@@ -437,6 +449,7 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
 				auto cPacket = std::dynamic_pointer_cast<LoxoneDaytimerStatesPacket>(packet);
 				if(!cPacket) return;
                 if(!_control->processPacket(cPacket)) return;
+                _control->packetReceived(_peerID, cPacket, valuesCentral);
 				break;
 			}
 		    default:
@@ -550,7 +563,7 @@ PVariable LoxonePeer::getDeviceDescription(PRpcClientInfo clientInfo, int32_t ch
         //todo: find a way to display the additional information in the admin ui. till now it looks like the admin ui needs to be changed to diseplay the additional infoarmtions
         description->structValue->emplace("ROOMNAME", std::make_shared<Variable>(_control->getRoom()));
         description->structValue->emplace("CATEGORIES", std::make_shared<Variable>(_control->getCat()));
-        description->structValue->emplace("LOXONE_UUID", std::make_shared<Variable>(_control->_uuidAction));
+        description->structValue->emplace("LOXONE_UUID", std::make_shared<Variable>(_control->getUuidAction()));
 
         return description;
     }
@@ -744,11 +757,29 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 			return PVariable(new Variable(VariableType::tVoid));
 		}
 		else if (rpcParameter->physical->operationType != IPhysical::OperationType::Enum::command) return Variable::createError(-6, "Parameter is not settable.");
+
+		//todo: maybe call control set value at this point. maybe it is easyer at this point because we dont need to form the json struct.
+        //{{{
+        if(channel > 2) {
+            std::string command;
+            bool isSecured;
+            if(!_control->setValue(channel, valueKey, value, valuesCentral, command, isSecured)) return Variable::createError(-32500, "Loxone Control can not create packet");
+            //if (!_control->setValue(frame, parameters, channel, command, isSecured)) return Variable::createError(-32500, "Loxone Control can not create packet");
+            GD::out.printDebug(command);
+            std::shared_ptr<LoxonePacket> packet(new LoxonePacket(command, isSecured));
+            _physicalInterface->sendPacket(packet);
+
+            return PVariable(new Variable(VariableType::tVoid));
+        }
+        //}}}
+
 		if (rpcParameter->setPackets.empty()) return Variable::createError(-6, "parameter is read only");
 		std::string setRequest = rpcParameter->setPackets.front()->id;
 		PacketsById::iterator packetIterator = _rpcDevice->packetsById.find(setRequest);
 		if (packetIterator == _rpcDevice->packetsById.end()) return Variable::createError(-6, "No frame was found for parameter " + valueKey);
 		PPacket frame = packetIterator->second;
+
+
 		std::vector<uint8_t> parameterData;
 		rpcParameter->convertToPacket(value, parameter.mainRole(), parameterData);
 		parameter.setBinaryData(parameterData);
@@ -825,9 +856,10 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 		}
 
 		std::string command;
-		if(!_control->setValue(frame, parameters, command)) return Variable::createError(-32500, "Loxone Control can not create packet");
+		bool isSecured;
+		if(!_control->setValue(frame, parameters, channel, command, isSecured)) return Variable::createError(-32500, "Loxone Control can not create packet");
         GD::out.printDebug(command);
-        std::shared_ptr<LoxonePacket> packet (new LoxonePacket(command));
+        std::shared_ptr<LoxonePacket> packet (new LoxonePacket(command, isSecured));
 		_physicalInterface->sendPacket(packet);
 
 		if (!valueKeys->empty())

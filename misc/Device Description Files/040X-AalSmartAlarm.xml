@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone AalSmartAlarm">
+      <description>Loxone AalSmartAlarm</description>
+      <typeNumber>0x0401</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="AAL_SMART_ALARM" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>aalSmartAlarm_valueset--1</variables>
+    </function>
+  </functions>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\alarmCause</keyPath>
+          <parameterId>ALARM_CAUSE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\alarmLevel</keyPath>
+          <parameterId>ALARM_LEVEL</parameterId>
+        </element>
+        <element>
+          <keyPath>state\alarmTime</keyPath>
+          <parameterId>ALARM_TIME</parameterId>
+        </element>
+        <element>
+          <keyPath>state\isLocked</keyPath>
+          <parameterId>IS_LOCKED</parameterId>
+        </element>
+        <element>
+          <keyPath>state\isLeaveActive</keyPath>
+          <parameterId>IS_LEAVE_ACTIVE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\disableEndTime</keyPath>
+          <parameterId>DISABLE_END_TIME</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="startDrill">
+      <direction>fromCentral</direction>
+      <function1>activeSetOn</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>startDrill</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="confirm">
+      <direction>fromCentral</direction>
+      <function1>activeSetOn</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>confirm</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="disable">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>disable</constValueString>
+        </element>
+        <element>
+          <parameterId>DISABLE_END_TIME</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="aalSmartAlarm_valueset--1">
+      <parameter id="ALARM_LEVEL">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <id>no alarm</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>immediate alarm</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>delayed alarm</id>
+            <index>2</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="ALARM_LEVEL">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ALARM_CAUSE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="ALARM_CAUSE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ALARM_TIME">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+        </logicalDecimal>
+        <physicalNone groupId="ALARM_TIME">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="IS_LOCKED">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <falseValue>0</falseValue>
+              <trueValue>1</trueValue>
+              <threshold>1</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="IS_LOCKED">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="IS_LEAVE_ACTIVE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <falseValue>0</falseValue>
+              <trueValue>1</trueValue>
+              <threshold>1</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="IS_LEAVE_ACTIVE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="DISABLE_END_TIME">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <specialValues>
+            <specialValue id="Disable off">0</specialValue>
+          </specialValues>
+        </logicalDecimal>
+        <physicalNone groupId="DISABLE_END_TIME">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="disable">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="TRIGGER_TEST_ALARM">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="TRIGGER_TEST_ALARM">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="startDrill">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CONFIRM_ALARM">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="CONFIRM_ALARM">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="confirm">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>

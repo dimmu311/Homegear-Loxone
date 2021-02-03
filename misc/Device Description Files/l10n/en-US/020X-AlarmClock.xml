@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDeviceTranslation lang="en-US">
+  <supportedDevices>
+    <device id="Loxone Alarm Clock">
+      <description>Loxone Alarm CLock</description>
+      <longDescription></longDescription>
+    </device>
+  </supportedDevices>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <label>Room</label>
+        <description>Displays the room which is configured in Loxone Config.</description>
+      </parameter>
+      <parameter id="CATEGORY">
+        <label>Category</label>
+        <description>Displays the category which is configured in Loxone Config.</description>
+      </parameter>
+      <parameter id="HAS_NIGHT_LIGHT">
+        <label>Has night light</label>
+        <description>shows if this control is connected to a night light.</description>
+      </parameter>
+      <parameter id="SNOOZE_DURATION_CONNECTED">
+        <label>Snooze duration connected</label>
+        <description>TRUE if the parameter input Ts is defined in Loxone Config.</description>
+      </parameter>
+      <parameter id="BRIGHT_INACTIVE_CONNECTED">
+        <label>Bright inactive connected</label>
+        <description>TRUE if the parameter input Bi is defined in Loxone Config.</description>
+      </parameter>
+      <parameter id="BRIGHT_ACTIVE_CONNECTED">
+        <label>Bright active connected</label>
+        <description>TRUE if the parameter input Ba is defined in Loxone Config.</description>
+      </parameter>
+      <parameter id="WAKE_ALARM_SOUND_CONNECTED">
+        <label>Wake alarm sound connected</label>
+        <description>TRUE if the parameter input S is defined in Loxone Config.</description>
+      </parameter>
+      <parameter id="WAKE_ALARM_VOLUME_CONNECTED">
+        <label>Wake alarm volume connected</label>
+        <description>TRUE if the parameter input Sv is defined in Loxone Config.</description>
+      </parameter>
+      <parameter id="WAKE_ALARM_SLOPING_CONNECTED">
+        <label>Wake alarm sloping connected</label>
+        <description>TRUE if the parameter input Sr is defined in Loxone Config.</description>
+      </parameter>
+      <parameter id="WAKE_ALARM_SOUNDS">
+        <label>Wake alarm sounds</label>
+        <description>Array of all available sounds.</description>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <label>Unreachable</label>
+        <description>Set to "true" when the device is unreachable. This means that the associated control no longer exists in Loxone Config.</description>
+      </parameter>
+    </variables>
+    <variables id="alarmClock_valueset--1">
+      <parameter id="IS_ENABLED">
+        <label>Is enabled</label>
+        <description>shows if the AlarmClock is enabled.</description>
+      </parameter>
+      <parameter id="IS_ALARM_ACTIVE">
+        <label>Is alarm active</label>
+        <description>True if an entry is ringing.</description>
+      </parameter>
+      <parameter id="CONFIRMATION_NEEDED">
+        <label>Confirmation needed</label>
+        <description>True if the User needs to confirm the entry.</description>
+      </parameter>
+      <parameter id="CURRENT_ENTRY">
+        <label>Current entry</label>
+        <description>The entryID of the current entry.</description>
+      </parameter>
+      <parameter id="NEXT_ENTRY">
+        <label>Next entry</label>
+        <description>The entryID of the next entry.</description>
+      </parameter>
+      <parameter id="NEXT_ENTRY_MODE">
+        <label>Next entry mode</label>
+        <description>Represents operating modes 3 - 9 from our structure file.</description>
+      </parameter>
+      <parameter id="RINGING_TIME">
+        <label>Ringing time</label>
+        <description>Countdown in seconds how long the alarmClock will be ringing until it’s going to snooze again.</description>
+      </parameter>
+      <parameter id="RING_DURATION">
+        <label>Ring duration</label>
+        <description>The duration the AlarmClock is ringing.</description>
+      </parameter>
+      <parameter id="PREPARE_DURATION">
+        <label>Prepare duration</label>
+        <description>The preparation time in seconds.</description>
+      </parameter>
+      <parameter id="SNOOZE_TIME">
+        <label>Snooze time</label>
+        <description>Seconds until snoozing ends.</description>
+      </parameter>
+      <parameter id="SNOOZE_DURATION">
+        <label>Snooze duration</label>
+        <description>Duration of snoozing.</description>
+      </parameter>
+      <parameter id="NEXT_ENTRY_TIME">
+        <label>Next entry time</label>
+        <description>Date of next entry in seconds since 1.1.2009.</description>
+      </parameter>
+      <parameter id="DEVICE_STATE">
+        <label>Device state</label>
+        <description>The current state of the Nightlight.</description>
+      </parameter>
+      <parameter id="ENTRY_LIST">
+        <label>Entry list</label>
+        <description>Object with all the entries.</description>
+      </parameter>
+      <parameter id="NEW_ENTRY">
+        <label>New entry</label>
+        <description>set new entry to entry list. String:{entryID}/{name}/{alarmTime}/{isActive}/{modes|daily}.</description>
+      </parameter>
+      <parameter id="DEVICE_SETTINGS">
+        <label>Device settings</label>
+        <description>JSON string showing actual device settings</description>
+      </parameter>
+      <parameter id="WAKE_ALARM_SOUND_SETTINGS">
+        <label>Wake alarm sound settings</label>
+        <description>Json String showing actual wake alarm sound settings.</description>
+      </parameter>
+      <parameter id="BEEP_USED">
+        <label>Beep used</label>
+        <description>Shows if the keyclick of the night light is activ. Set this value to true to enable keyclick, set to false to disable keyclick.</description>
+      </parameter>
+      <parameter id="BRIGHT_INACTIVE">
+        <label>Bright inactive</label>
+        <description>Shows the display brightness during inactivity. Set this variable to the brightness you want during inactivity.</description>
+      </parameter>
+      <parameter id="BRIGHT_ACTIVE">
+        <label>Bright active</label>
+        <description>Shows the display brightness during activity. Set this variable to the brightness you want during activity.</description>
+      </parameter>
+      <parameter id="DELETE_ENTRY">
+        <label>Delete entry</label>
+        <description>Delete this entry from entry list.</description>
+      </parameter>
+      <parameter id="SNOOZE">
+        <label>Snooze</label>
+        <description>Snoozes the current active entry.</description>
+      </parameter>
+      <parameter id="DISMISS">
+        <label>Dismiss</label>
+        <description>Dismisses the current active entry.</description>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDeviceTranslation>

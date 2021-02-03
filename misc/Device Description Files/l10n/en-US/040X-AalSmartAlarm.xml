@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <homegearDeviceTranslation lang="en-US">
   <supportedDevices>
-    <device id="Loxone AalEmergency">
-      <description>Loxone AalEmergency</description>
+    <device id="Loxone AalSmartAlarm">
+      <description>Loxone AalSmartAlarm</description>
       <longDescription></longDescription>
     </device>
   </supportedDevices>
@@ -25,25 +25,37 @@
       </parameter>
     </variables>
     <variables id="aalEmergency_valueset--1">
-      <parameter id="STATUS">
-        <label>Status</label>
-        <description>shows the current state of the control</description>
+      <parameter id="ALARM_LEVEL">
+        <label>Alarm Level</label>
+        <description>shows the current alarm level</description>
       </parameter>
-      <parameter id="RESET_ACTIVE">
-        <label>Reset Active</label>
-        <description>text state with the active reset input (if control is in reset by programm logic in Loxone Config).</description>
+      <parameter id="ALARM_CAUSE">
+        <label>Alarm Cause</label>
+        <description>representing the last cause for an alarm.</description>
       </parameter>
-      <parameter id="TRIGGER_ALARM">
-        <label>Trigger Alarm</label>
-        <description>trigger an alarm from the app.</description>
+      <parameter id="ALARM_TIME">
+        <label>Alarm Time</label>
+        <description>at this time (unix timestamp) the alarm was triggered.</description>
       </parameter>
-      <parameter id="QUIT_ALARM">
-        <label>Quit Alarm</label>
+      <parameter id="IS_LOCKED">
+        <label>Is Locked</label>
         <description>quit an active alarm.</description>
+      </parameter>
+      <parameter id="IS_LEAVE_ACTIVE">
+        <label>Unreachable</label>
+        <description>Reset active, inputs will be ignored and therefore no alarms will be executed.</description>
       </parameter>
       <parameter id="DISABLE_END_TIME">
         <label>Disable End Time</label>
         <description>shows the end time (unix timestamp) when control will start to operate again. set to 0 for immediate re-activate the monitoring or give to for how long (sec) monitoring should be suspended.</description>
+      </parameter>
+      <parameter id="TRIGGER_TEST_ALARM">
+        <label>Trigger Test Alarm</label>
+        <description>execute test alarm.</description>
+      </parameter>
+      <parameter id="CONFIRM_ALARM">
+        <label>Confirm Alarm</label>
+        <description>confirm pending alarm.</description>
       </parameter>
     </variables>
   </parameterGroups>
