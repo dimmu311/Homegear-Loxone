@@ -8,6 +8,8 @@ For more information about how to use Homegear, visit [Homegear Website](https:/
 <h3>Installation</h3>
 the homegear team kindly compiles this module on their compile server and makes it available as a debian packet.
 after successful homegear installation, the Loxone module can easily be installed using this command.
+
+
 ```console
 dimmu@homegearpi(rw):apt install homegear-loxone
 ```
@@ -17,14 +19,20 @@ now go down to configure the module
 If you don't want to install the prebuild version you can simply build your own version.
 you should have running homegear version on your system.<br><br>
 First install all the dependency
+
+
 ```console
 dimmu@homegearpi(rw):apt install libgnutls28-dev libgnutlsxx28
 ```
 Then compile and install
+
+
 ```console
 dimmu@homegearpi(rw):/home/pi/Homegear-Loxone# ./makeRelease.sh
 ```
 After compiling and installation is done you have to move and modify some files.
+
+
 ```console
 dimmu@homegearpi(rw):/home/pi/Homegear-Loxone# cp 'misc/Config Directory/loxone.conf' /etc/homegear/families/loxone.conf
 dimmu@homegearpi(rw):/home/pi/Homegear-Loxone# mkdir /etc/homegear/devices/65/
@@ -38,6 +46,8 @@ most of the config file is self-explanatory.
 the only thing i want to remind is to set the Communication Module Header. And this header has to be between [ ].
 
 *i recommend to generate extra username and password for Homegear on your Loxone Miniserver. By this way you don't need to chang anything in this configuration after updating users/passwords that you use on the Loxone App. Also you can set lower access permission for the Homegear user in the Miniserver. The Homegear user only needs permission for lokal connection, no FTP or something else.*
+
+
 ```console
 dimmu@homegearpi(rw):/home/pi/Homegear-Loxone# nano /etc/homegear/families/loxone.conf
 ````
