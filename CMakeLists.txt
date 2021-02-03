@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(loxone_miniserver)
+project(homegear_loxone)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -42,6 +42,10 @@ set(SOURCE_FILES
 		src/helper/KelvinRgb.h
 		src/controls/Central.cpp
 		src/controls/Central.h src/controls/Daytimer.cpp src/controls/Daytimer.h)
+
+# These are the corresponding output paths
+set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/output)
+set (LIBRARY_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH})
 
 add_custom_target(homegear COMMAND ../../makeAll.sh SOURCES ${SOURCE_FILES})
 set(CMAKE_SHARED_LIBRARY_PREFIX "mod_")
