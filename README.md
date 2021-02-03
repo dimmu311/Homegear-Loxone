@@ -45,7 +45,9 @@ dimmu@homegearpi(rw):/home/pi/Homegear-Loxone# nano /etc/homegear/families/loxon
 
 <h3>Working With The Module</h3>
 The main part clould be done using homegear cli. i also testet some functions im Homegear Admin ui. The most important thinks work also in Admin ui, but not all. Because of that i only show how to work with cli. <br>
-log in to homegear cli and select Loxone family (family nr. 65) module and show the module help
+log in to homegear cli and select Loxone family (family nr. 65) module and show the module help.
+
+
 ```console
 dimmu@homegearpi(rw):homegear -r
 > fs 65
@@ -53,7 +55,6 @@ Family 65> help
 List of commands (shortcut in brackets):
 
 For more information about the individual command type: COMMAND help
-
 peers list (ls)         List all peers
 peers remove (prm)      Remove a peer (without unpairing)
 peers setname (pn)      Name a peer
@@ -61,9 +62,9 @@ search (sp)             Searches for new devices
 unselect (u)            Unselect this device
 ````
 
-the most important command ar:
- * peers list (ls) to show the existing peers
- * search (sp) to search vor new peers.
+the most important command are:
+ - peers list (ls) to show the existing peers
+ - search (sp) to search vor new peers.
  
 so at first commissioning just do "sp". The Output show you how much new peers was added.
 ```console
@@ -89,9 +90,9 @@ by this way you can easily find a peer id that you maybe need for nood-blue prog
 
 <h3>Limitations</h3>
 until now there are some issues:
-* there is no function to check if the connection was possible. Till now the only way is to look in the log during homegear restart.
-* not all Loxone Devices have Device Descriptions until now. But i think the most important are there. Devices without Device Description fils did not create a Homegear peer.
-* there some things Loxone changes in the Structfile after you upload now Project with Loxone Config. When you do search peers, this module gets new sturctfile. if there are new Devices in the stuctfile you get new Homegear peer. But if there is a change to a already know Device (in this case there is already a peer) the existing peer is not updatet. Eg if you change Room or Category of a Device in Loxone Config, Homegear do not change the Roomname or the Categorie.
-* if you remove Device in Loxone Config that is already know to Homegear, this peer do not show that it do not exist anymore.
+*    there is no function to check if the connection was possible. Till now the only way is to look in the log during homegear restart.
+*    not all Loxone Devices have Device Descriptions until now. But i think the most important are there. Devices without Device Description fils did not create a Homegear peer.
+*    there some things Loxone changes in the Structfile after you upload now Project with Loxone Config. When you do search peers, this module gets new sturctfile. if there are new Devices in the stuctfile you get new Homegear peer. But if there is a change to a already know Device (in this case there is already a peer) the existing peer is not updatet. Eg if you change Room or Category of a Device in Loxone Config, Homegear do not change the Roomname or the Categorie.
+*    if you remove Device in Loxone Config that is already know to Homegear, this peer do not show that it do not exist anymore.
 
 If you find any more issu (i'm sure there are) feel free to open issu or ask in homegear forum.
