@@ -229,6 +229,49 @@
           <operationType>config</operationType>
         </physicalString>
       </parameter>
+      <parameter id="MASTER_COLOR">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="MASTER_VALUE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="MOVEMENT_SCENE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalDecimal/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
     </configParameters>
     <configParameters id="maint_ch_master--0"/>
     <variables id="maint_ch_values--0">

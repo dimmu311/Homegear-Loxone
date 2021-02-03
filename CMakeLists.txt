@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(loxone_miniserver)
+project(homegear_loxone)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -36,19 +36,19 @@ set(SOURCE_FILES
 		src/controls/createInstance.h
 		src/controls/Slider.cpp
 		src/controls/Slider.h
-		src/controls/Dimmer.cpp
-		src/controls/Dimmer.h
-		src/controls/LightControllerV2.cpp
-		src/controls/LightControllerV2.h
-		src/controls/Alarm.cpp
-		src/controls/Alarm.h
-		src/controls/MediaClient.cpp
-		src/controls/MediaClient.h
-		src/controls/Jalousie.cpp
-		src/controls/Jalousie.h src/controls/IntelligentRoomControllerV2.cpp src/controls/IntelligentRoomControllerV2.h src/controls/AalEmergency.cpp src/controls/AalEmergency.h)
+        src/controls/ColorPicker.cpp
+        src/controls/ColorPicker.h
+		src/helper/KelvinRgb.cpp
+		src/helper/KelvinRgb.h
+		src/controls/Central.cpp
+		src/controls/Central.h src/controls/Daytimer.cpp src/controls/Daytimer.h)
+
+# These are the corresponding output paths
+set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/output)
+set (LIBRARY_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH})
 
 add_custom_target(homegear COMMAND ../../makeAll.sh SOURCES ${SOURCE_FILES})
 set(CMAKE_SHARED_LIBRARY_PREFIX "mod_")
 
-add_library(loxone_miniserver SHARED ${SOURCE_FILES})
-install(TARGETS loxone_miniserver DESTINATION /var/lib/homegear/modules)
+add_library(loxone SHARED ${SOURCE_FILES})
+install(TARGETS loxone DESTINATION /var/lib/homegear/modules)

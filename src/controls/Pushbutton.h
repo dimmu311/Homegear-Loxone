@@ -1,5 +1,5 @@
-#ifndef HOMEGEAR_LOXONE_MINISERVER_PUSHBUTTON_H
-#define HOMEGEAR_LOXONE_MINISERVER_PUSHBUTTON_H
+#ifndef PUSHBUTTON_H
+#define PUSHBUTTON_H
 
 #include "../LoxoneControl.h"
 
@@ -34,9 +34,8 @@ class Pushbutton : public LoxoneControl
         Pushbutton(std::shared_ptr<BaseLib::Database::DataTable> rows);
         uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
     protected:
-        bool _isFavorite;
         std::string _defaultIcon;
     };
 }
 
-#endif //HOMEGEAR_LOXONE_MINISERVER_PUSHBUTTON_H
+#endif //PUSHBUTTON_H

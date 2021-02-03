@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone Central Audio Zone">
+      <description>Loxone Central Audio Zone</description>
+      <typeNumber>0x0501</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="CENTRAL" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>central_valueset--1</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="2" type="CONTROLS" channelCount="10">
+      <properties/>
+      <configParameters>config--2</configParameters>
+      <variables>control_valueset--1</variables>
+    </function>
+  </functions>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="play">
+      <direction>fromCentral</direction>
+      <function1>valueSet</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>play</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="pause">
+      <direction>fromCentral</direction>
+      <function1>valueSet</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>pause</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="controlsPlay">
+      <direction>fromCentral</direction>
+      <function1>special</function1>
+      <function2>setControls</function2>
+      <jsonPayload>
+        <element>
+          <constValueString>play</constValueString>
+        </element>
+        <element>
+          <parameterId>IDS</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="controlsPause">
+      <direction>fromCentral</direction>
+      <function1>special</function1>
+      <function2>setControls</function2>
+      <jsonPayload>
+        <element>
+          <constValueString>pause</constValueString>
+        </element>
+        <element>
+          <parameterId>IDS</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="controlPlay">
+      <direction>fromCentral</direction>
+      <function1>special</function1>
+      <function2>setControl</function2>
+      <jsonPayload>
+        <element>
+          <constValueString>play</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="controlPause">
+      <direction>fromCentral</direction>
+      <function1>special</function1>
+      <function2>setControl</function2>
+      <jsonPayload>
+        <element>
+          <constValueString>pause</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+      </packets>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+    </configParameters>
+    <configParameters id="config--2">
+      <parameter id="CONTROL">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="central_valueset--1">
+      <parameter id="ALL_PLAY">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="ALL_PLAY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="play">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ALL_PAUSE">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="ALL_PAUSE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="pause">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SELECTED_PLAY">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SELECTED_PLAY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="controlsPlay">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SELECTED_PAUSE">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SELECTED_PAUSE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="controlsPause">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="IDS">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString>
+          <defaultValue>0</defaultValue>
+        </logicalString>
+        <physicalString groupId="IDS">
+          <operationType>store</operationType>
+        </physicalString>
+      </parameter>
+    </variables>
+  <variables id="control_valueset--1">
+    <parameter id="PLAY">
+      <properties>
+        <writeable>true</writeable>
+        <readable>false</readable>
+        <casts>
+          <optionString/>
+          <rpcBinary/>
+        </casts>
+      </properties>
+      <logicalAction />
+      <physicalNone groupId="PLAY">
+        <operationType>command</operationType>
+      </physicalNone>
+      <packets>
+        <packet id="controlPlay">
+          <type>set</type>
+        </packet>
+      </packets>
+    </parameter>
+    <parameter id="PAUSE">
+      <properties>
+        <writeable>true</writeable>
+        <readable>false</readable>
+        <casts>
+          <optionString/>
+          <rpcBinary/>
+        </casts>
+      </properties>
+      <logicalAction />
+      <physicalNone groupId="PAUSE">
+        <operationType>command</operationType>
+      </physicalNone>
+      <packets>
+        <packet id="controlPause">
+          <type>set</type>
+        </packet>
+      </packets>
+    </parameter>
+  </variables>
+</parameterGroups>
+</homegearDevice>

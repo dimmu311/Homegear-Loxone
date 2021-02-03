@@ -3,6 +3,7 @@
 
 #include "../LoxonePacket.h"
 #include "LoxoneEncryption.h"
+#include "Musicserver.h"
 
 namespace Loxone
 {
@@ -67,10 +68,11 @@ protected:
     BaseLib::Output _out;
     int32_t _port = 80;
 	std::string _user;
-	std::string _password;
 	uint32_t _msVersion = 11;
     std::shared_ptr<BaseLib::TcpSocket> _tcpSocket;
     std::shared_ptr<LoxoneEncryption> _loxoneEncryption;
+
+    std::shared_ptr<Musicserver> _musicserver;
 
     std::atomic<uint16_t> _messageCounter{ 0 };
 
@@ -92,6 +94,7 @@ protected:
 
     void acquireToken();
     void authenticateUsingTokens();
+    void prepareSecuredCommand();
 
     PLoxonePacket getResponse(const std::string& responseCommand, const std::string& command, int32_t waitForSeconds = 15);
     std::string encodeWebSocket(const std::string& command, WebSocket::Header::Opcode::Enum messageType);

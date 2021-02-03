@@ -1,0 +1,901 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone Alarm Clock">
+      <description>Loxone Alarm Clock</description>
+      <typeNumber>0x0202</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="ALARM_CLOCK" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>alarmClock_valueset--1</variables>
+    </function>
+  </functions>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\entryList</keyPath>
+          <parameterId>ENTRY_LIST</parameterId>
+        </element>
+        <element>
+          <keyPath>state\deviceSettings</keyPath>
+          <parameterId>DEVICE_SETTINGS</parameterId>
+        </element>
+        <element>
+          <keyPath>json\deviceSettings\beepUsed</keyPath>
+          <parameterId>BEEP_USED</parameterId>
+        </element>
+        <element>
+          <keyPath>json\deviceSettings\brightActive</keyPath>
+          <parameterId>BRIGHT_ACTIVE</parameterId>
+        </element>
+        <element>
+          <keyPath>json\deviceSettings\brightInactive</keyPath>
+          <parameterId>BRIGHT_INACTIVE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\wakeAlarmSoundSettings</keyPath>
+          <parameterId>WAKE_ALARM_SOUND_SETTINGS</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\isEnabled</keyPath>
+          <parameterId>IS_ENABLED</parameterId>
+        </element>
+        <element>
+          <keyPath>state\isAlarmActive</keyPath>
+          <parameterId>IS_ALARM_ACTIVE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\confirmationNeeded</keyPath>
+          <parameterId>CONFIRMATION_NEEDED</parameterId>
+        </element>
+        <element>
+          <keyPath>state\currentEntry</keyPath>
+          <parameterId>CURRENT_ENTRY</parameterId>
+        </element>
+        <element>
+          <keyPath>state\nextEntry</keyPath>
+          <parameterId>NEXT_ENTRY</parameterId>
+        </element>
+        <element>
+          <keyPath>state\nextEntryMode</keyPath>
+          <parameterId>NEXT_ENTRY_MODE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\ringingTime</keyPath>
+          <parameterId>RINGING_TIME</parameterId>
+        </element>
+        <element>
+          <keyPath>state\ringDuration</keyPath>
+          <parameterId>RING_DURATION</parameterId>
+        </element>
+        <element>
+          <keyPath>state\prepareDuration</keyPath>
+          <parameterId>PREPARE_DURATION</parameterId>
+        </element>
+        <element>
+          <keyPath>state\snoozeTime</keyPath>
+          <parameterId>SNOOZE_TIME</parameterId>
+        </element>
+        <element>
+          <keyPath>state\snoozeDuration</keyPath>
+          <parameterId>SNOOZE_DURATION</parameterId>
+        </element>
+        <element>
+          <keyPath>state\nextEntryTime</keyPath>
+          <parameterId>NEXT_ENTRY_TIME</parameterId>
+        </element>
+        <element>
+          <keyPath>state\deviceState</keyPath>
+          <parameterId>DEVICE_STATE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setBeep">
+      <direction>fromCentral</direction>
+      <function1>booleanSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>BEEP_USED</parameterId>
+        </element>
+        <element>
+          <constValueString>setBeepOn/1</constValueString>
+        </element>
+        <element>
+          <constValueString>setBeepOn/0</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setBrightnessInactive">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setBrightnessInactive</constValueString>
+        </element>
+        <element>
+          <parameterId>BRIGHT_INACTIVE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setBrightnessActive">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setBrightnessActive</constValueString>
+        </element>
+        <element>
+          <parameterId>BRIGHT_ACTIVE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setPrepDuration">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setPrepDuration</constValueString>
+        </element>
+        <element>
+          <parameterId>PREPARE_DURATION</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setRingDuration">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setRingDuration</constValueString>
+        </element>
+        <element>
+          <parameterId>RING_DURATION</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="snooze">
+      <direction>fromCentral</direction>
+      <function1>activeSetOn</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>snooze</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="dismiss">
+      <direction>fromCentral</direction>
+      <function1>activeSetOn</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>dismiss</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="delete">
+      <direction>fromCentral</direction>
+      <function1>2valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>entryList</constValueString>
+        </element>
+        <element>
+          <constValueString>delete</constValueString>
+        </element>
+        <element>
+          <parameterId>DELETE_ENTRY</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="addEntry">
+      <direction>fromCentral</direction>
+      <function1>2valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>entryList</constValueString>
+        </element>
+        <element>
+          <constValueString>put</constValueString>
+        </element>
+        <element>
+          <parameterId>NEW_ENTRY</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="HAS_NIGHT_LIGHT">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="SNOOZE_DURATION_CONNECTED">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="BRIGHT_INACTIVE_CONNECTED">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="BRIGHT_ACTIVE_CONNECTED">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="WAKE_ALARM_SOUND_CONNECTED">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="WAKE_ALARM_VOLUME_CONNECTED">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="WAKE_ALARM_SLOPING_CONNECTED">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="WAKE_ALARM_SOUNDS">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="alarmClock_valueset--1">
+      <parameter id="IS_ENABLED">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="IS_ENABLED">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="IS_ALARM_ACTIVE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="IS_ALARM_ACTIVE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CONFIRMATION_NEEDED">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="CONFIRMATION_NEEDED">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CURRENT_ENTRY">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>-1</defaultValue>
+          <minimumValue>-1</minimumValue>
+          <maximumValue>10</maximumValue>
+          <specialValues>
+            <specialValue id="no current Entry">-1</specialValue>
+          </specialValues>
+        </logicalDecimal>
+        <physicalNone groupId="CURRENT_ENTRY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="NEXT_ENTRY">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>-1</defaultValue>
+          <minimumValue>-1</minimumValue>
+          <maximumValue>10</maximumValue>
+          <specialValues>
+            <specialValue id="no next entry">-1</specialValue>
+          </specialValues>
+        </logicalDecimal>
+        <physicalNone groupId="NEXT_ENTRY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="NEXT_ENTRY_MODE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>10</maximumValue>
+        </logicalDecimal>
+        <physicalNone groupId="NEXT_ENTRY_MODE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="RINGING_TIME">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+        </logicalDecimal>
+        <physicalNone groupId="RINGING_TIME">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="RING_DURATION">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+        </logicalDecimal>
+        <physicalNone groupId="RING_DURATION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="setRingDuration">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PREPARE_DURATION">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+        </logicalDecimal>
+        <physicalNone groupId="PREPARE_DURATION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="setPrepDuration">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SNOOZE_TIME">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+        </logicalDecimal>
+        <physicalNone groupId="SNOOZE_TIME">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SNOOZE_DURATION">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+          <minimumValue>60</minimumValue>
+          <maximumValue>1800</maximumValue>
+        </logicalDecimal>
+        <physicalNone groupId="SNOOZE_DURATION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="NEXT_ENTRY_TIME">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+        </logicalDecimal>
+        <physicalNone groupId="NEXT_ENTRY_TIME">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="DEVICE_STATE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <index>0</index>
+            <id>No Touch Nightlight is connected</id>
+          </value>
+          <value>
+            <index>1</index>
+            <id>Touch Nightlight is offline</id>
+          </value>
+          <value>
+            <index>2</index>
+            <id>Touch Nightlight is online</id>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="DEVICE_STATE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ENTRY_LIST">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="ENTRY_LIST">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="NEW_ENTRY">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="NEW_ENTRY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="addEntry">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="DEVICE_SETTINGS">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="DEVICE_SETTINGS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="WAKE_ALARM_SOUND_SETTINGS">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="WAKE_ALARM_SOUND_SETTINGS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="BEEP_USED">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <booleanString>
+              <trueValue>true</trueValue>
+              <falseValue>false</falseValue>
+            </booleanString>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="BEEP_USED">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="setBeep">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="BRIGHT_INACTIVE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>100</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="BRIGHT_INACTIVE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="setBrightnessInactive">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="BRIGHT_ACTIVE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>100</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="BRIGHT_ACTIVE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="setBrightnessActive">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="DELETE_ENTRY">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>100</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="DELETE_ENTRY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="delete">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SNOOZE">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SNOOZE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="snooze">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="DISMISS">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="DISMISS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="dismiss">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>

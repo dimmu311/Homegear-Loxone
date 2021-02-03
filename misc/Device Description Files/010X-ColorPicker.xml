@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone ColorPicker">
+      <description>Loxone ColorPicker</description>
+      <typeNumber>0x0106</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="COLOR_PICKER" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>colorPicker_valueset--1</variables>
+    </function>
+  </functions>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\color</keyPath>
+          <parameterId>COLOR</parameterId>
+        </element>
+        <element>
+          <keyPath>state\value</keyPath>
+          <parameterId>ACTIVE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\value</keyPath>
+          <parameterId>VALUE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\hue</keyPath>
+          <parameterId>HUE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\saturation</keyPath>
+          <parameterId>SATURATION</parameterId>
+        </element>
+        <element>
+          <keyPath>state\kelvin</keyPath>
+          <parameterId>TEMPERATURE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\red</keyPath>
+          <parameterId>RED</parameterId>
+        </element>
+        <element>
+          <keyPath>state\green</keyPath>
+          <parameterId>GREEN</parameterId>
+        </element>
+        <element>
+          <keyPath>state\blue</keyPath>
+          <parameterId>BLUE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\favorites</keyPath>
+          <parameterId>FAVORITES</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="activeSet">
+      <direction>fromCentral</direction>
+      <function1>activeSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>ACTIVE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setBrightness">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setBrightness</constValueString>
+        </element>
+        <element>
+          <parameterId>VALUE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setTemperature">
+      <direction>fromCentral</direction>
+      <function1>special</function1>
+      <function2>setLumitech</function2>
+      <jsonPayload>
+        <element>
+          <parameterId>TEMPERATURE</parameterId>
+        </element>
+        <element>
+          <parameterId>VALUE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setHsv">
+      <direction>fromCentral</direction>
+      <function1>special</function1>
+      <function2>setHsv</function2>
+      <jsonPayload>
+        <element>
+          <parameterId>HUE</parameterId>
+        </element>
+        <element>
+          <parameterId>SATURATION</parameterId>
+        </element>
+        <element>
+          <parameterId>VALUE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setRgb">
+      <direction>fromCentral</direction>
+      <function1>special</function1>
+      <function2>setRgb</function2>
+      <jsonPayload>
+        <element>
+          <parameterId>RED</parameterId>
+        </element>
+        <element>
+          <parameterId>GREEN</parameterId>
+        </element>
+        <element>
+          <parameterId>BLUE</parameterId>
+        </element>
+        <element>
+          <parameterId>VALUE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setFav">
+      <direction>fromCentral</direction>
+      <function1>stringSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>setFav</constValueString>
+        </element>
+        <element>
+          <parameterId>SET_FAV</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="PICKER_TYPE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="colorPicker_valueset--1">
+      <parameter id="COLOR">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString>
+          <defaultValue>0</defaultValue>
+        </logicalString>
+        <physicalString groupId="COLOR">
+          <operationType>store</operationType>
+        </physicalString>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ACTIVE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="ACTIVE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="activeSet">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="VALUE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>100</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="VALUE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="setBrightness">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="HUE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>360</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="HUE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="setHsv">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SATURATION">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>255</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="SATURATION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="setHsv">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="TEMPERATURE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>4600</defaultValue>
+          <minimumValue>2700</minimumValue>
+          <maximumValue>6500</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="TEMPERATURE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="setTemperature">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="RED">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>255</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="RED">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="setRgb">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="GREEN">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>255</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="GREEN">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="setRgb">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="BLUE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>255</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="BLUE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="setRgb">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="FAVORITES">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString>
+          <defaultValue>0</defaultValue>
+        </logicalString>
+        <physicalString groupId="FAVORITES">
+          <operationType>store</operationType>
+        </physicalString>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SET_FAV">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString>
+          <defaultValue>0</defaultValue>
+        </logicalString>
+        <physicalString groupId="SET_FAV">
+          <operationType>command</operationType>
+        </physicalString>
+        <packets>
+          <packet id="setFav">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>

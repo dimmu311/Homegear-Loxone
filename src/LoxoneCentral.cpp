@@ -62,10 +62,10 @@ void LoxoneCentral::checkUnreach()
     {
         if(!physicalInterface.second->isOpen())
         {
-            GD::out.printDebug("Loxone Central: physicalInterface -> " + physicalInterface.first + "is not connected anymore. set every peer to unreach");
+            GD::out.printDebug("Loxone Central: physicalInterface -> " + physicalInterface.first + " is not connected anymore. set every peer to unreach");
             for(auto i = _peersById.begin(); i != _peersById.end(); ++i)
             {
-                if(!i->second->serviceMessages->getUnreach()) i->second->serviceMessages->setUnreach(true,false);
+                //if(!i->second->serviceMessages->getUnreach()) i->second->serviceMessages->setUnreach(true,false);
             }
         }
     }
@@ -81,6 +81,12 @@ bool LoxoneCentral::onPacketReceived(std::string& senderId, std::shared_ptr<Base
         if(!loxonePacket) return false;
 
 		GD::out.printDebug("Loxone Central: onPacketReceived-> " + loxonePacket->getUuid());
+
+		if(loxonePacket->getPacketType() == LoxonePacketType::LoxoneValueStatesPacket)
+        {
+            auto cPacket = std::dynamic_pointer_cast<LoxoneValueStatesPacket>(packet);
+            GD::out.printDebug("Loxone Central: onPacketReceived-> " + std::to_string(cPacket->getDValue()));
+        }
 
 		if (_uuidVariable_PeerIdMap.find(loxonePacket->getUuid()) == _uuidVariable_PeerIdMap.end()) return false;
 		auto variable_PeerId = _uuidVariable_PeerIdMap.find(loxonePacket->getUuid());
@@ -296,9 +302,7 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
     try
 	{
 		std::ostringstream stringStream;
-		
 		std::vector<std::string> arguments;
-		bool showHelp = false;
 
 		if(command == "help" || command == "h")
 		{
@@ -395,7 +399,7 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 					stringStream << "Filter types:" << std::endl;
 					stringStream << "  ID: Filter by id." << std::endl;
 					stringStream << "      FILTERVALUE: The id of the peer to filter (e. g. 513)." << std::endl;
-					stringStream << "  ADDRESS: Filter by address." << std::endl;
+					stringStream << "  ROOM: Filter by room." << std::endl;
 					stringStream << "      FILTERVALUE: The 3 byte address of the peer to filter (e. g. 1DA44D)." << std::endl;
 					stringStream << "  SERIAL: Filter by serial number." << std::endl;
 					stringStream << "      FILTERVALUE: The serial number of the peer to filter (e. g. JEQ0554309)." << std::endl;
@@ -419,8 +423,8 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 				std::string bar(" │ ");
 				const int32_t idWidth = 11;
 				const int32_t nameWidth = 25;
-				const int32_t addressWidth = 8;
-				const int32_t serialWidth = 17;
+				const int32_t roomWidth = 25;
+				const int32_t serialWidth = 18;
 				const int32_t typeWidth1 = 4;
 				const int32_t typeWidth2 = 25;
 				const int32_t firmwareWidth = 8;
@@ -428,12 +432,14 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 				const int32_t unreachWidth = 7;
 				std::string nameHeader("Name");
 				nameHeader.resize(nameWidth, ' ');
+                std::string roomHeader("Room");
+                roomHeader.resize(roomWidth, ' ');
 				std::string typeStringHeader("Type String");
 				typeStringHeader.resize(typeWidth2, ' ');
 				stringStream << std::setfill(' ')
 					<< std::setw(idWidth) << "ID" << bar
 					<< nameHeader << bar
-					<< std::setw(addressWidth) << "Address" << bar
+					<< roomHeader << bar
 					<< std::setw(serialWidth) << "Serial Number" << bar
 					<< std::setw(typeWidth1) << "Type" << bar
 					<< typeStringHeader << bar
@@ -441,11 +447,11 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 					<< std::setw(configPendingWidth) << "Config Pending" << bar
 					<< std::setw(unreachWidth) << "Unreach"
 					<< std::endl;
-				stringStream << "────────────┼───────────────────────────┼──────────┼───────────────────┼──────┼───────────────────────────┼──────────┼────────────────┼────────" << std::endl;
+				stringStream << "────────────┼───────────────────────────┼───────────────────────────┼────────────────────┼──────┼───────────────────────────┼──────────┼────────────────┼────────" << std::endl;
 				stringStream << std::setfill(' ')
 					<< std::setw(idWidth) << " " << bar
 					<< std::setw(nameWidth) << " " << bar
-					<< std::setw(addressWidth) << " " << bar
+					<< std::setw(roomWidth) << " " << bar
 					<< std::setw(serialWidth) << " " << bar
 					<< std::setw(typeWidth1) << " " << bar
 					<< std::setw(typeWidth2) << " " << bar
@@ -467,10 +473,11 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 						std::string name = i->second->getName();
 						if((signed)BaseLib::HelperFunctions::toLower(name).find(filterValue) == (signed)std::string::npos) continue;
 					}
-					else if(filterType == "address")
+					else if(filterType == "room")
 					{
-						int32_t address = BaseLib::Math::getNumber(filterValue, true);
-						if(i->second->getAddress() != address) continue;
+                        auto myLoxonePeer = std::dynamic_pointer_cast<LoxonePeer>(i->second);
+                        if(!myLoxonePeer) continue;
+                        if(myLoxonePeer->getControl()->getRoom() != filterValue) continue;
 					}
 					else if(filterType == "serial")
 					{
@@ -507,8 +514,20 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 						name += "...";
 					}
 					else name.resize(nameWidth + (name.size() - nameSize), ' ');
-					stringStream << name << bar
-						<< std::setw(addressWidth) << BaseLib::HelperFunctions::getHexString(i->second->getAddress(), 8) << bar
+					stringStream << name << bar;
+
+                    auto myLoxonePeer = std::dynamic_pointer_cast<LoxonePeer>(i->second);
+                    if(!myLoxonePeer) continue;
+                    std::string room = myLoxonePeer->getControl()->getRoom();
+                    size_t roomSize = BaseLib::HelperFunctions::utf8StringSize(room);
+                    if(roomSize > (unsigned)roomWidth)
+                    {
+                        room = BaseLib::HelperFunctions::utf8Substring(room, 0, roomWidth - 3);
+                        room += "...";
+                    }
+                    else room.resize(roomWidth + (room.size() - roomSize), ' ');
+                    stringStream << room << bar
+
 						<< std::setw(serialWidth) << i->second->getSerialNumber() << bar
 						<< std::setw(typeWidth1) << BaseLib::HelperFunctions::getHexString(i->second->getDeviceType(), 4) << bar;
 					if(i->second->getRpcDevice())
@@ -537,7 +556,7 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 					stringStream << std::endl << std::dec;
 				}
 				_peersMutex.unlock();
-				stringStream << "────────────┴───────────────────────────┴──────────┴───────────────────┴──────┴───────────────────────────┴──────────┴────────────────┴────────" << std::endl;
+				stringStream << "────────────┴───────────────────────────┴───────────────────────────┴────────────────────┴──────┴───────────────────────────┴──────────┴────────────────┴────────" << std::endl;
 				if(firmwareUpdates) stringStream << std::endl << "*: Firmware update available." << std::endl;
 
 				return stringStream.str();
@@ -742,9 +761,18 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
 
             auto controls = _LoxApp3.getControls();
             std::vector<std::shared_ptr<LoxonePeer>>newPeers;
+
+            std::list<std::string>knownControls;
+            for (auto myPeer = _peersById.begin(); myPeer != _peersById.end(); ++myPeer)
+            {
+                auto myLoxonePeer = std::dynamic_pointer_cast<LoxonePeer>(myPeer->second);
+                if(!myLoxonePeer) continue;
+                knownControls.push_back(myLoxonePeer->getControl()->getUuidAction());
+            }
+
             for (auto control = controls.begin(); control != controls.end(); ++control)
             {
-                if (_peersBySerial.find(control->first) != _peersBySerial.end()) continue;
+                if(std::find(knownControls.begin(), knownControls.end(), control->second->getUuidAction()) != knownControls.end()) continue;
 
                 auto deviceType = control->second->getType();
                 auto serial = control->first;

@@ -1,39 +1,52 @@
-<homegearDevice version="1">
-  <supportedDevices>
-    <device id="Loxone Alarm">
-      <description>Loxone Alarm</description>
-      <typeNumber>0x0200</typeNumber>
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone Daytimer">
+      <description>Loxone Daytimer</description>
+      <typeNumber>0x0203</typeNumber>
       <minFirmwareVersion>0</minFirmwareVersion>
     </device>
   </supportedDevices>
   <properties/>
   <functions>
-    <function channel="0" type="MAINTENANCE" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
       <properties>
         <internal>true</internal>
       </properties>
       <configParameters>maint_ch_master--0</configParameters>
       <variables>maint_ch_values--0</variables>
     </function>
-    <function channel="1" type="ALARM" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="DAYTIMER" channelCount="1">
       <properties/>
       <configParameters>config--1</configParameters>
-      <variables>alarm_valueset--1</variables>
+      <variables>daytimer_valueset--1</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="3" type="DAYTIMER_ENTRY" channelCount="15">
+      <properties/>
+      <configParameters>config--2</configParameters>
+      <variables>entry_valueset--1</variables>
     </function>
   </functions>
-  <packets>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
     <packet id="on.textSet">
       <direction>toCentral</direction>
       <function1>on.textStatesPacket</function1>
       <channel>1</channel>
       <jsonPayload>
         <element>
-          <keyPath>state\sensors</keyPath>
-          <parameterId>SENSORS</parameterId>
+          <keyPath>state\modeList</keyPath>
+          <parameterId>MODE_LIST</parameterId>
         </element>
+      </jsonPayload>
+    </packet>
+    <packet id="on.daytimerStatesPacket">
+      <direction>toCentral</direction>
+      <function1>on.daytimerStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
         <element>
-          <keyPath>state\startTime</keyPath>
-          <parameterId>ALARM_TIME</parameterId>
+          <keyPath>state\default</keyPath>
+          <parameterId>DEFAULT</parameterId>
         </element>
       </jsonPayload>
     </packet>
@@ -43,102 +56,70 @@
       <channel>1</channel>
       <jsonPayload>
         <element>
-          <keyPath>state\armed</keyPath>
-          <parameterId>ARMED</parameterId>
+          <keyPath>state\mode</keyPath>
+          <parameterId>MODE</parameterId>
         </element>
         <element>
-          <keyPath>state\nextLevel</keyPath>
-          <parameterId>NEXT_LEVEL</parameterId>
+          <keyPath>state\override</keyPath>
+          <parameterId>OVERRIDE</parameterId>
         </element>
         <element>
-          <keyPath>state\nextLevelDelay</keyPath>
-          <parameterId>NEXT_LEVEL_DELAY</parameterId>
+          <keyPath>state\value</keyPath>
+          <parameterId>VALUE</parameterId>
         </element>
         <element>
-          <keyPath>state\nextLevelDelayTotal</keyPath>
-          <parameterId>NEXT_LEVEL_DELAY_TOTAL</parameterId>
+          <keyPath>state\resetActive</keyPath>
+          <parameterId>RESET_ACTIVE</parameterId>
         </element>
         <element>
-          <keyPath>state\level</keyPath>
-          <parameterId>LEVEL</parameterId>
-        </element>
-        <element>
-          <keyPath>state\armedDelay</keyPath>
-          <parameterId>ARMED_DELAY</parameterId>
-        </element>
-        <element>
-          <keyPath>state\armedDelayTotal</keyPath>
-          <parameterId>ARMED_DELAY_TOTAL</parameterId>
-        </element>
-        <element>
-          <keyPath>state\disabledMove</keyPath>
-          <parameterId>DISABLED_MOVE</parameterId>
+          <keyPath>state\needsActivation</keyPath>
+          <parameterId>NEEDS_ACTIVATION</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="armed">
-      <direction>fromCentral</direction>
-      <function1>activeSet</function1>
-      <jsonPayload>
-        <element>
-          <parameterId>ARMED</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="arm">
-      <direction>fromCentral</direction>
-      <function1>valueSetToPath</function1>
-      <jsonPayload>
-        <element>
-          <constValueString>on</constValueString>
-        </element>
-        <element>
-          <parameterId>ARM_MODE</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="delayedon">
+    <packet id="pulse">
       <direction>fromCentral</direction>
       <function1>activeSetOn</function1>
       <jsonPayload>
         <element>
-          <constValueString>delayedon</constValueString>
+          <constValueString>pulse</constValueString>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="delayedonMode">
+    <packet id="default">
       <direction>fromCentral</direction>
       <function1>valueSetToPath</function1>
       <jsonPayload>
         <element>
-          <constValueString>delayedon</constValueString>
+          <constValueString>default</constValueString>
         </element>
         <element>
-          <parameterId>ARM_DELAY_MODE</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="quit">
-      <direction>fromCentral</direction>
-      <function1>activeSetOn</function1>
-      <jsonPayload>
-        <element>
-          <constValueString>quit</constValueString>
+          <parameterId>DEFAULT</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="dismv">
+    <packet id="setOverride">
       <direction>fromCentral</direction>
-      <function1>booleanSet</function1>
+      <function1>special</function1>
+      <function2>setOverride</function2>
       <jsonPayload>
         <element>
-          <parameterId>DISABLED_MOVE</parameterId>
+          <parameterId>SET_OVERRIDE</parameterId>
         </element>
         <element>
-          <constValueString>dismv/1</constValueString>
+          <parameterId>OVERRIDE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setModesList">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>modeslist</constValueString>
         </element>
         <element>
-          <constValueString>dismv/0</constValueString>
+          <parameterId>MODE_LIST</parameterId>
         </element>
       </jsonPayload>
     </packet>
@@ -175,7 +156,7 @@
           <operationType>config</operationType>
         </physicalString>
       </parameter>
-      <parameter id="ALERT">
+      <parameter id="ANALOG">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -184,22 +165,39 @@
           </casts>
         </properties>
         <logicalBoolean/>
-        <physicalNone>
+        <physicalNone groupId="ANALOG">
           <operationType>config</operationType>
         </physicalNone>
       </parameter>
-      <parameter id="PRESENCE_CONNECTED">
+      <parameter id="TEXT">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
           <casts>
             <rpcBinary />
           </casts>
         </properties>
-        <logicalBoolean/>
-        <physicalNone>
+        <logicalString/>
+        <physicalString>
           <operationType>config</operationType>
-        </physicalNone>
+        </physicalString>
+      </parameter>
+      <parameter id="FORMAT">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
       </parameter>
     </configParameters>
     <configParameters id="maint_ch_master--0"/>
@@ -215,10 +213,182 @@
         </physicalInteger>
       </parameter>
     </variables>
-    <variables id="alarm_valueset--1">
-      <parameter id="ARMED">
+    <variables id="daytimer_valueset--1">
+      <parameter id="MODE_LIST">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="MODE_LIST">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+          <packet id="setModesList">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="MODE">
         <properties>
           <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="MODE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="OVERRIDE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="OVERRIDE">
+          <operationType>store</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="VALUE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="VALUE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="NEEDS_ACTIVATION">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="NEEDS_ACTIVATION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="RESET_ACTIVE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="RESET_ACTIVE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PULSE">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="PULSE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="pulse">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="DEFAULT">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="DEFAULT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.daytimerStatesPacket">
+            <type>event</type>
+          </packet>
+          <packet id="default">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SET_OVERRIDE">
+        <properties>
+          <readable>false</readable>
           <writeable>true</writeable>
           <casts>
             <booleanDecimal>
@@ -232,151 +402,18 @@
         <logicalBoolean>
           <defaultValue>false</defaultValue>
         </logicalBoolean>
-        <physicalNone groupId="ARMED">
+        <physicalNone groupId="SET_OVERRIDE">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-          <packet id="armed">
+          <packet id="setOverride">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="NEXT_LEVEL">
-        <properties>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalEnumeration>
-          <defaultValue>0</defaultValue>
-          <value>
-            <index>none</index>
-            <id>0</id>
-          </value>
-          <value>
-            <index>Silent</index>
-            <id>1</id>
-          </value>
-          <value>
-            <index>Acustic</index>
-            <id>2</id>
-          </value>
-          <value>
-            <index>Optical</index>
-            <id>3</id>
-          </value>
-          <value>
-            <index>Internal</index>
-            <id>4</id>
-          </value>
-          <value>
-            <index>External</index>
-            <id>5</id>
-          </value>
-          <value>
-            <index>Remote</index>
-            <id>6</id>
-          </value>
-        </logicalEnumeration>
-        <physicalNone groupId="NEXT_LEVEL">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="NEXT_LEVEL_DELAY">
-        <properties>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalDecimal>
-          <defaultValue>0</defaultValue>
-        </logicalDecimal>
-        <physicalNone groupId="NEXT_LEVEL_DELAY">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="NEXT_LEVEL_DELAY_TOTAL">
-        <properties>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalDecimal>
-          <defaultValue>0</defaultValue>
-        </logicalDecimal>
-        <physicalNone groupId="NEXT_LEVEL_DELAY_TOTOAL">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="LEVEL">
-        <properties>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalEnumeration>
-          <defaultValue>0</defaultValue>
-          <value>
-            <index>none</index>
-            <id>0</id>
-          </value>
-          <value>
-            <index>Silent</index>
-            <id>1</id>
-          </value>
-          <value>
-            <index>Acustic</index>
-            <id>2</id>
-          </value>
-          <value>
-            <index>Optical</index>
-            <id>3</id>
-          </value>
-          <value>
-            <index>Internal</index>
-            <id>4</id>
-          </value>
-          <value>
-            <index>External</index>
-            <id>5</id>
-          </value>
-          <value>
-            <index>Remote</index>
-            <id>6</id>
-          </value>
-        </logicalEnumeration>
-        <physicalNone groupId="LEVEL">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets> 
-      </parameter>
-      <parameter id="ARMED_DELAY">
+    </variables>
+    <variables id="entry_valueset--1">
+      <parameter id="ID">
         <properties>
           <readable>true</readable>
           <writeable>false</writeable>
@@ -387,17 +424,13 @@
         <logicalDecimal>
           <defaultValue>0</defaultValue>
         </logicalDecimal>
-        <physicalNone groupId="ARMED_DELAY">
+        <physicalNone groupId="ID">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
       </parameter>
-      <parameter id="ARMED_DELAY_TOTAL">
+      <parameter id="FROM">
         <properties>
+          <readable>true</readable>
           <writeable>false</writeable>
           <casts>
             <rpcBinary/>
@@ -406,41 +439,49 @@
         <logicalDecimal>
           <defaultValue>0</defaultValue>
         </logicalDecimal>
-        <physicalNone groupId="ARMED_DELAY_TOTAL">
+        <physicalNone groupId="FROM">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
       </parameter>
-      <parameter id="SENSORS">
+      <parameter id="TO">
         <properties>
+          <readable>true</readable>
           <writeable>false</writeable>
           <casts>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalString/>
-        <physicalNone groupId="SENSORS">
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="TO">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="on.textSet">
-            <type>event</type>
-          </packet>
-        </packets>
       </parameter>
-      <parameter id="DISABLED_MOVE">
+      <parameter id="MODE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="MODE">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="NEED_ACTIVATE">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
           <casts>
             <booleanDecimal>
-              <trueValue>1.0</trueValue>
-              <falseValue>0.0</falseValue>
-              <threshold>1.0</threshold>
+              <falseValue>0</falseValue>
+              <trueValue>1</trueValue>
+              <threshold>1</threshold>
             </booleanDecimal>
             <rpcBinary/>
           </casts>
@@ -448,136 +489,24 @@
         <logicalBoolean>
           <defaultValue>0</defaultValue>
         </logicalBoolean>
-        <physicalNone groupId="DISABLED_MOVE">
+        <physicalNone groupId="NEED_ACTIVATE">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-          <packet id="dismv">
-            <type>set</type>
-          </packet>
-        </packets>
       </parameter>
-      <parameter id="ALARM_TIME">
+      <parameter id="VALUE">
         <properties>
+          <readable>true</readable>
           <writeable>false</writeable>
           <casts>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalString/>
-        <physicalNone groupId="ALARM_TIME">
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="VALUE">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="on.textSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ARM_MODE">
-        <properties>
-          <readable>false</readable>
-          <writeable>true</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalEnumeration>
-          <defaultValue>-1</defaultValue>
-          <value>
-            <id>none</id>
-            <index>-1</index>
-          </value>
-          <value>
-            <id>without movement</id>
-            <index>0</index>
-          </value>
-          <value>
-            <id>with movement</id>
-            <index>1</index>
-          </value>
-        </logicalEnumeration>
-        <physicalNone groupId="ARM_MODE">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="arm">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ARM_DELAY">
-        <properties>
-          <readable>false</readable>
-          <writeable>true</writeable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction/>
-        <physicalNone groupId="ARM_DELAY">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="delayedon">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ARM_DELAY_MODE">
-        <properties>
-          <readable>false</readable>
-          <writeable>true</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalEnumeration>
-          <defaultValue>-1</defaultValue>
-          <value>
-            <id>none</id>
-            <index>-1</index>
-          </value>
-          <value>
-            <id>without movement</id>
-            <index>0</index>
-          </value>
-          <value>
-            <id>with movement</id>
-            <index>1</index>
-          </value>
-        </logicalEnumeration>
-        <physicalNone groupId="ARM_DELAY_MODE">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="delayedonMode">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="QUIT">
-        <properties>
-          <readable>false</readable>
-          <writeable>true</writeable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction/>
-        <physicalNone groupId="QUIT">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="quit">
-            <type>set</type>
-          </packet>
-        </packets>
       </parameter>
     </variables>
   </parameterGroups>

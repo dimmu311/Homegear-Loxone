@@ -35,7 +35,7 @@ class LoxonePacket : public BaseLib::Systems::Packet
 {
 public:
     LoxonePacket() = default;
-    LoxonePacket(std::string& command);
+    LoxonePacket(std::string& command, bool isSecured = false);
 	virtual ~LoxonePacket() = default;
 	static const std::list<std::string> _responseCommands;
 
@@ -48,6 +48,7 @@ public:
 
 	LoxonePacketType getPacketType() { return _packetType; };
 	std::string getUuid() { return _uuid; };
+	bool needToSecure(){return _isSecured;};
 
 protected:
 	std::string _command;
@@ -59,6 +60,7 @@ protected:
 
 	std::string _uuid;
 	LoxonePacketType _packetType;
+    bool _isSecured = false;
 
 	std::string getUuidFromPacket(char* data);
 	double getValueFromPacket(char* data);
@@ -175,11 +177,12 @@ public:
 		LoxoneTimeEntry(std::vector<uint8_t> data);
 	};
 	LoxoneDaytimerStatesPacket(char* packet, uint32_t nrEntrys);
-	LoxoneTimeEntry getEntry(uint32_t entry){return _entrys.at(entry);};
+    std::shared_ptr<LoxoneTimeEntry> getEntry(uint32_t entry){return _entrys.at(entry);};
 	uint32_t getNrEntrys() {return _entrys.size();};
-	std::map<uint32_t, LoxoneTimeEntry> getEntrys() {return _entrys;};
+	std::map<uint32_t, std::shared_ptr<LoxoneTimeEntry>> getEntrys() {return _entrys;};
+	double getDevValue(){return _devValue;};
 protected:
-	std::map<uint32_t, LoxoneTimeEntry> _entrys;
+	std::map<uint32_t, std::shared_ptr<LoxoneTimeEntry>> _entrys;
 	double _devValue;
 };
 class LoxoneWeatherStatesPacket : public LoxonePacket
