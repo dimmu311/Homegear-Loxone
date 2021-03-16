@@ -46,6 +46,7 @@ dimmu@homegearpi(rw):/home/pi/Homegear-Loxone# nano /etc/homegear/families/loxon
 <h3>Working With The Module</h3>
 The main part clould be done using homegear cli. i also testet some functions im Homegear Admin ui. The most important thinks work also in Admin ui, but not all. Because of that i only show how to work with cli. <br>
 log in to homegear cli and select Loxone family (family nr. 65) module and show the module help
+
 ```console
 dimmu@homegearpi(rw):homegear -r
 > fs 65
