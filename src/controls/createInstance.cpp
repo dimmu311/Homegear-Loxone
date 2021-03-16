@@ -23,10 +23,10 @@ namespace Loxone
         else if(type == "Alarm") return std::make_shared<LoxoneControl>(control, room, cat, 0x200);
         else if(type == "MediaClient") return std::make_shared<LoxoneControl>(control, room, cat, 0x201);
         else if(type == "AlarmClock") return std::make_shared<LoxoneControl>(control, room, cat, 0x202);
-        //
         else if(type == "IRCV2Daytimer") return std::make_shared<Daytimer>(control, room, cat, 0x203);
         else if(type == "Daytimer") return std::make_shared<Daytimer>(control, room, cat, 0x203);
         //don't know if there are some more Daytimer Variants. The Api is not correct at this point
+        else if(type == "Heatmixer") return std::make_shared<LoxoneControl>(control, room, cat, 0x204);
         else if(type == "ClimateController") return std::make_shared<LoxoneControl>(control, room, cat, 0x300);
         else if(type == "IRoomControllerV2") return std::make_shared<LoxoneControl>(control, room, cat, 0x301);
         else if(type == "AalEmergency") return std::make_shared<LoxoneControl>(control, room, cat, 0x400);
@@ -58,6 +58,7 @@ namespace Loxone
         else if(typeNr == 0x201) return std::make_shared<LoxoneControl>(rows, typeNr); //MediaClient
         else if(typeNr == 0x202) return std::make_shared<LoxoneControl>(rows, typeNr); //AlarmClock
         else if(typeNr == 0x203) return std::make_shared<Daytimer>(rows, typeNr); //Daytimer, IRCV2Daytimer.....
+        else if(typeNr == 0x204) return std::make_shared<LoxoneControl>(rows, typeNr); //Heatmixer
         else if(typeNr == 0x300) return std::make_shared<LoxoneControl>(rows, typeNr); //ClimateController
         else if(typeNr == 0x301) return std::make_shared<LoxoneControl>(rows, typeNr); //IntelligentRoomControllerV2
         else if(typeNr == 0x400) return std::make_shared<LoxoneControl>(rows, typeNr); //AalEmergency
