@@ -32,6 +32,7 @@ namespace Loxone
         else if(type == "Hourcounter") return std::make_shared<LoxoneControl>(control, room, cat, 0x205);
         else if(type == "ClimateController") return std::make_shared<LoxoneControl>(control, room, cat, 0x300);
         else if(type == "IRoomControllerV2") return std::make_shared<LoxoneControl>(control, room, cat, 0x301);
+        else if(type == "IRoomController") return std::make_shared<LoxoneControl>(control, room, cat, 0x302);
         else if(type == "AalEmergency") return std::make_shared<LoxoneControl>(control, room, cat, 0x400);
         else if(type == "AalSmartAlarm") return std::make_shared<LoxoneControl>(control, room, cat, 0x401);
         else if(type == "CarCharger") return std::make_shared<LoxoneControl>(control, room, cat, 0x402);
@@ -67,6 +68,7 @@ namespace Loxone
         else if(typeNr == 0x205) return std::make_shared<LoxoneControl>(rows, typeNr); //Hourcounter
         else if(typeNr == 0x300) return std::make_shared<LoxoneControl>(rows, typeNr); //ClimateController
         else if(typeNr == 0x301) return std::make_shared<LoxoneControl>(rows, typeNr); //IntelligentRoomControllerV2
+        else if(typeNr == 0x302) return std::make_shared<LoxoneControl>(rows, typeNr); //IntelligentRoomController
         else if(typeNr == 0x400) return std::make_shared<LoxoneControl>(rows, typeNr); //AalEmergency
         else if(typeNr == 0x401) return std::make_shared<LoxoneControl>(rows, typeNr); //AalSmartAlarm
         else if(typeNr == 0x402) return std::make_shared<LoxoneControl>(rows, typeNr); //CarCharger
