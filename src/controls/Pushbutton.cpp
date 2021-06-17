@@ -2,7 +2,7 @@
 
 namespace Loxone
 {
-    Pushbutton::Pushbutton(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat,0x100)
+    Pushbutton::Pushbutton(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat) : LoxoneControl(control, room, cat,0x100)
     {
         getValueFromStructFile("defaultIcon", "", _defaultIcon);
     }

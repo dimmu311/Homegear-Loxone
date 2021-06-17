@@ -30,7 +30,7 @@ class Pushbutton : public LoxoneControl
     decrypted Command = jdev/sps/io/14003f84-007d-36b6-ffff14b9c0f9d460/off
      */
     public:
-        Pushbutton(PVariable control, std::string room, std::string cat);
+        Pushbutton(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
         Pushbutton(std::shared_ptr<BaseLib::Database::DataTable> rows);
         uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
     protected:

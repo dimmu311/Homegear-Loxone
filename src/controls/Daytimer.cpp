@@ -1,7 +1,7 @@
 #include "Daytimer.h"
 namespace Loxone
 {
-    Daytimer::Daytimer(PVariable control, std::string room, std::string cat, uint32_t typeNr) : LoxoneControl(control, room, cat,typeNr)
+    Daytimer::Daytimer(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat) : LoxoneControl(control, room, cat,0x203)
     {
     }
 

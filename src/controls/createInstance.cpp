@@ -8,7 +8,7 @@
 
 namespace Loxone
 {
-    std::shared_ptr<LoxoneControl> createInstance::createInstanceFromTypeString(PVariable control, std::string room, std::string cat)
+    std::shared_ptr<LoxoneControl> createInstance::createInstanceFromTypeString(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat)
     {
         auto type = control->structValue->at("type")->stringValue;
 
@@ -17,16 +17,16 @@ namespace Loxone
         else if(type == "Dimmer") return std::make_shared<LoxoneControl>(control, room, cat, 0x102);
         else if(type == "LightControllerV2") return std::make_shared<LoxoneControl>(control, room, cat, 0x103);
         else if(type == "Jalousie") return std::make_shared<LoxoneControl>(control, room, cat, 0x104);
-        else if(type == "ColorPickerV2") return std::make_shared<ColorPicker>(control, room, cat, 0x105);
-        else if(type == "ColorPicker") return std::make_shared<ColorPicker>(control, room, cat, 0x106);
+        else if(type == "ColorPickerV2") return std::make_shared<ColorPicker>(control, room, cat);
+        else if(type == "ColorPicker") return std::make_shared<ColorPicker>(control, room, cat);
         else if(type == "Gate") return std::make_shared<LoxoneControl>(control, room, cat, 0x107);
         else if(type == "InfoOnlyAnalog") return std::make_shared<LoxoneControl>(control, room, cat, 0x108);
         else if(type == "InfoOnlyDigital") return std::make_shared<LoxoneControl>(control, room, cat, 0x109);
         else if(type == "Alarm") return std::make_shared<LoxoneControl>(control, room, cat, 0x200);
         else if(type == "MediaClient") return std::make_shared<LoxoneControl>(control, room, cat, 0x201);
         else if(type == "AlarmClock") return std::make_shared<LoxoneControl>(control, room, cat, 0x202);
-        else if(type == "IRCV2Daytimer") return std::make_shared<Daytimer>(control, room, cat, 0x203);
-        else if(type == "Daytimer") return std::make_shared<Daytimer>(control, room, cat, 0x203);
+        else if(type == "IRCV2Daytimer") return std::make_shared<Daytimer>(control, room, cat);
+        else if(type == "Daytimer") return std::make_shared<Daytimer>(control, room, cat);
         //don't know if there are some more Daytimer Variants. The Api is not correct at this point
         else if(type == "Heatmixer") return std::make_shared<LoxoneControl>(control, room, cat, 0x204);
         else if(type == "Hourcounter") return std::make_shared<LoxoneControl>(control, room, cat, 0x205);
@@ -43,6 +43,7 @@ namespace Loxone
         else if(type == "CentralGate") return std::make_shared<Central>(control, room, cat, 0x502);
         else if(type == "CentralJalousie") return std::make_shared<Central>(control, room, cat, 0x503);
         else if(type == "CentralLightController") return std::make_shared<Central>(control, room, cat, 0x504);
+        else if(type == "Intercom") return std::make_shared<LoxoneControl>(control, room, cat, 0x505);
         //Alarm Sequence, this in in Doku, but not shown in struct file. don't know if this is a Loxone issu
 
         return nullptr;
@@ -79,6 +80,8 @@ namespace Loxone
         else if(typeNr == 0x502) return std::make_shared<Central>(rows, typeNr); //CentralGate
         else if(typeNr == 0x503) return std::make_shared<Central>(rows, typeNr); //CentralJalousie
         else if(typeNr == 0x504) return std::make_shared<Central>(rows, typeNr); //CentralLightController
+        else if(typeNr == 0x505) return std::make_shared<LoxoneControl>(rows, typeNr); //Intercom
+
         //Alarm Sequence, this in in Doku, but not shown in struct file. don't know if this is a Loxone issu
 
         return nullptr;

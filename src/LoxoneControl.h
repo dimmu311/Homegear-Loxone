@@ -25,7 +25,7 @@ namespace Loxone
 	class MandatoryFields
 	{
 		public:
-		MandatoryFields(PVariable mandatoryFields, std::string room, std::string cat);
+		MandatoryFields(PVariable mandatoryFields, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
 		explicit MandatoryFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
 		void overwriteName(std::string name);
 		std::string getName() { return _name; };
@@ -44,7 +44,7 @@ namespace Loxone
 	{
 		public:
 
-		OptionalFields(PVariable optionalFields, std::string room, std::string cat);
+		OptionalFields(PVariable optionalFields, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
 		explicit OptionalFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
 		std::string getRoom() { return _room; };
 		std::string getCat() { return _cat; };
@@ -65,7 +65,7 @@ namespace Loxone
 	class LoxoneControl : public MandatoryFields, public OptionalFields
 	{
 	public:
-        LoxoneControl(PVariable control, std::string room, std::string cat, uint32_t typeNr);
+        LoxoneControl(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat, uint32_t typeNr);
 		LoxoneControl(std::shared_ptr<BaseLib::Database::DataTable> rows, uint32_t typeNr);
 
         uint32_t getType() { return _type; };
