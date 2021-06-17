@@ -3,7 +3,7 @@
 
 namespace Loxone
 {
-    ColorPicker::ColorPicker(PVariable control, std::string room, std::string cat, uint32_t typeNr) : LoxoneControl(control, room, cat, typeNr)
+    ColorPicker::ColorPicker(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat) : LoxoneControl(control, room, cat, 0x105)
     {
     }
     ColorPicker::ColorPicker(std::shared_ptr<BaseLib::Database::DataTable> rows, uint32_t typeNr) : LoxoneControl(rows, typeNr)

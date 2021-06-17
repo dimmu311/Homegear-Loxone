@@ -2,7 +2,7 @@
 
 namespace Loxone
 {
-    Slider::Slider(PVariable control, std::string room, std::string cat) : LoxoneControl(control, room, cat, 0x101)
+    Slider::Slider(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat) : LoxoneControl(control, room, cat, 0x101)
     {
         getValueFromStructFile("defaultIcon", "", _defaultIcon);
     }

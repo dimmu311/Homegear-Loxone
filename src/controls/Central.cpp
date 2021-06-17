@@ -2,7 +2,7 @@
 
 namespace Loxone
 {
-    Central::Central(PVariable control, std::string room, std::string cat, uint32_t typeNr) : LoxoneControl(control, room, cat,typeNr)
+    Central::Central(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat, uint32_t typeNr) : LoxoneControl(control, room, cat,typeNr)
     {
     }
 

@@ -122,7 +122,7 @@ namespace Loxone
 				}
 
 				if (GD::bl->debugLevel >= 5) GD::out.printInfo("Loading Control " + i->second->structValue->at("name")->stringValue + " with serial " + serial);
-				std::shared_ptr<LoxoneControl> control = createInstance::createInstanceFromTypeString(i->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second);
+				std::shared_ptr<LoxoneControl> control = createInstance::createInstanceFromTypeString(i->second, _rooms,_cats);
 				if(!control) continue;
 
 				if(_controls.find(serial) != _controls.end()) serial[17] = '1';
@@ -154,7 +154,7 @@ namespace Loxone
                             }
 						}
 						if (GD::bl->debugLevel >= 5) GD::out.printInfo("Loading subControl " + j->second->structValue->at("name")->stringValue + " with serial " + subSerial);
-						std::shared_ptr<LoxoneControl> subControl = createInstance::createInstanceFromTypeString(j->second, _rooms.find(i->second->structValue->at("room")->stringValue)->second, _cats.find(i->second->structValue->at("cat")->stringValue)->second);
+						std::shared_ptr<LoxoneControl> subControl = createInstance::createInstanceFromTypeString(j->second, _rooms, _cats);
                         if(!subControl) continue;
                         subControl->overwriteName(i->second->structValue->at("name")->stringValue + " ||| " + j->second->structValue->at("name")->stringValue);
 

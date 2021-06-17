@@ -32,7 +32,7 @@ namespace Loxone
         }
         */
     public:
-        Slider(PVariable control, std::string room, std::string cat);
+        Slider(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
         Slider(std::shared_ptr<BaseLib::Database::DataTable> rows);
         uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
     protected:

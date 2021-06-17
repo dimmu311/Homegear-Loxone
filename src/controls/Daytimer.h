@@ -7,7 +7,7 @@ namespace Loxone {
     class Daytimer : public LoxoneControl {
 
     public:
-        Daytimer(PVariable control, std::string room, std::string cat, uint32_t typeNr);
+        Daytimer(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
         Daytimer(std::shared_ptr<BaseLib::Database::DataTable> rows, uint32_t typeNr);
 
         bool setValue(PPacket frame, PVariable parameters, uint32_t channel, std::string &command, bool &isSecured);
