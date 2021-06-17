@@ -8,7 +8,7 @@ namespace Loxone
     class ColorPicker : public LoxoneControl
     {
     public:
-        ColorPicker(PVariable control, std::string room, std::string cat, uint32_t typeNr);
+        ColorPicker(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
         ColorPicker(std::shared_ptr<BaseLib::Database::DataTable> rows, uint32_t typeNr);
 
         bool processPacket(PLoxoneTextStatesPacket loxonePacket);

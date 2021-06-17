@@ -2,7 +2,7 @@
 
 namespace Loxone
 {
-    MandatoryFields::MandatoryFields(PVariable mandatoryFields, std::string room, std::string cat)
+    MandatoryFields::MandatoryFields(PVariable mandatoryFields, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat)
     {
     	_name = mandatoryFields->structValue->at("name")->stringValue;
 		_typeString = mandatoryFields->structValue->at("type")->stringValue;
@@ -118,10 +118,19 @@ namespace Loxone
 		return 0;
     }
 
-    OptionalFields::OptionalFields(PVariable optionalFields, std::string room, std::string cat)
+    OptionalFields::OptionalFields(PVariable optionalFields, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat)
     {
-    	_room = room;
-		_cat = cat;
+        _room = "noRoom";
+        if(optionalFields->structValue->find("room") != optionalFields->structValue->end()){
+            std::string uuid = optionalFields->structValue->at("room")->stringValue;
+            if(room.find(uuid) != room.end()) _room = room.at(uuid);
+        }
+        _cat = "noCat";
+        if(optionalFields->structValue->find("cat") != optionalFields->structValue->end()){
+            std::string uuid = optionalFields->structValue->at("cat")->stringValue;
+            if(cat.find(uuid) != cat.end()) _cat = cat.at(uuid);
+        }
+        _cat = _cat.find(optionalFields->structValue->at("cat")->stringValue);
 	}
     OptionalFields::OptionalFields(std::shared_ptr<BaseLib::Database::DataTable>rows)
 	{
@@ -169,7 +178,7 @@ namespace Loxone
 		return 0;
     }
 
-	LoxoneControl::LoxoneControl(PVariable control, std::string room, std::string cat, uint32_t typeNr) : MandatoryFields(control, room, cat),	OptionalFields(control, room, cat)
+	LoxoneControl::LoxoneControl(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat, uint32_t typeNr) : MandatoryFields(control, room, cat),	OptionalFields(control, room, cat)
 	{
 		try
 		{
@@ -553,6 +562,20 @@ namespace Loxone
                 if (!getValueFromVariable(parameters->arrayValue->at(2), command)) return false;
                 command += "/";
                 return getValueFromVariable(parameters->arrayValue->at(3), command);
+            }
+            else if(frame->function1 == "5valueSetToPath")
+            {
+                if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
+                command += parameters->arrayValue->at(0)->stringValue + "/";
+                if (!getValueFromVariable(parameters->arrayValue->at(1), command)) return false;
+                command += "/";
+                if (!getValueFromVariable(parameters->arrayValue->at(2), command)) return false;
+                command += "/";
+                if (!getValueFromVariable(parameters->arrayValue->at(3), command)) return false;
+                command += "/";
+                if (!getValueFromVariable(parameters->arrayValue->at(4), command)) return false;
+                command += "/";
+                return getValueFromVariable(parameters->arrayValue->at(5), command);
             }
             else if (frame->function1 == "stringSetToPath"){
                 if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;

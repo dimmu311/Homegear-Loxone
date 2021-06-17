@@ -1,0 +1,607 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+    <device id="Loxone EnergyMonitor">
+      <description>Loxone EnergyMonitor</description>
+      <typeNumber>0x0404</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="FanController" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>energymonitor_valueset--1</variables>
+    </function>
+  </functions>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\prodCurr</keyPath>
+          <parameterId>PROD_CURR</parameterId>
+        </element>
+        <element>
+          <keyPath>state\prodCurrDay</keyPath>
+          <parameterId>PROD_CURR_DAY</parameterId>
+        </element>
+        <element>
+          <keyPath>state\prodCurrMonth</keyPath>
+          <parameterId>PROD_CURR_MONTH</parameterId>
+        </element>
+        <element>
+          <keyPath>state\prodCurrYear</keyPath>
+          <parameterId>PROD_CURR_YEAR</parameterId>
+        </element>
+        <element>
+          <keyPath>state\prodCurrTotal</keyPath>
+          <parameterId>PROD_CURR_TOTAL</parameterId>
+        </element>
+        <element>
+          <keyPath>state\consCurr</keyPath>
+          <parameterId>CONS_CURR</parameterId>
+        </element>
+        <element>
+          <keyPath>state\consCurrDay</keyPath>
+          <parameterId>CONS_CURR_DAY</parameterId>
+        </element>
+        <element>
+          <keyPath>state\gridCurr</keyPath>
+          <parameterId>GRID_CURR</parameterId>
+        </element>
+        <element>
+          <keyPath>state\batteryCurr</keyPath>
+          <parameterId>BATTERY_CURR</parameterId>
+        </element>
+        <element>
+          <keyPath>state\stateOfCharge</keyPath>
+          <parameterId>STATE_OF_CHARGE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\earningsDay</keyPath>
+          <parameterId>EARNINGS_DAY</parameterId>
+        </element>
+        <element>
+          <keyPath>state\earningsMonth</keyPath>
+          <parameterId>EARNINGS_MONTH</parameterId>
+        </element>
+        <element>
+          <keyPath>state\earningsYear</keyPath>
+          <parameterId>EARNINGS_YEAR</parameterId>
+        </element>
+        <element>
+          <keyPath>state\earningsTotal</keyPath>
+          <parameterId>EARNINGS_TOTAL</parameterId>
+        </element>
+        <element>
+          <keyPath>state\priceDelivery</keyPath>
+          <parameterId>PRICE_DELIVERY</parameterId>
+        </element>
+        <element>
+          <keyPath>state\priceConsumption</keyPath>
+          <parameterId>PRICE_CONSUMPTION</parameterId>
+        </element>
+        <element>
+          <keyPath>state\co2Factor</keyPath>
+          <parameterId>CO2_FACTOR</parameterId>
+        </element>
+        <element>
+          <keyPath>state\generatorType</keyPath>
+          <parameterId>GENERATOR_TYPE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\mode</keyPath>
+          <parameterId>MODE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\online</keyPath>
+          <parameterId>ONLINE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="energymonitor_valueset--1">
+      <parameter id="PROD_CURR">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="PROD_CURR">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PROD_CURR_DAY">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="PROD_CURR_DAY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PROD_CURR_MONTH">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="PROD_CURR_MONTH">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PROD_CURR_YEAR">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="PROD_CURR_YEAR">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PROD_CURR_TOTAL">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="PROD_CURR_TOTAL">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CONS_CURR">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="CONS_CURR">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CONS_CURR_DAY">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="CONS_CURR_DAY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="GRID_CURR">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="GRID_CURR">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="BATTERY_CURR">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="BATTERY_CURR">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="STATE_OF_CHARGE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="STATE_OF_CHARGE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="EARNINGS_DAY">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="EARNINGS_DAY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="EARNINGS_MONTH">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="EARNINGS_MONTH">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="EARNINGS_YEAR">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="EARNINGS_YEAR">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="EARNINGS_TOTAL">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="EARNINGS_TOTAL">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PRICE_DELIVERY">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="PRICE_DELIVERY">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PRICE_CONSUMPTION">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="PRICE_CONSUMPTION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CO2_FACTOR">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="CO2_FACTOR">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="GENERATOR_TYPE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <index>Fronius</index>
+            <id>0</id>
+          </value>
+          <value>
+            <index>Inputs</index>
+            <id>1</id>
+          </value>
+          <value>
+            <index>Kostal</index>
+            <id>2</id>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="GENERATOR_TYPE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="MODE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <index>Produced Power</index>
+            <id>1</id>
+          </value>
+          <value>
+            <index>Cons -> GridPower</index>
+            <id>2</id>
+          </value>
+          <value>
+            <index>Batt -> BattPower</index>
+            <id>4</id>
+          </value>
+          <value>
+            <index>ProdEnergy</index>
+            <id>8</id>
+          </value>
+          <value>
+            <index>ConsEnergy</index>
+            <id>16</id>
+          </value>
+          <value>
+            <index>DelEnergy</index>
+            <id>32</id>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="MODE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ONLINE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <index>online</index>
+            <id>0</id>
+          </value>
+          <value>
+            <index>offline</index>
+            <id>1</id>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="ONLINE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>

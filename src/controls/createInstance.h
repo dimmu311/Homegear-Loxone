@@ -11,7 +11,7 @@ namespace Loxone
     class createInstance
     {
     public:
-        static std::shared_ptr<LoxoneControl> createInstanceFromTypeString(PVariable control, std::string room, std::string cat);
+        static std::shared_ptr<LoxoneControl> createInstanceFromTypeString(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
         static std::shared_ptr<LoxoneControl> createInstanceFromTypeNr(uint32_t typeNr, std::shared_ptr<BaseLib::Database::DataTable> rows);
     };
 }
