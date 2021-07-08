@@ -158,7 +158,7 @@ namespace Loxone
                         if(!subControl) continue;
                         subControl->overwriteName(i->second->structValue->at("name")->stringValue + " ||| " + j->second->structValue->at("name")->stringValue);
 
-                        if(_controls.find(subSerial) != _controls.end()) subSerial[subSerial.find(".")] = '1';
+                        if(_controls.find(subSerial) != _controls.end()) subSerial[17] = '1';
 
 						_controls.insert({ subSerial, subControl });
 					}
