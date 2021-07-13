@@ -130,7 +130,6 @@ namespace Loxone
             std::string uuid = optionalFields->structValue->at("cat")->stringValue;
             if(cat.find(uuid) != cat.end()) _cat = cat.at(uuid);
         }
-        _cat = _cat.find(optionalFields->structValue->at("cat")->stringValue);
 	}
     OptionalFields::OptionalFields(std::shared_ptr<BaseLib::Database::DataTable>rows)
 	{
