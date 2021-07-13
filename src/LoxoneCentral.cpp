@@ -304,42 +304,35 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 		std::ostringstream stringStream;
 		std::vector<std::string> arguments;
 
-		if(command == "help" || command == "h")
-		{
+		if(command == "help" || command == "h"){
 			stringStream << "List of commands (shortcut in brackets):" << std::endl << std::endl;
 			stringStream << "For more information about the individual command type: COMMAND help" << std::endl << std::endl;
 			stringStream << "peers list (ls)\t\tList all peers" << std::endl;
 			stringStream << "peers remove (prm)\tRemove a peer (without unpairing)" << std::endl;
-			stringStream << "peers setname (pn)\tName a peer" << std::endl;
 			stringStream << "search (sp)\t\tSearches for new devices" << std::endl;
 			stringStream << "unselect (u)\t\tUnselect this device" << std::endl;
 			return stringStream.str();
 		}
-		if(command.compare(0, 12, "peers remove") == 0 || command.compare(0, 3, "prm") == 0)
-		{
+		if(command.compare(0, 12, "peers remove") == 0 || command.compare(0, 3, "prm") == 0){
 			uint64_t peerID = 0;
 
 			std::stringstream stream(command);
 			std::string element;
 			int32_t offset = (command.at(1) == 'r') ? 0 : 1;
 			int32_t index = 0;
-			while(std::getline(stream, element, ' '))
-			{
-				if(index < 1 + offset)
-				{
+			while(std::getline(stream, element, ' ')){
+				if(index < 1 + offset){
 					index++;
 					continue;
 				}
-				else if(index == 1 + offset)
-				{
+				else if(index == 1 + offset){
 					if(element == "help") break;
 					peerID = BaseLib::Math::getNumber(element, false);
 					if(peerID == 0) return "Invalid id.\n";
 				}
 				index++;
 			}
-			if(index == 1 + offset)
-			{
+			if(index == 1 + offset){
 				stringStream << "Description: This command removes a peer without trying to unpair it first." << std::endl;
 				stringStream << "Usage: peers remove PEERID" << std::endl << std::endl;
 				stringStream << "Parameters:" << std::endl;
@@ -348,17 +341,14 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 			}
 
 			if(!peerExists(peerID)) stringStream << "This peer is not paired to this central." << std::endl;
-			else
-			{
+			else{
 				deletePeer(peerID);
 				stringStream << "Removed peer " << std::to_string(peerID) << "." << std::endl;
 			}
 			return stringStream.str();
 		}
-		else if(command.compare(0, 10, "peers list") == 0 || command.compare(0, 2, "pl") == 0 || command.compare(0, 2, "ls") == 0)
-		{
-			try
-			{
+		else if(command.compare(0, 10, "peers list") == 0 || command.compare(0, 2, "pl") == 0 || command.compare(0, 2, "ls") == 0){
+			try{
 				std::string filterType;
 				std::string filterValue;
 
@@ -366,31 +356,25 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 				std::string element;
 				int32_t offset = (command.at(1) == 'l' || command.at(1) == 's') ? 0 : 1;
 				int32_t index = 0;
-				while(std::getline(stream, element, ' '))
-				{
-					if(index < 1 + offset)
-					{
+				while(std::getline(stream, element, ' ')){
+					if(index < 1 + offset){
 						index++;
 						continue;
 					}
-					else if(index == 1 + offset)
-					{
-						if(element == "help")
-						{
+					else if(index == 1 + offset){
+						if(element == "help"){
 							index = -1;
 							break;
 						}
 						filterType = BaseLib::HelperFunctions::toLower(element);
 					}
-					else if(index == 2 + offset)
-					{
+					else if(index == 2 + offset){
 						filterValue = element;
 						if(filterType == "name") BaseLib::HelperFunctions::toLower(filterValue);
 					}
 					index++;
 				}
-				if(index == -1)
-				{
+				if(index == -1){
 					stringStream << "Description: This command lists information about all peers." << std::endl;
 					stringStream << "Usage: peers list [FILTERTYPE] [FILTERVALUE]" << std::endl << std::endl;
 					stringStream << "Parameters:" << std::endl;
@@ -407,28 +391,23 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 					stringStream << "      FILTERVALUE: The part of the name to search for (e. g. \"1st floor\")." << std::endl;
 					stringStream << "  TYPE: Filter by device type." << std::endl;
 					stringStream << "      FILTERVALUE: The 2 byte device type in hexadecimal format." << std::endl;
-					stringStream << "  CONFIGPENDING: List peers with pending config." << std::endl;
-					stringStream << "      FILTERVALUE: empty" << std::endl;
 					stringStream << "  UNREACH: List all unreachable peers." << std::endl;
 					stringStream << "      FILTERVALUE: empty" << std::endl;
 					return stringStream.str();
 				}
 
-				if(_peersById.empty())
-				{
+				if(_peersById.empty()){
 					stringStream << "No peers are paired to this central." << std::endl;
 					return stringStream.str();
 				}
 				bool firmwareUpdates = false;
 				std::string bar(" │ ");
 				const int32_t idWidth = 11;
-				const int32_t nameWidth = 25;
+				const int32_t nameWidth = 35;
 				const int32_t roomWidth = 25;
 				const int32_t serialWidth = 18;
 				const int32_t typeWidth1 = 4;
 				const int32_t typeWidth2 = 25;
-				const int32_t firmwareWidth = 8;
-				const int32_t configPendingWidth = 14;
 				const int32_t unreachWidth = 7;
 				std::string nameHeader("Name");
 				nameHeader.resize(nameWidth, ' ');
@@ -443,11 +422,9 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 					<< std::setw(serialWidth) << "Serial Number" << bar
 					<< std::setw(typeWidth1) << "Type" << bar
 					<< typeStringHeader << bar
-					<< std::setw(firmwareWidth) << "Firmware" << bar
-					<< std::setw(configPendingWidth) << "Config Pending" << bar
 					<< std::setw(unreachWidth) << "Unreach"
 					<< std::endl;
-				stringStream << "────────────┼───────────────────────────┼───────────────────────────┼────────────────────┼──────┼───────────────────────────┼──────────┼────────────────┼────────" << std::endl;
+				stringStream << "────────────┼─────────────────────────────────────┼───────────────────────────┼────────────────────┼──────┼───────────────────────────┼────────" << std::endl;
 				stringStream << std::setfill(' ')
 					<< std::setw(idWidth) << " " << bar
 					<< std::setw(nameWidth) << " " << bar
@@ -455,50 +432,33 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 					<< std::setw(serialWidth) << " " << bar
 					<< std::setw(typeWidth1) << " " << bar
 					<< std::setw(typeWidth2) << " " << bar
-					<< std::setw(firmwareWidth) << " " << bar
-					<< std::setw(configPendingWidth) << " " << bar
 					<< std::setw(unreachWidth) << " "
 					<< std::endl;
 				_peersMutex.lock();
-				for(std::map<uint64_t, std::shared_ptr<BaseLib::Systems::Peer>>::iterator i = _peersById.begin(); i != _peersById.end(); ++i)
-				{
+				for(std::map<uint64_t, std::shared_ptr<BaseLib::Systems::Peer>>::iterator i = _peersById.begin(); i != _peersById.end(); ++i){
 					std::shared_ptr<LoxonePeer> peer(std::dynamic_pointer_cast<LoxonePeer>(i->second));
-					if(filterType == "id")
-					{
+					if(filterType == "id"){
 						uint64_t id = BaseLib::Math::getNumber(filterValue, false);
 						if(i->second->getID() != id) continue;
 					}
-					else if(filterType == "name")
-					{
+					else if(filterType == "name"){
 						std::string name = i->second->getName();
 						if((signed)BaseLib::HelperFunctions::toLower(name).find(filterValue) == (signed)std::string::npos) continue;
 					}
-					else if(filterType == "room")
-					{
+					else if(filterType == "room"){
                         auto myLoxonePeer = std::dynamic_pointer_cast<LoxonePeer>(i->second);
                         if(!myLoxonePeer) continue;
                         if(myLoxonePeer->getControl()->getRoom() != filterValue) continue;
 					}
-					else if(filterType == "serial")
-					{
+					else if(filterType == "serial"){
 						if(i->second->getSerialNumber() != filterValue) continue;
 					}
-					else if(filterType == "type")
-					{
+					else if(filterType == "type"){
 						int32_t deviceType = BaseLib::Math::getNumber(filterValue, true);
 						if((int32_t)i->second->getDeviceType() != deviceType) continue;
 					}
-					else if(filterType == "configpending")
-					{
-						if(i->second->serviceMessages)
-						{
-							if(!i->second->serviceMessages->getConfigPending()) continue;
-						}
-					}
-					else if(filterType == "unreach")
-					{
-						if(i->second->serviceMessages)
-						{
+					else if(filterType == "unreach"){
+						if(i->second->serviceMessages){
 							if(!i->second->serviceMessages->getUnreach()) continue;
 						}
 					}
@@ -544,19 +504,16 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 						stringStream << typeID << bar;
 					}
 					else stringStream << std::setw(typeWidth2) << " " << bar;
-					if(i->second->getFirmwareVersion() == 0) stringStream << std::setfill(' ') << std::setw(firmwareWidth) << "?" << bar;
-					else stringStream << std::setfill(' ') << std::setw(firmwareWidth) << std::dec << (uint32_t)i->second->getFirmwareVersion() << bar;
 					if(i->second->serviceMessages)
 					{
 						std::string configPending(i->second->serviceMessages->getConfigPending() ? "Yes" : "No");
 						std::string unreachable(i->second->serviceMessages->getUnreach() ? "Yes" : "No");
-						stringStream << std::setfill(' ') << std::setw(configPendingWidth) << configPending << bar;
 						stringStream << std::setfill(' ') << std::setw(unreachWidth) << unreachable;
 					}
 					stringStream << std::endl << std::dec;
 				}
 				_peersMutex.unlock();
-				stringStream << "────────────┴───────────────────────────┴───────────────────────────┴────────────────────┴──────┴───────────────────────────┴──────────┴────────────────┴────────" << std::endl;
+				stringStream << "────────────┴─────────────────────────────────────┴───────────────────────────┴────────────────────┴──────┴───────────────────────────┴────────" << std::endl;
 				if(firmwareUpdates) stringStream << std::endl << "*: Firmware update available." << std::endl;
 
 				return stringStream.str();
@@ -566,54 +523,6 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 				_peersMutex.unlock();
 				GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 			}
-		}
-		else if(command.compare(0, 13, "peers setname") == 0 || command.compare(0, 2, "pn") == 0)
-		{
-			uint64_t peerID = 0;
-			std::string name;
-
-			std::stringstream stream(command);
-			std::string element;
-			int32_t offset = (command.at(1) == 'n') ? 0 : 1;
-			int32_t index = 0;
-			while(std::getline(stream, element, ' '))
-			{
-				if(index < 1 + offset)
-				{
-					index++;
-					continue;
-				}
-				else if(index == 1 + offset)
-				{
-					if(element == "help") break;
-					else
-					{
-						peerID = BaseLib::Math::getNumber(element, false);
-						if(peerID == 0) return "Invalid id.\n";
-					}
-				}
-				else if(index == 2 + offset) name = element;
-				else name += ' ' + element;
-				index++;
-			}
-			if(index == 1 + offset)
-			{
-				stringStream << "Description: This command sets or changes the name of a peer to identify it more easily." << std::endl;
-				stringStream << "Usage: peers setname PEERID NAME" << std::endl << std::endl;
-				stringStream << "Parameters:" << std::endl;
-				stringStream << "  PEERID:\tThe id of the peer to set the name for. Example: 513" << std::endl;
-				stringStream << "  NAME:\tThe name to set. Example: \"1st floor light switch\"." << std::endl;
-				return stringStream.str();
-			}
-
-			if(!peerExists(peerID)) stringStream << "This peer is not paired to this central." << std::endl;
-			else
-			{
-				std::shared_ptr<LoxonePeer> peer = getPeer(peerID);
-				peer->setName(name);
-				stringStream << "Name set to \"" << name << "\"." << std::endl;
-			}
-			return stringStream.str();
 		}
 		else if(command.compare(0, 6, "search") == 0 || command.compare(0, 2, "sp") == 0)
 		{
