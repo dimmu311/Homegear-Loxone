@@ -13,7 +13,7 @@ namespace Loxone
 	class LoxoneEncryption
 	{
 	public:
-		LoxoneEncryption(const std::string user, const std::string password, const std::string visuPassword, BaseLib::SharedObjects* bl);
+		LoxoneEncryption(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings);
         ~LoxoneEncryption();
 
 		uint32_t buildSessionKey(std::string& rsaEncrypted);
@@ -28,8 +28,8 @@ namespace Loxone
 		void setKey(const std::string hexKey);
 		void setSalt(const std::string salt);
 		uint32_t setHashAlgorithm(const std::string algorithm);
+        uint32_t setToken(const std::string token);
         uint32_t setToken(const BaseLib::PVariable value);
-        uint32_t setToken(const std::string jwt);
         uint32_t getToken(std::string& token, std::time_t& lifeTime);
 
         void setVisuKey(const std::string hexKey);
@@ -39,7 +39,7 @@ namespace Loxone
         std::string getHashedVisuPassword();
 
 	private:
-        BaseLib::SharedObjects* _bl;
+        BaseLib::Output _out;
 
         uint64_t _tokenValidUntil;
 	    std::shared_ptr<GnutlsData> _publicKey;
@@ -75,6 +75,7 @@ namespace Loxone
         std::string getSalt();
         void removeSalt(std::string& command);
         uint32_t getNewAes256();
+        std::string convertJwtTime(uint64_t timestamp);
 
         void deInitGnuTls();
         void initGnuTls();

@@ -20,18 +20,13 @@ class Miniserver;
 class LoxoneCentral : public BaseLib::Systems::ICentral
 {
 public:
-    //In table variables
-	int32_t getFirmwareVersion() { return _firmwareVersion; }
-	void setFirmwareVersion(int32_t value) { _firmwareVersion = value; saveVariable(0, value); }
-	//End
-
-	LoxoneCentral(ICentralEventSink* eventHandler);
+    LoxoneCentral(ICentralEventSink* eventHandler);
 	LoxoneCentral(uint32_t deviceType, std::string serialNumber, int32_t address, ICentralEventSink* eventHandler);
 	virtual ~LoxoneCentral();
 	virtual void dispose(bool wait = true);
 
-	virtual void loadVariables();
-	virtual void saveVariables();
+    virtual void loadVariables(){};
+    virtual void saveVariables(){};
 	virtual void loadPeers();
 	virtual void savePeers(bool full);
 
@@ -40,7 +35,6 @@ public:
 	virtual bool onPacketReceived(std::string& senderID, std::shared_ptr<BaseLib::Systems::Packet> packet);
 	virtual std::string handleCliCommand(std::string command);
 
-	std::shared_ptr<LoxonePeer> getPeer(const std::string& interfaceId, const std::string& serialNumber);
 	std::shared_ptr<LoxonePeer> getPeer(uint64_t id);
 	std::shared_ptr<LoxonePeer> getPeer(const std::string& serialNumber);
 
@@ -48,20 +42,8 @@ public:
 	virtual PVariable deleteDevice(BaseLib::PRpcClientInfo clientInfo, uint64_t peerID, int32_t flags);
 	virtual PVariable searchDevices(BaseLib::PRpcClientInfo clientInfo, const std::string& interfaceId);
 
+	void updatePeer(uint64_t oldId, uint64_t newId);
 protected:
-	//In table variables
-	int32_t _firmwareVersion = 0;
-	//End
-
-//	std::atomic_bool _searching{false};
-
-	std::mutex _searchDevicesMutex;
-
-	std::unordered_map<std::string, std::unordered_map<std::string, std::shared_ptr<LoxonePeer>>> _peersByInterface;
-
-	std::unique_ptr<BaseLib::Rpc::JsonDecoder> _jsonDecoder;
-	
-
 	/**
 	 * Creates a new peer. The method does not add the peer to the peer arrays.
 	 *
@@ -80,7 +62,7 @@ protected:
 	std::thread _unreachThread;
 
 	LoxoneLoxApp3 _LoxApp3;
-	std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> _uuidVariable_PeerIdMap;
+	std::unordered_map<std::string, uint64_t> _uuidPeerIdMap;
 };
 
 }

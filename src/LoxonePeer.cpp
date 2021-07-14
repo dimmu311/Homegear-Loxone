@@ -20,15 +20,12 @@ std::shared_ptr<BaseLib::Systems::ICentral> LoxonePeer::getCentral()
 	}
 	return std::shared_ptr<BaseLib::Systems::ICentral>();
 }
-//wird aufgerufen wenn ein peer gepairt wird
 LoxonePeer::LoxonePeer(uint32_t parentID, IPeerEventSink* eventHandler, std::shared_ptr<LoxoneControl> control) : Peer(GD::bl, parentID, eventHandler)
 {
 	_binaryEncoder.reset(new BaseLib::Rpc::RpcEncoder(GD::bl));
 	_binaryDecoder.reset(new BaseLib::Rpc::RpcDecoder(GD::bl));
 	_control = control;
 }
-//wird aufgerufen wenn ein vorhandener peer neu geladen wird
-//danach siehe LoxonePeer::load()
 LoxonePeer::LoxonePeer(int32_t id, int32_t address, std::string serialNumber, uint32_t parentID, IPeerEventSink* eventHandler) : Peer(GD::bl, id, address, serialNumber, parentID, eventHandler)
 {
 	_binaryEncoder.reset(new BaseLib::Rpc::RpcEncoder(GD::bl));
@@ -64,8 +61,7 @@ std::string LoxonePeer::handleCliCommand(std::string command)
 
 void LoxonePeer::save(bool savePeer, bool variables, bool centralConfig)
 {
-	try
-	{
+	try{
 		Peer::save(savePeer, variables, centralConfig);
 	}
 	catch(const std::exception& ex)
@@ -74,50 +70,36 @@ void LoxonePeer::save(bool savePeer, bool variables, bool centralConfig)
     }
 }
 
-void LoxonePeer::saveUuids()
+void LoxonePeer::updatePeer(uint64_t oldId, uint64_t newId)
 {
-	try
-	{
-		std::list<Database::DataRow> list;
-		if(_control->getDataToSave(list, _peerID) != 0) return;
+    try {
+        bool changed = false;
+        {
+            std::lock_guard<std::mutex> peersGuard(_peersMutex);
+            for (std::unordered_map<int32_t, std::vector<std::shared_ptr<BasicPeer>>>::iterator i = _peers.begin(); i != _peers.end(); ++i) {
+                for (std::vector<std::shared_ptr<BasicPeer>>::iterator j = i->second.begin(); j != i->second.end(); ++j) {
+                    if ((*j)->id == oldId) {
+                        (*j)->id = newId;
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (changed) {
+            savePeers();
+            auto central = std::dynamic_pointer_cast<LoxoneCentral>(_central);
+            if(!central) return;
+            central->updatePeer(oldId, newId);
+        }
+    }
+    catch (const std::exception &ex) {
+        _bl->out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+}
 
-		for(auto i = list.begin(); i != list.end(); ++i)
-		{
-			_bl->db->savePeerVariableAsynchronous(*i);
-		}
-	}
-	catch (const std::exception & ex)
-	{
-		GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-	}
-}
-
-void LoxonePeer::loadUuids()
+void LoxonePeer::saveConfig()
 {
-    try
-    {
-        std::shared_ptr<BaseLib::Database::DataTable> rows = _bl->db->getPeerVariables(_peerID);
-        if(!rows) return;
-        //_control = std::shared_ptr<LoxoneControl>(createInstance::_uintControlsMap.at(_deviceType)(rows));
-        _control = createInstance::createInstanceFromTypeNr(_deviceType, rows);
-        if(!_control)return ;
-        _uuidVariable_PeerIdMap = _control->getVariables();
-    }
-    catch(const std::exception& ex)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-}
-void LoxonePeer::setPeerIdToVariableList()
-{
-    _uuidVariable_PeerIdMap = _control->getVariables();
-    for(auto i = _uuidVariable_PeerIdMap.begin(); i != _uuidVariable_PeerIdMap.end(); ++i)
-    {
-        i->second->peerId = _peerID;
-    }
-}
-void LoxonePeer::setConfigParameters()
-{
+    try{
     //This do not set anything to homegear rooms or roles. this are just to variables wich shows how this peer is configred in Loxone Config.
     //If you want to add a room or role then do this in homegear.
     { //Set the Roomname wich is configured in Loxone Config
@@ -142,18 +124,15 @@ void LoxonePeer::setConfigParameters()
     }
     { //Set ExtraData  from this peer
         std::list<extraData> data;
-        if(_control->getExtraData(data) == 0)
-        {
-            for(auto i = data.begin(); i != data.end(); ++i)
-            {
+        if(_control->getExtraData(data) == 0){
+            for(auto i = data.begin(); i != data.end(); ++i){
                 if(configCentral.find(i->channel) == configCentral.end()) continue;
                 if(configCentral[i->channel].find(i->variable) == configCentral[i->channel].end()) continue;
 
                 BaseLib::Systems::RpcConfigurationParameter &parameter = configCentral[i->channel][i->variable];
                 std::vector<uint8_t> parameterData;
 
-                if(i->value->type == VariableType::tStruct)
-                {
+                if(i->value->type == VariableType::tStruct){
                     std::string val;
                     BaseLib::Rpc::JsonEncoder::encode(i->value, val);
                     i->value->stringValue = val;
@@ -169,16 +148,21 @@ void LoxonePeer::setConfigParameters()
             }
         }
     }
+    }
+    catch(const std::exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
 }
 void LoxonePeer::homegearStarted()
 {
     Peer::homegearStarted();
+    //todo set unreach after restart
     //serviceMessages->setUnreach(true,false);
 }
 void LoxonePeer::setPhysicalInterfaceId(std::string id)
 {
-    if(id.empty() || (GD::physicalInterfaces.find(id) != GD::physicalInterfaces.end() && GD::physicalInterfaces.at(id)))
-    {
+    if(id.empty() || (GD::physicalInterfaces.find(id) != GD::physicalInterfaces.end() && GD::physicalInterfaces.at(id))){
         _physicalInterfaceId = id;
         setPhysicalInterface(id.empty() ? GD::defaultPhysicalInterface : GD::physicalInterfaces.at(_physicalInterfaceId));
         saveVariable(19, _physicalInterfaceId);
@@ -188,28 +172,23 @@ void LoxonePeer::setPhysicalInterfaceId(std::string id)
 
 void LoxonePeer::setPhysicalInterface(std::shared_ptr<Miniserver> interface)
 {
-	try
-	{
+	try{
 		if(!interface) return;
 		_physicalInterface = interface;
 	}
-	catch(const std::exception& ex)
-	{
+	catch(const std::exception& ex){
 		GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 	}
 }
 
 void LoxonePeer::loadVariables(BaseLib::Systems::ICentral* central, std::shared_ptr<BaseLib::Database::DataTable>& rows)
 {
-	try
-	{
+	try{
 		if(!rows) rows = _bl->db->getPeerVariables(_peerID);
 		Peer::loadVariables(central, rows);
 
-		for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
-		{
-			switch(row->second.at(2)->intValue)
-			{
+		for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row){
+			switch(row->second.at(2)->intValue){
 			case 19:
                 _physicalInterfaceId = row->second.at(4)->textValue;
                 if(!_physicalInterfaceId.empty() && GD::physicalInterfaces.find(_physicalInterfaceId) != GD::physicalInterfaces.end()) setPhysicalInterface(GD::physicalInterfaces.at(_physicalInterfaceId));
@@ -217,11 +196,14 @@ void LoxonePeer::loadVariables(BaseLib::Systems::ICentral* central, std::shared_
 			}
 		}
 
-		if(!_physicalInterface)
-		{
+		if(!_physicalInterface){
 			GD::out.printError("Error: Could not find correct physical interface for peer " + std::to_string(_peerID) + ". The peer might not work correctly. The expected interface ID is: " + _physicalInterfaceId);
             _physicalInterface = GD::defaultPhysicalInterface;
 		}
+
+        _control = createInstance::createInstanceFromTypeNr(_deviceType, rows);
+        if(!_control) return;
+        _uuidVariableMap = _control->getUuidVariableMap();
 	}
 	catch(const std::exception& ex)
     {
@@ -231,13 +213,11 @@ void LoxonePeer::loadVariables(BaseLib::Systems::ICentral* central, std::shared_
 
 bool LoxonePeer::load(BaseLib::Systems::ICentral* central)
 {
-    try
-    {
+    try{
         std::shared_ptr<BaseLib::Database::DataTable> rows;
         loadVariables(central, rows);
         _rpcDevice = GD::family->getRpcDevices()->find(_deviceType, _firmwareVersion, -1);
-		if(!_rpcDevice)
-		{
+		if(!_rpcDevice){
 			GD::out.printError("Error loading peer " + std::to_string(_peerID) + ": Device type not found: 0x" + BaseLib::HelperFunctions::getHexString(_deviceType) + " Firmware version: " + std::to_string(_firmwareVersion));
 			return false;
 		}
@@ -259,12 +239,17 @@ bool LoxonePeer::load(BaseLib::Systems::ICentral* central)
 
 void LoxonePeer::saveVariables()
 {
-	try
-	{
+	try{
 		if(_peerID == 0) return;
 		Peer::saveVariables();
 
 		saveVariable(19, _physicalInterfaceId);
+
+        std::list<Database::DataRow> list;
+        if(_control->getDataToSave(list, _peerID) != 0) return;
+        for(auto i = list.begin(); i != list.end(); ++i){
+            _bl->db->savePeerVariableAsynchronous(*i);
+        }
 	}
 	catch(const std::exception& ex)
     {

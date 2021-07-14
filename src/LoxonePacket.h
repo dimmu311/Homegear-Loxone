@@ -71,7 +71,7 @@ protected:
 class LoxoneHttpPacket : public LoxonePacket
 {
 public: 
-	LoxoneHttpPacket(std::string jsonString, uint32_t responseCode);
+	LoxoneHttpPacket(BaseLib::Http& http);
 	uint32_t getResponseCode() { return _responseCode; };
 	std::string getControl() { return _control; };
 	BaseLib::PVariable getValue() { return _value; };
@@ -85,7 +85,7 @@ class LoxoneWsPacket : public LoxonePacket
 {
 public:
 	LoxoneWsPacket();
-	LoxoneWsPacket(std::string jsonString);
+	LoxoneWsPacket(BaseLib::WebSocket& webSocket);
 	uint32_t getResponseCode() { return _responseCode; };
 	void setResponseCode(uint32_t responseCode) { _responseCode = responseCode; };
 	std::string getControl() { return _control; };

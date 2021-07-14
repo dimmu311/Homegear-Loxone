@@ -13,18 +13,15 @@ public:
 	LoxoneLoxApp3();
 	int32_t parseStructFile(BaseLib::PVariable structFile);
 
-	std::unordered_map<std::string, std::shared_ptr<LoxoneControl>> getControls() { return _controls; }
+	std::vector<std::shared_ptr<LoxoneControl>> getControls() { return _controls; }
 	std::string getlastModified() { return _lastModified; }
 
 protected:
 	BaseLib::PVariable _structFile;
 
-	std::unique_ptr<BaseLib::Rpc::JsonEncoder> _jsonEncoder;
-	std::unique_ptr<BaseLib::Rpc::JsonDecoder> _jsonDecoder;
-
 	std::unordered_map<std::string, std::string> _cats;
 	std::unordered_map<std::string, std::string> _rooms;
-	std::unordered_map<std::string, std::shared_ptr<LoxoneControl>> _controls;
+	std::vector<std::shared_ptr<LoxoneControl>> _controls;
 
 	std::string _lastModified;
 
@@ -32,6 +29,8 @@ protected:
 	void loadCats();
 	void loadRooms();
 	void loadControls();
+private:
+    BaseLib::Output _out;
 };
 }
 #endif

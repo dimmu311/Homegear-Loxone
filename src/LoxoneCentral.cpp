@@ -88,15 +88,11 @@ bool LoxoneCentral::onPacketReceived(std::string& senderId, std::shared_ptr<Base
             GD::out.printDebug("Loxone Central: onPacketReceived-> " + std::to_string(cPacket->getDValue()));
         }
 
-		if (_uuidVariable_PeerIdMap.find(loxonePacket->getUuid()) == _uuidVariable_PeerIdMap.end()) return false;
-		auto variable_PeerId = _uuidVariable_PeerIdMap.find(loxonePacket->getUuid());
-		uint32_t peerId = variable_PeerId->second->peerId;
-
-		GD::out.printDebug("Loxone Central: Parse peermap -> has " + variable_PeerId->second->variable + " and id " + std::to_string(peerId));
+        if(_uuidPeerIdMap.find(loxonePacket->getUuid()) == _uuidPeerIdMap.end()) return false;
+        uint64_t peerId = _uuidPeerIdMap.at(loxonePacket->getUuid());
 
 		auto peer = getPeer(peerId);
-		if (peer)
-		{
+		if (peer){
 			peer->packetReceived(loxonePacket);
 			return true;
 		}
@@ -123,40 +119,20 @@ void LoxoneCentral::loadPeers()
 			uint32_t type = row->second.at(4)->intValue;
 
 			auto peer = std::make_shared<LoxonePeer>(peerId, nodeId, serial, _deviceId, this);
-
 			if(!peer->load(this)) continue;
-			peer->loadUuids();
 
-			auto variables = peer->getVariables();
-			_uuidVariable_PeerIdMap.insert(variables.begin(), variables.end());
-		
+            //{{{ Generate a map uuid -> peerId
+            auto uuidVariableMap = peer->getUuidVariableMap();
+            if(!uuidVariableMap) continue;
+            for(auto i = uuidVariableMap->begin(); i != uuidVariableMap->end(); ++i) {
+                _uuidPeerIdMap.emplace(i->first, peer->getID());
+            }
+            //}}}
+
 			if(!peer->getRpcDevice()) continue;
 			std::lock_guard<std::mutex> peersGuard(_peersMutex);
 			if(!peer->getSerialNumber().empty()) _peersBySerial[peer->getSerialNumber()] = peer;
 			_peersById[peerId] = peer;
-			_peersByInterface[peer->getPhysicalInterfaceId()][peer->getSerialNumber()] = peer;
-		}
-	}
-	catch(const std::exception& ex)
-    {
-    	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-}
-
-void LoxoneCentral::loadVariables()
-{
-	try
-	{
-		std::shared_ptr<BaseLib::Database::DataTable> rows = _bl->db->getDeviceVariables(_deviceId);
-		for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
-		{
-			_variableDatabaseIds[row->second.at(2)->intValue] = row->second.at(0)->intValue;
-			switch(row->second.at(2)->intValue)
-			{
-			case 0:
-				_firmwareVersion = row->second.at(3)->intValue;
-				break;
-			}
 		}
 	}
 	catch(const std::exception& ex)
@@ -183,38 +159,6 @@ void LoxoneCentral::savePeers(bool full)
     {
     	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
-}
-
-void LoxoneCentral::saveVariables()
-{
-	try
-	{
-		if(_deviceId == 0) return;
-		saveVariable(0, _firmwareVersion);
-	}
-	catch(const std::exception& ex)
-    {
-    	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-}
-
-std::shared_ptr<LoxonePeer> LoxoneCentral::getPeer(const std::string& interfaceId, const std::string& serialNumber)
-{
-	try
-	{
-		std::lock_guard<std::mutex> peersGuard(_peersMutex);
-		auto peersByInterfaceIterator = _peersByInterface.find(interfaceId);
-		if (peersByInterfaceIterator != _peersByInterface.end())
-		{
-			auto nodeIdIterator = peersByInterfaceIterator->second.find(serialNumber);
-			if (nodeIdIterator != peersByInterfaceIterator->second.end()) return nodeIdIterator->second;
-		}
-	}
-	catch (const std::exception& ex)
-	{
-		GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-	}
-	return std::shared_ptr<LoxonePeer>();
 }
 
 std::shared_ptr<LoxonePeer> LoxoneCentral::getPeer(uint64_t id)
@@ -277,7 +221,6 @@ void LoxoneCentral::deletePeer(uint64_t id)
 			std::lock_guard<std::mutex> peersGuard(_peersMutex);
 			_peersBySerial.erase(peer->getSerialNumber());
 			_peersById.erase(id);
-			_peersByInterface[peer->getPhysicalInterfaceId()].erase(peer->getSerialNumber());
 		}
 
         int32_t i = 0;
@@ -400,7 +343,6 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 					stringStream << "No peers are paired to this central." << std::endl;
 					return stringStream.str();
 				}
-				bool firmwareUpdates = false;
 				std::string bar(" │ ");
 				const int32_t idWidth = 11;
 				const int32_t nameWidth = 35;
@@ -514,7 +456,6 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 				}
 				_peersMutex.unlock();
 				stringStream << "────────────┴─────────────────────────────────────┴───────────────────────────┴────────────────────┴──────┴───────────────────────────┴────────" << std::endl;
-				if(firmwareUpdates) stringStream << std::endl << "*: Firmware update available." << std::endl;
 
 				return stringStream.str();
 			}
@@ -563,26 +504,35 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
     return "Error executing command. See log file for more details.\n";
 }
 
+void LoxoneCentral::updatePeer(uint64_t oldId, uint64_t newId)
+{
+    for(auto i = _uuidPeerIdMap.begin(); i != _uuidPeerIdMap.end(); ++i) {
+        if(i->second != oldId) continue;
+        i->second = newId;
+    }
+}
+
 std::shared_ptr<LoxonePeer> LoxoneCentral::createPeer(uint32_t deviceType, const std::string& serialNumber, std::shared_ptr<Miniserver> interface, std::shared_ptr<LoxoneControl> control, bool save)
 {
 	try
 	{
 		std::shared_ptr<LoxonePeer> peer(new LoxonePeer(_deviceId, this, control));
-		//TODO check if this is needed to be set
-		//peer->setAddress(nodeId);
-		//peer->setFirmwareVersion(firmwareVersion);
 		peer->setDeviceType(deviceType);
 		peer->setSerialNumber(serialNumber);
 		uint32_t firmwareVersion = 0;
 		peer->setRpcDevice(GD::family->getRpcDevices()->find(deviceType, firmwareVersion, -1));
 		if(!peer->getRpcDevice()) return std::shared_ptr<LoxonePeer>();
-		if(save) peer->save(true, true, false); //Save and create peerID
-		peer->saveUuids();
 		peer->setPhysicalInterfaceId(interface->getID());
 		peer->initializeCentralConfig();
+        if(save) peer->save(true, true, true); //Save and create peerID
 
-		peer->setPeerIdToVariableList();
-        peer->setConfigParameters();
+        //{{{ Generate a map uuid -> peerId
+		auto uuidVariableMap = peer->getUuidVariableMap();
+        if(!uuidVariableMap) return peer;
+        for(auto i = uuidVariableMap->begin(); i != uuidVariableMap->end(); ++i) {
+            _uuidPeerIdMap.emplace(i->first, peer->getID());
+        }
+        //}}}
 		return peer;
 	}
     catch(const std::exception& ex)
@@ -672,32 +622,33 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
             std::vector<std::shared_ptr<LoxonePeer>>newPeers;
 
             std::list<std::string>knownControls;
-            for (auto myPeer = _peersById.begin(); myPeer != _peersById.end(); ++myPeer)
+            for (auto peer = _peersById.begin(); peer != _peersById.end(); ++peer)
             {
-                auto myLoxonePeer = std::dynamic_pointer_cast<LoxonePeer>(myPeer->second);
-                if(!myLoxonePeer) continue;
-                knownControls.push_back(myLoxonePeer->getControl()->getUuidAction());
+                auto loxonePeer = std::dynamic_pointer_cast<LoxonePeer>(peer->second);
+                if(!loxonePeer) continue;
+                knownControls.push_back(loxonePeer->getControl()->getUuidAction());
+                //todo: implement update function of the known controls
             }
 
-            for (auto control = controls.begin(); control != controls.end(); ++control)
-            {
-                if(std::find(knownControls.begin(), knownControls.end(), control->second->getUuidAction()) != knownControls.end()) continue;
+            for(const auto& control: controls) {
+                if(std::find(knownControls.begin(), knownControls.end(), control->getUuidAction()) != knownControls.end()) continue;
+                auto deviceType = control->getType();
 
-                auto deviceType = control->second->getType();
-                auto serial = control->first;
+                std::string serial;
+                do {
+                    int32_t seedNumber = BaseLib::HelperFunctions::getRandomNumber(1, 9999999);
+                    std::ostringstream stringstream;
+                    stringstream << "LOX" << std::setw(7) << std::setfill('0') << std::dec << seedNumber;
+                    serial = stringstream.str();
+                } while(_peersBySerial.find(serial) != _peersBySerial.end());
 
-                std::shared_ptr<LoxonePeer> peer = createPeer(deviceType, serial, interface.second, control->second, true);
+                std::shared_ptr<LoxonePeer> peer = createPeer(deviceType, serial, interface.second, control, true);
                 if (!peer || !peer->getRpcDevice()) continue;
-                peer->setName(control->second->getName());
+                peer->setName(control->getName());
 
-                auto variables = peer->getVariables();
-                _uuidVariable_PeerIdMap.insert(variables.begin(), variables.end());
-                {
-					std::lock_guard<std::mutex> peersGuard(_peersMutex);
-					_peersBySerial[control->first] = peer;
-					_peersById[peer->getID()] = peer;
-					_peersByInterface[interface.first][control->first] = peer;
-				}
+                std::lock_guard<std::mutex> peersGuard(_peersMutex);
+                _peersBySerial[peer->getSerialNumber()] = peer;
+                _peersById[peer->getID()] = peer;
 
                 newPeers.push_back(peer);
                 GD::out.printMessage("Added peer " + std::to_string(peer->getID()) + ".");

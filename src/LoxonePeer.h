@@ -39,15 +39,10 @@ public:
 
 	virtual bool load(BaseLib::Systems::ICentral* central);
 	virtual void save(bool savePeer, bool saveVariables, bool saveCentralConfig);
-    //todo: update the peerid in the variable list. mybe by overloading this methode
-	//virtual void updatePeer(uint64_t oldId, uint64_t newId);
+    virtual void updatePeer(uint64_t oldId, uint64_t newId);
 
-	void saveUuids();
-    void loadUuids();
-    void setPeerIdToVariableList();
-    void setConfigParameters();
     std::shared_ptr<LoxoneControl> getControl(){return _control;};
-    std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> getVariables() { return _uuidVariable_PeerIdMap; };
+    std::shared_ptr<std::unordered_map<std::string, std::string>> getUuidVariableMap() {return std::make_shared<std::unordered_map<std::string, std::string>>(_uuidVariableMap);};
 
 	virtual void savePeers() {};
 	virtual int32_t getChannelGroupedWith(int32_t channel) { return -1; }
@@ -124,10 +119,10 @@ protected:
 
 	virtual void loadVariables(BaseLib::Systems::ICentral* central, std::shared_ptr<BaseLib::Database::DataTable>& rows);
     virtual void saveVariables();
+    virtual void saveConfig();
 
     std::shared_ptr<LoxoneControl> _control;
-    std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> _uuidVariable_PeerIdMap;
-
+    std::unordered_map<std::string, std::string> _uuidVariableMap;
 };
 
 }
