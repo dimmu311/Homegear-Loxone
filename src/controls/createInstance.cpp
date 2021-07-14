@@ -43,7 +43,7 @@ namespace Loxone
         else if(type == "CentralGate") return std::make_shared<Central>(control, room, cat, 0x502);
         else if(type == "CentralJalousie") return std::make_shared<Central>(control, room, cat, 0x503);
         else if(type == "CentralLightController") return std::make_shared<Central>(control, room, cat, 0x504);
-        else if(type == "Intercom") return std::make_shared<LoxoneControl>(control, room, cat, 0x505);
+        //else if(type == "Intercom") return std::make_shared<LoxoneControl>(control, room, cat, 0x505);
         //Alarm Sequence, this in in Doku, but not shown in struct file. don't know if this is a Loxone issu
 
         return nullptr;
@@ -80,7 +80,7 @@ namespace Loxone
         else if(typeNr == 0x502) return std::make_shared<Central>(rows, typeNr); //CentralGate
         else if(typeNr == 0x503) return std::make_shared<Central>(rows, typeNr); //CentralJalousie
         else if(typeNr == 0x504) return std::make_shared<Central>(rows, typeNr); //CentralLightController
-        else if(typeNr == 0x505) return std::make_shared<LoxoneControl>(rows, typeNr); //Intercom
+        //else if(typeNr == 0x505) return std::make_shared<LoxoneControl>(rows, typeNr); //Intercom
 
         //Alarm Sequence, this in in Doku, but not shown in struct file. don't know if this is a Loxone issu
 
