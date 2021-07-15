@@ -51,6 +51,7 @@ public:
 	PVariable getNewStructfile();
 	PVariable getLoxApp3Version();
     bool isOpen() override { return !_stopped; }
+    bool isConnected() {return _connected;}
 
 protected:
     struct Request
@@ -61,6 +62,7 @@ protected:
         PLoxonePacket response;
     };
 
+    bool _connected;
     BaseLib::Output _out;
     int32_t _port = 80;
 	std::string _user;

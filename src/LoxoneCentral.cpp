@@ -26,13 +26,11 @@ void LoxoneCentral::init()
 	{
 		_physicalInterfaceEventhandlers[physicalInterface.first] = physicalInterface.second->addEventHandler((BaseLib::Systems::IPhysicalInterface::IPhysicalInterfaceEventSink*)this);
 	}
-    _bl->threadManager.start(_unreachThread, true, &LoxoneCentral::checkUnreach, this);
 }
 
 LoxoneCentral::~LoxoneCentral()
 {
-    _bl->threadManager.join(_unreachThread);
-	dispose();
+    dispose();
 }
 
 void LoxoneCentral::dispose(bool wait)
@@ -52,24 +50,6 @@ void LoxoneCentral::dispose(bool wait)
     {
         GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
-}
-
-void LoxoneCentral::checkUnreach()
-{
-    //todo: check why this not work
-    //this function checks every second if the physicalInterface is still connected. If the Interface is not connected anymore the correspondig Peers are set to unreach.
-    for(auto& physicalInterface : GD::physicalInterfaces)
-    {
-        if(!physicalInterface.second->isOpen())
-        {
-            GD::out.printDebug("Loxone Central: physicalInterface -> " + physicalInterface.first + " is not connected anymore. set every peer to unreach");
-            for(auto i = _peersById.begin(); i != _peersById.end(); ++i)
-            {
-                //if(!i->second->serviceMessages->getUnreach()) i->second->serviceMessages->setUnreach(true,false);
-            }
-        }
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //Sleep for 1sec
 }
 
 bool LoxoneCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib::Systems::Packet> packet)
@@ -544,6 +524,7 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::createPeer(uint32_t deviceType, const
 
 void LoxoneCentral::homegearShuttingDown()
 {
+    //todo implement interface disconnect
 }
 
 //RPC functions
@@ -610,6 +591,11 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
 		}
 		for (auto& interface : GD::physicalInterfaces)
 		{
+            if(!interface.second->isConnected()){
+                GD::out.printDebug("could not search because the interface " + interface.first + " is not connected", 3);
+                continue;
+		    }
+
             std::string actualVersion = interface.second->getLoxApp3Version()->stringValue;
             if(cashedVersion == actualVersion) return std::make_shared<BaseLib::Variable>(0);
             GD::out.printMessage("get new Struct File from Interface:" + interface.first);
@@ -620,20 +606,27 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
 
             auto controls = _LoxApp3.getControls();
             std::vector<std::shared_ptr<LoxonePeer>>newPeers;
-
-            std::list<std::string>knownControls;
+            std::vector<std::shared_ptr<LoxonePeer>>knownPeers;
             for (auto peer = _peersById.begin(); peer != _peersById.end(); ++peer)
             {
                 auto loxonePeer = std::dynamic_pointer_cast<LoxonePeer>(peer->second);
                 if(!loxonePeer) continue;
-                knownControls.push_back(loxonePeer->getControl()->getUuidAction());
-                //todo: implement update function of the known controls
-            }
+                knownPeers.push_back(loxonePeer);
+               }
 
             for(const auto& control: controls) {
-                if(std::find(knownControls.begin(), knownControls.end(), control->getUuidAction()) != knownControls.end()) continue;
-                auto deviceType = control->getType();
+                bool found = false;
+                for(auto loxonePeer = knownPeers.begin(); loxonePeer != knownPeers.end(); ++ loxonePeer) {
+                    if (loxonePeer.operator*()->getControl()->getUuidAction() == control->getUuidAction()) {
+                        found = true;
+                        loxonePeer.operator*()->serviceMessages->endUnreach();
+                        knownPeers.erase(loxonePeer);
+                        break;
+                    }
+                }
+                if(found) continue;
 
+                auto deviceType = control->getType();
                 std::string serial;
                 do {
                     int32_t seedNumber = BaseLib::HelperFunctions::getRandomNumber(1, 9999999);
@@ -652,6 +645,14 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
 
                 newPeers.push_back(peer);
                 GD::out.printMessage("Added peer " + std::to_string(peer->getID()) + ".");
+            }
+
+            GD::out.printDebug("Size of knownPeers is now :" + std::to_string(knownPeers.size()));
+            if(knownPeers.size() > 0){
+                for(const auto& loxonePeer: knownPeers) {
+                     GD::out.printDebug("PeerId: " + std::to_string(loxonePeer->getID()) + " is paired but not in Loxone Struct file anymore");
+                    if(!loxonePeer->serviceMessages->getUnreach()) loxonePeer->serviceMessages->setUnreach(true,false);
+                }
             }
             //saveVariable(0, lastModified);
 

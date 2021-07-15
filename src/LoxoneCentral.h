@@ -58,8 +58,6 @@ protected:
 	void deletePeer(uint64_t id);
 
 	void init();
-	void checkUnreach();
-	std::thread _unreachThread;
 
 	LoxoneLoxApp3 _LoxApp3;
 	std::unordered_map<std::string, uint64_t> _uuidPeerIdMap;

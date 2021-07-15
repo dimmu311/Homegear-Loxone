@@ -12,6 +12,7 @@ Miniserver::Miniserver(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettin
     signal(SIGPIPE, SIG_IGN);
 
     _stopped = true;
+    _connected = false;
 
     if(!settings){
         _out.printCritical("Critical: Error initializing. Settings pointer is empty.");
@@ -133,7 +134,7 @@ void Miniserver::init()
 	try
     {
         _out.printDebug("Init Connection to Miniserver");
-
+        _connected = false;
         {
             std::lock_guard<std::mutex> requestsGuard(_responsesMutex);
             _responses.clear();
@@ -287,6 +288,7 @@ void Miniserver::init()
 				}
 			}
 		}
+		_connected = true;
         _out.printDebug("Info: Initialization complete.", 3);
 		_out.printDebug("Info: Starting Keep Alive Thread.", 4);
 		_bl->threadManager.start(_keepAliveThread, true, &Miniserver::keepAlive, this);
@@ -295,6 +297,7 @@ void Miniserver::init()
     }
     catch(const std::exception& ex){
         _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+        _connected = false;
     }
 }
 void Miniserver:: authenticateUsingTokens()
@@ -304,18 +307,21 @@ void Miniserver:: authenticateUsingTokens()
     if (_loxoneEncryption->hashToken(hashedToken) < 0) {
         _out.printError("Error: Could not hash the Token.");
         _stopped = true;
+        _connected = false;
         return;
     }
     std::string command;
     if (_loxoneEncryption->encryptCommand("authwithtoken/" + hashedToken + "/" + _user,command) < 0) {
         _out.printError("Error: Could not encrypt command.");
         _stopped = true;
+        _connected = false;
         return;
     }
     auto responsePacket = getResponse("authwithtoken/", encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text));
     if (!responsePacket){
         _out.printError("Error: Could not authenticate with token.");
         _stopped = true;
+        _connected = false;
         return;
     }
     auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
@@ -324,6 +330,7 @@ void Miniserver:: authenticateUsingTokens()
         _out.printError("Error: Could not authenticate with token.");
         if(loxoneWsPacket->getResponseCode() == 401) _loxoneEncryption->setToken("");
         _stopped = true;
+        _connected = false;
         return;
     }
  }
@@ -334,29 +341,34 @@ void Miniserver:: acquireToken()
     if(_loxoneEncryption->hashPassword(hashedPassword)<0){
         _out.printError("Error: Could not hash password.");
         _stopped = true;
+        _connected = false;
         return;
     }
     std::string command;
     if(_loxoneEncryption->encryptCommand("jdev/sys/getjwt/" + hashedPassword + "/"+ _user + "/2/edfc5f9a-df3f-4cad-9dddcdc42c732be2/homegearloxwsapi", command)<0){
         _out.printError("Error: Could not encrypt command.");
         _stopped = true;
+        _connected = false;
         return;
     }
     auto responsePacket = getResponse("jdev/sys/getjwt/", encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text));
     if(!responsePacket){
         _out.printError("Error: Could not get Token from Miniserver.");
         _stopped = true;
+        _connected = false;
         return;
     }
     auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
     if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200){
         _out.printError("Error: Could not get Token from Miniserver.");
         _stopped = true;
+        _connected = false;
         return;
     }
     if(_loxoneEncryption->setToken(loxoneWsPacket->getValue())<0){
         _out.printError("Error: Could not import Token.");
         _stopped = true;
+        _connected = false;
         return;
     }
 }
@@ -368,18 +380,21 @@ void Miniserver::prepareSecuredCommand()
     if (_loxoneEncryption->encryptCommand("jdev/sys/getvisusalt/" + _user,command) < 0) {
         _out.printError("Error: Could not encrypt command.");
         _stopped = true;
+        _connected = false;
         return;
     }
     auto responsePacket = getResponse("dev/sys/getvisusalt/", encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text));
     if (!responsePacket){
         _out.printError("Error: Could get Visu Salt.");
         _stopped = true;
+        _connected = false;
         return;
     }
     auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
     if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200){
         _out.printError("Error: Could get Visu Salt.");
         _stopped = true;
+        _connected = false;
         return;
     }
     _loxoneEncryption->setVisuKey(loxoneWsPacket->getValue()->structValue->at("key")->stringValue);
@@ -387,6 +402,7 @@ void Miniserver::prepareSecuredCommand()
     if(_loxoneEncryption->setVisuHashAlgorithm(loxoneWsPacket->getValue()->structValue->at("hashAlg")->stringValue)<0){
         _out.printError("Error: Could not set Hash Algorithm.");
         _stopped = true;
+        _connected = false;
         return;
     }
     _out.printDebug("Step 2: create Visu Password Hash");
@@ -394,6 +410,7 @@ void Miniserver::prepareSecuredCommand()
     if(_loxoneEncryption->hashVisuPassword(hashedPassword)<0){
         _out.printError("Error: Could not hash password.");
         _stopped = true;
+        _connected = false;
         return;
     }
     _loxoneEncryption->setHashedVisuPassword(hashedPassword);
@@ -413,18 +430,21 @@ void Miniserver::refreshToken()
                 if(_loxoneEncryption->encryptCommand("jdev/sys/getkey/", command)<0){
                     _out.printError("Error: Could not encrypt command.");
                     _stopped = true;
+                    _connected = false;
                     return;
                 }
                 auto responsePacket = getResponse("jdev/sys/getkey/", encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text));
                 if(!responsePacket){
                     _out.printError("Error: Could not get Key from Miniserver.");
                     _stopped = true;
+                    _connected = false;
                     return;
                 }
                 auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
                 if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200){
                     _out.printError("Error: Could not get Key from Miniserver.");
                     _stopped = true;
+                    _connected = false;
                     return;
                 }
                 _loxoneEncryption->setKey(loxoneWsPacket->getValue()->stringValue);
@@ -435,29 +455,34 @@ void Miniserver::refreshToken()
                 if (_loxoneEncryption->hashToken(hashedToken) < 0) {
                     _out.printError("Error: Could not hash the Token.");
                     _stopped = true;
+                    _connected = false;
                     return;
                 }
                 std::string command;
                 if (_loxoneEncryption->encryptCommand("jdev/sys/refreshjwt/" + hashedToken + "/" + _user,command) < 0) {
                     _out.printError("Error: Could not encrypt command.");
                     _stopped = true;
+                    _connected = false;
                     return;
                 }
                 auto responsePacket = getResponse("dev/sys/refreshjwt/", encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text));
                 if (!responsePacket) {
                     _out.printError("Error: Could not refresh token.");
                     _stopped = true;
+                    _connected = false;
                     return;
                 }
                 auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
                 if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200) {
                     _out.printError("Error: Could not refresh token.");
                     _stopped = true;
+                    _connected = false;
                     return;
                 }
                 if(_loxoneEncryption->setToken(loxoneWsPacket->getValue())<0){
                     _out.printError("Error: Could not import Token.");
                     _stopped = true;
+                    _connected = false;
                     return;
                 }
             }
@@ -482,12 +507,14 @@ void Miniserver::keepAlive()
             if (!responsePacket){
                 _out.printError("Error: Could not keepalive the connection to the miniserver.");
                 _stopped = true;
+                _connected = false;
                 return;
             }
             auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
             if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200){
                 _out.printError("Error: Could not keepalive the connection to the miniserver.");
                 _stopped = true;
+                _connected = false;
                 return;
             }
             keepAliveCounter++;
@@ -510,6 +537,7 @@ void Miniserver::listen()
             {
                 _out.printInfo("Info: Successfully connected.");
                 _stopped = false;
+                _connected = false;
                 _bl->threadManager.start(_initThread, true, &Miniserver::init, this);
             }
         }
@@ -531,6 +559,7 @@ void Miniserver::listen()
                     if(_tcpSocket->connected()){
                         _out.printInfo("Info: Successfully connected.");
                         _stopped = false;
+                        _connected = false;
                         _bl->threadManager.start(_initThread, true, &Miniserver::init, this);
                     }
                     continue;
@@ -540,7 +569,8 @@ void Miniserver::listen()
                 uint32_t bytesRead;
                 try{
                     bytesRead = _tcpSocket->proofread(buffer.data(), buffer.size());
-                    _out.printDebug(std::string(buffer.begin(), buffer.end()), 7);
+                    _out.printDebug(std::string(buffer.begin(), buffer.begin()+bytesRead), 8);
+                    _out.printDebug(BaseLib::HelperFunctions::getHexString(buffer.data(),bytesRead), 8);
                 }
                 catch (BaseLib::SocketTimeOutException& ex){
                     if (_stopCallbackThread) continue;
@@ -570,61 +600,59 @@ void Miniserver::listen()
                     }
                     else{
                         _out.printDebug("Packet is NOT type http.... it should be websocket", 6);
+                        _out.printDebug(std::string(buffer.begin() + processed, buffer.begin() + bytesRead), 7);
+                        _out.printDebug(BaseLib::HelperFunctions::getHexString(buffer.data() + processed, bytesRead - processed), 7);
                         processed += websocket.process(buffer.data() + processed, bytesRead - processed);
                         _out.printDebug("Process Websocket Packet: Header says content length should be " + std::to_string(websocket.getHeader().length) + " and content length is " + std::to_string(websocket.getContentSize()), 6);
-                        if (websocket.getContentSize() == websocket.getHeader().length){
-                            if (websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::binary){
-                                _out.printDebug("Websocket Opcode is typ BINARY", 6);
-                                auto content = websocket.getContent();
-                                if (content.at(0) == 3 && content.size() == 8){ //Loxone Header starts with 0x03 and is 8 byte long
-                                    _out.printDebug("Websocket BINARY Packet is typ of Loxone Header");
+                        _out.printDebug("Process Websocket Packet: Processed Bytes are: " + std::to_string(processed), 6);
+                        if (websocket.getContentSize() != websocket.getHeader().length) continue;
+                        if (websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::binary){
+                            _out.printDebug("Websocket Opcode is typ BINARY", 6);
+                            auto content = websocket.getContent();
+                            if (content.at(0) == 3 && content.size() == 8){ //Loxone Header starts with 0x03 and is 8 byte long
+                                _out.printDebug("Websocket BINARY Packet is typ of Loxone Header");
 
-                                    loxoneHeader->identifier = (LoxoneHeader::Identifier)content.at(1);
-                                    loxoneHeader->loxonePayloadLength = content.at(4) | content.at(5) << 8 | content.at(6) << 16 | content.at(7) << 24;
+                                loxoneHeader->identifier = (LoxoneHeader::Identifier)content.at(1);
+                                loxoneHeader->loxonePayloadLength = content.at(4) | content.at(5) << 8 | content.at(6) << 16 | content.at(7) << 24;
 
-                                    if (loxoneHeader->identifier == LoxoneHeader::Identifier::Keepalive_Response) processKeepAlivePacket();
-                                    else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Out_Of_Service_Indicator) processOutOfServiceIndicatorPacket();
-                                }
-                                else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Textmessage) processTextmessagePacket(websocket.getContent());
-                                else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Binary_File) processBinaryFilePacket(websocket.getContent());
-                                else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Value_States) processEventTableOfValueStatesPacket(websocket.getContent());
-                                else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Text_States) processEventTableOfTextStatesPacket(websocket.getContent());
-                                else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Daytimer_States) processEventTableOfDaytimerStatesPacket(websocket.getContent());
-                                else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Weather_States) processEventTableOfWeatherStatesPacket(websocket.getContent());
-                                else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Out_Of_Service_Indicator){
-                                    //this Condition would never get true;
-                                    //this is because the Out of Service Response is only a Loxone Header Telegramm.
-                                    //The normale way is to receive a Loxone Header and after a Message wich has to parse differently -> see the different identifiers
-                                    //So this means that we have to do a special check at the LoxoneHeader generation if the received header is a Out of Service header
-                                    processOutOfServiceIndicatorPacket();
-                                }
-                                else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Keepalive_Response){
-                                    //this Condition would never get true;
-                                    //this is because the Keepalive Response is only a Loxone Header Telegramm.
-                                    //The normale way is to receive a Loxone Header and after a Message wich has to parse differently -> see the different identifiers
-                                    //So this means that we have to do a special check at the LoxoneHeader generation if the received header is a keepalive header
-                                    processKeepAlivePacket();
-                                }
+                                if (loxoneHeader->identifier == LoxoneHeader::Identifier::Keepalive_Response) processKeepAlivePacket();
+                                else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Out_Of_Service_Indicator) processOutOfServiceIndicatorPacket();
                             }
-                            else if (websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::text){
-                                _out.printDebug("Websocket Opcode is typ TEXT", 6);
-                                processWsPacket(websocket);
+                            /*fixme
+                             * this results in a segfault
+                            else if(websocket.getContentSize() != loxoneHeader->loxonePayloadLength){
+                                _out.printWarning("Websocket content length do not match Loxone Header Payload length. Skipping....");
+                                continue;
                             }
-                            else if(websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::close){
-                               if (GD::bl->debugLevel >= 5) _out.printDebug("Opcode CLOSE -> " + std::string(websocket.getContent().begin(), websocket.getContent().end()));
-                                _stopped = true;
-                                _loxoneEncryption->setToken("");
-                                websocket.reset();
-                                break;
-                            }
-                            websocket.reset();
-                            continue;
+                            if (loxoneHeader->identifier == LoxoneHeader::Identifier::Textmessage) processTextmessagePacket(websocket.getContent());
+                            */
+                            else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Textmessage) processTextmessagePacket(websocket.getContent());
+                            else if (loxoneHeader->identifier == LoxoneHeader::Identifier::Binary_File) processBinaryFilePacket(websocket.getContent());
+                            else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Value_States) processEventTableOfValueStatesPacket(websocket.getContent());
+                            else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Text_States) processEventTableOfTextStatesPacket(websocket.getContent());
+                            else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Daytimer_States) processEventTableOfDaytimerStatesPacket(websocket.getContent());
+                            else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Weather_States) processEventTableOfWeatherStatesPacket(websocket.getContent());
                         }
+                        else if (websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::text){
+                            _out.printDebug("Websocket Opcode is typ TEXT", 6);
+                            processWsPacket(websocket);
+                        }
+                        else if(websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::close){
+                            _out.printDebug("Websocket Opcode is typ CLOSE: " + std::string(websocket.getContent().begin(), websocket.getContent().end()), 6);
+                            _stopped = true;
+                            _connected = false;
+                            _loxoneEncryption->setToken("");
+                        }
+                        else{
+                            _out.printDebug("Websocket Opcode is typ: " + std::to_string((int)websocket.getHeader().opcode));
+                        }
+                        websocket.reset();
                     }
                 } while (processed < bytesRead);
             }
             catch(const std::exception& ex){
                 _stopped = true;
+                _connected = false;
                 _loxoneEncryption->setToken("");
                 _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
             }
@@ -672,6 +700,7 @@ void Miniserver::processWsPacket(BaseLib::WebSocket& webSocket)
         if(_loxoneEncryption->decryptCommand(control, decrypted)<0){
             _out.printError("Error: Could not decrypt Packet");
             _stopped = true;
+            _connected = false;
             return;
         }
         loxoneWsPacket->setControl(decrypted);
@@ -784,7 +813,6 @@ void Miniserver::processEventTableOfDaytimerStatesPacket(std::vector<char>& data
 
 void Miniserver::processOutOfServiceIndicatorPacket()
 {
-    //todo
     _out.printDebug("processOutOfServiceIndicatorPacket");
 }
 void Miniserver::processKeepAlivePacket()
@@ -904,12 +932,14 @@ PVariable Miniserver::getNewStructfile()
     if(!responsePacket){
 		_out.printError("Error: Could not get new Structfile from miniserver.");
 		_stopped = true;
+        _connected = false;
 		return PVariable();
 	}
 	auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
 	if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200){
 		_out.printError("Error: Could not get new Structfile from miniserver.");
 		_stopped = true;
+        _connected = false;
 		return PVariable();
 	}
 	return loxoneWsPacket->getValue();
@@ -922,12 +952,14 @@ PVariable Miniserver::getLoxApp3Version()
     if(!responsePacket){
         _out.printError("Error: Could not get LoxApp3Version from miniserver.");
         _stopped = true;
+        _connected = false;
         return PVariable();
     }
     auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
     if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200){
 		_out.printError("Error: Could not get LoxApp3Version from miniserver.");
 		_stopped = true;
+        _connected = false;
 		return PVariable();
 	}
 	return loxoneWsPacket->getValue();

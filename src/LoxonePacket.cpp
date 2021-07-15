@@ -177,35 +177,34 @@ namespace Loxone
         if (!json) return;
         if(json->structValue->find("LL") != json->structValue->end()) {
             _responseCode = getCodeFromPacket(json->structValue->at("LL"));
-            if (_responseCode == 200) {
-                if (json->structValue->at("LL")->structValue->find("value") !=
-                    json->structValue->at("LL")->structValue->end())
-                    _value = json->structValue->at("LL")->structValue->at("value");
-                if (json->structValue->at("LL")->structValue->find("control") !=
-                    json->structValue->at("LL")->structValue->end()) {
-                    _control = json->structValue->at("LL")->structValue->at("control")->stringValue;
-                    for (const std::string &command : _responseCommands) {
-                        if (_control.compare(0, command.size(), command) == 0) {
-                            _control = command;
-
-                            if (command == "jdev/sys/enc/") {
-                                _controlIsEncrypted = true;
-                                _control = json->structValue->at("LL")->structValue->at("control")->stringValue;
-                            }
-                            break;
-                        }
+            if (json->structValue->at("LL")->structValue->find("value") != json->structValue->at("LL")->structValue->end()) _value = json->structValue->at("LL")->structValue->at("value");
+            if (json->structValue->at("LL")->structValue->find("control") != json->structValue->at("LL")->structValue->end()) {
+                _control = json->structValue->at("LL")->structValue->at("control")->stringValue;
+                if(_control.compare(0, std::string("jdev/sys/enc/").size(), "jdev/sys/enc/") == 0){
+                    _controlIsEncrypted = true;
+                    return;
+                }
+                for (const std::string &command : _responseCommands) {
+                    if (_control.compare(0, command.size(), command) == 0) {
+                        _control = command;
+                        return;
                     }
                 }
             }
         }
 		else{
 			GD::out.printDebug("LoxoneWsPacket with not LL at the beginning", 6);
-			//ToDo, make a better solution to detect that this response is a new Structfile
-			_responseCode = 200;
-			_control = "newStuctfile";
-			_value = json;
+            //This is kind of a workaround.
+            //so the Problem is that a structfile did not have a fild to cleary identify a structfile
+            //because of this we look for a lot of fields that are only in a structfile transmitted
+            //maybe in future versions this could result in a problem.....
+            if(json->structValue->find("lastModified") != json->structValue->end() && json->structValue->find("msInfo") != json->structValue->end() && json->structValue->find("globalStates") != json->structValue->end() && json->structValue->find("operatingModes") != json->structValue->end()) {
+                GD::out.printDebug("LoxoneWsPacket has fields that are only in strucfile. This packet should be a structfile", 4);
+                _responseCode = 200;
+                _control = "newStuctfile";
+                _value = json;
+            }
 		}
-        GD::out.printDebug("wsPacket parsed json is: responseCode " + std::to_string(_responseCode) + " control " + _control);
 	}
 
 	LoxoneTextmessagePacket::LoxoneTextmessagePacket(std::string command)

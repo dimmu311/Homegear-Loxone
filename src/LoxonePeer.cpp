@@ -157,8 +157,8 @@ void LoxonePeer::saveConfig()
 void LoxonePeer::homegearStarted()
 {
     Peer::homegearStarted();
-    //todo set unreach after restart
-    //serviceMessages->setUnreach(true,false);
+    //set unreach after restart
+    serviceMessages->setUnreach(true,false);
 }
 void LoxonePeer::setPhysicalInterfaceId(std::string id)
 {
@@ -749,7 +749,6 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
             std::string command;
             bool isSecured;
             if(!_control->setValue(channel, valueKey, value, valuesCentral, command, isSecured)) return Variable::createError(-32500, "Loxone Control can not create packet");
-            //if (!_control->setValue(frame, parameters, channel, command, isSecured)) return Variable::createError(-32500, "Loxone Control can not create packet");
             GD::out.printDebug(command);
             std::shared_ptr<LoxonePacket> packet(new LoxonePacket(command, isSecured));
             _physicalInterface->sendPacket(packet);
