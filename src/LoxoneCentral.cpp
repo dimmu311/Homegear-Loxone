@@ -524,7 +524,15 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::createPeer(uint32_t deviceType, const
 
 void LoxoneCentral::homegearShuttingDown()
 {
-    //todo implement interface disconnect
+    try{
+        for (auto& physicalInterface : GD::physicalInterfaces){
+            if(physicalInterface.second->isConnected()) physicalInterface.second->disconnect();
+        }
+    }
+    catch(const std::exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
 }
 
 //RPC functions

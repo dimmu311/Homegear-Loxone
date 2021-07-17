@@ -642,6 +642,7 @@ void Miniserver::listen()
                             _stopped = true;
                             _connected = false;
                             _loxoneEncryption->setToken("");
+                            processWsPacket(websocket);
                         }
                         else{
                             _out.printDebug("Websocket Opcode is typ: " + std::to_string((int)websocket.getHeader().opcode));
@@ -963,5 +964,28 @@ PVariable Miniserver::getLoxApp3Version()
 		return PVariable();
 	}
 	return loxoneWsPacket->getValue();
+}
+void Miniserver::disconnect()
+{
+    _out.printDebug("Disconnect from Miniserver");
+    std::vector<char> output;
+    BaseLib::WebSocket::encodeClose(output);
+    std::string command(output.begin(), output.end());
+
+    auto responsePacket = getResponse("close", command);
+    if(!responsePacket){
+        _out.printError("Error: Could not disconnect from miniserver.");
+        _stopped = true;
+        _connected = false;
+        return;
+    }
+    auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+    if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200) {
+        _out.printError("Error: Could not disconnect from miniserver.");
+        _stopped = true;
+        _connected = false;
+        return;
+    }
+    stopListening();
 }
 }

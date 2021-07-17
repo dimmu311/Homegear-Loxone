@@ -9,7 +9,6 @@ using namespace BaseLib;
 
 namespace Loxone
 {
-
 	enum class LoxonePacketType
 	{
 	    LoxoneHttpPacket,

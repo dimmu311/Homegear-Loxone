@@ -50,6 +50,7 @@ public:
     void sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet) override;
 	PVariable getNewStructfile();
 	PVariable getLoxApp3Version();
+	void disconnect();
     bool isOpen() override { return !_stopped; }
     bool isConnected() {return _connected;}
 

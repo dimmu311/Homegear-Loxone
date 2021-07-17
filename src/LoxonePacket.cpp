@@ -17,6 +17,8 @@ namespace Loxone
 		"dev/sps/enablebinstatusupdate",
 
 		"jdev/sys/enc/",
+
+		"close",
 	};
 
     LoxonePacket::LoxonePacket(std::string& command, bool isSecured)
@@ -173,38 +175,45 @@ namespace Loxone
 	{
         _packetType = LoxonePacketType::LoxoneWsPacket;
         GD::out.printDebug("Ws Packet is: " + std::string(webSocket.getContent().begin(), webSocket.getContent().end()), 6);
+        if(webSocket.getHeader().opcode == WebSocket::Header::Opcode::close){
+            _responseCode = 200;
+            _control = "close";
+            return;
+        }
+        else if(webSocket.getHeader().opcode == WebSocket::Header::Opcode::text || webSocket.getHeader().opcode == WebSocket::Header::Opcode::binary){
         PVariable json = BaseLib::Rpc::JsonDecoder::decode(webSocket.getContent());
-        if (!json) return;
-        if(json->structValue->find("LL") != json->structValue->end()) {
-            _responseCode = getCodeFromPacket(json->structValue->at("LL"));
-            if (json->structValue->at("LL")->structValue->find("value") != json->structValue->at("LL")->structValue->end()) _value = json->structValue->at("LL")->structValue->at("value");
-            if (json->structValue->at("LL")->structValue->find("control") != json->structValue->at("LL")->structValue->end()) {
-                _control = json->structValue->at("LL")->structValue->at("control")->stringValue;
-                if(_control.compare(0, std::string("jdev/sys/enc/").size(), "jdev/sys/enc/") == 0){
-                    _controlIsEncrypted = true;
-                    return;
-                }
-                for (const std::string &command : _responseCommands) {
-                    if (_control.compare(0, command.size(), command) == 0) {
-                        _control = command;
+            if (!json) return;
+            if(json->structValue->find("LL") != json->structValue->end()) {
+                _responseCode = getCodeFromPacket(json->structValue->at("LL"));
+                if (json->structValue->at("LL")->structValue->find("value") != json->structValue->at("LL")->structValue->end()) _value = json->structValue->at("LL")->structValue->at("value");
+                if (json->structValue->at("LL")->structValue->find("control") != json->structValue->at("LL")->structValue->end()) {
+                    _control = json->structValue->at("LL")->structValue->at("control")->stringValue;
+                    if(_control.compare(0, std::string("jdev/sys/enc/").size(), "jdev/sys/enc/") == 0){
+                        _controlIsEncrypted = true;
                         return;
+                    }
+                    for (const std::string &command : _responseCommands) {
+                        if (_control.compare(0, command.size(), command) == 0) {
+                            _control = command;
+                            return;
+                        }
                     }
                 }
             }
-        }
-		else{
-			GD::out.printDebug("LoxoneWsPacket with not LL at the beginning", 6);
-            //This is kind of a workaround.
-            //so the Problem is that a structfile did not have a fild to cleary identify a structfile
-            //because of this we look for a lot of fields that are only in a structfile transmitted
-            //maybe in future versions this could result in a problem.....
-            if(json->structValue->find("lastModified") != json->structValue->end() && json->structValue->find("msInfo") != json->structValue->end() && json->structValue->find("globalStates") != json->structValue->end() && json->structValue->find("operatingModes") != json->structValue->end()) {
-                GD::out.printDebug("LoxoneWsPacket has fields that are only in strucfile. This packet should be a structfile", 4);
-                _responseCode = 200;
-                _control = "newStuctfile";
-                _value = json;
+            else{
+                GD::out.printDebug("LoxoneWsPacket with not LL at the beginning", 6);
+                //This is kind of a workaround.
+                //so the Problem is that a structfile did not have a fild to cleary identify a structfile
+                //because of this we look for a lot of fields that are only in a structfile transmitted
+                //maybe in future versions this could result in a problem.....
+                if(json->structValue->find("lastModified") != json->structValue->end() && json->structValue->find("msInfo") != json->structValue->end() && json->structValue->find("globalStates") != json->structValue->end() && json->structValue->find("operatingModes") != json->structValue->end()) {
+                    GD::out.printDebug("LoxoneWsPacket has fields that are only in strucfile. This packet should be a structfile", 4);
+                    _responseCode = 200;
+                    _control = "newStuctfile";
+                    _value = json;
+                }
             }
-		}
+        }
 	}
 
 	LoxoneTextmessagePacket::LoxoneTextmessagePacket(std::string command)
