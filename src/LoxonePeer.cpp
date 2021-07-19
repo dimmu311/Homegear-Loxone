@@ -392,7 +392,8 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
     {
         if(_disposing || !packet || !_rpcDevice) return;
 		GD::out.printDebug("Loxone Peer: packetReceived-> at peer " + std::to_string(_peerID));
-		switch(packet->getPacketType())
+
+        switch(packet->getPacketType())
 		{
 			case LoxonePacketType::LoxoneValueStatesPacket:
 			{
@@ -498,6 +499,33 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
 						rpcValues[*j]->push_back(parameter.rpcParameter->convertFromPacket(i->second.value, parameter.mainRole(), true));
 					}
                 }
+            }
+        }
+
+        if(_uuidVariableMap.find(packet->getUuid()) == _uuidVariableMap.end()) return;
+        std::string variable = _uuidVariableMap.at(packet->getUuid());
+        {
+            PVariable rawPacket = std::make_shared<Variable>(VariableType::tStruct);
+            rawPacket->structValue->operator[]("variable") = PVariable(new Variable(variable));
+            rawPacket->structValue->operator[]("values") = packet->getRawPacketStruct();
+
+            BaseLib::Systems::RpcConfigurationParameter &parameter = valuesCentral[1]["RAW"];
+            if(parameter.rpcParameter){
+                std::vector<uint8_t> parameterData;
+                parameter.rpcParameter->convertToPacket(rawPacket, parameter.mainRole(), parameterData);
+                parameter.setBinaryData(parameterData);
+
+                if(parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
+                else saveParameter(0, ParameterGroup::Type::Enum::variables, 1, "RAW", parameterData);
+                if(_bl->debugLevel >= 4) GD::out.printInfo("Info: RAW on channel " + std::to_string(1) + " of peer " + std::to_string(_peerID) + " with serial number " + _serialNumber  + " was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
+
+                if(!valueKeys[1] || !rpcValues[1]){
+                    valueKeys[1].reset(new std::vector<std::string>());
+                    rpcValues[1].reset(new std::vector<PVariable>());
+                }
+
+                valueKeys[1]->push_back("RAW");
+                rpcValues[1]->push_back(rawPacket);
             }
         }
 
@@ -742,9 +770,7 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 			return PVariable(new Variable(VariableType::tVoid));
 		}
 		else if (rpcParameter->physical->operationType != IPhysical::OperationType::Enum::command) return Variable::createError(-6, "Parameter is not settable.");
-
-		//todo: maybe call control set value at this point. maybe it is easyer at this point because we dont need to form the json struct.
-        //{{{
+//{{{
         if(channel > 2) {
             std::string command;
             bool isSecured;

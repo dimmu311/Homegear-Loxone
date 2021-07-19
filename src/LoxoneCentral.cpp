@@ -511,6 +511,7 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::createPeer(uint32_t deviceType, const
         if(!uuidVariableMap) return peer;
         for(auto i = uuidVariableMap->begin(); i != uuidVariableMap->end(); ++i) {
             _uuidPeerIdMap.emplace(i->first, peer->getID());
+            //todo find out why new peers need a restart to receive states
         }
         //}}}
 		return peer;
@@ -620,7 +621,7 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
                 auto loxonePeer = std::dynamic_pointer_cast<LoxonePeer>(peer->second);
                 if(!loxonePeer) continue;
                 knownPeers.push_back(loxonePeer);
-               }
+            }
 
             for(const auto& control: controls) {
                 bool found = false;
@@ -658,7 +659,7 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
             GD::out.printDebug("Size of knownPeers is now :" + std::to_string(knownPeers.size()));
             if(knownPeers.size() > 0){
                 for(const auto& loxonePeer: knownPeers) {
-                     GD::out.printDebug("PeerId: " + std::to_string(loxonePeer->getID()) + " is paired but not in Loxone Struct file anymore");
+                    GD::out.printDebug("PeerId: " + std::to_string(loxonePeer->getID()) + " is paired but not in Loxone Struct file anymore");
                     if(!loxonePeer->serviceMessages->getUnreach()) loxonePeer->serviceMessages->setUnreach(true,false);
                 }
             }

@@ -227,6 +227,11 @@ namespace Loxone
 		_packetType = LoxonePacketType::LoxoneValueStatesPacket;
 		_uuid = getUuidFromPacket(packet);
 		_value = getValueFromPacket(packet+16);
+
+		_rawPacketStruct = std::make_shared<Variable>(VariableType::tStruct);
+        _rawPacketStruct->structValue->operator[]("packetType") = PVariable(new Variable("Value States Packet"));
+        _rawPacketStruct->structValue->operator[]("uuid") = PVariable(new Variable(_uuid));
+        _rawPacketStruct->structValue->operator[]("value") = PVariable(new Variable(_value));
 	}
 	LoxoneTextStatesPacket::LoxoneTextStatesPacket(char* packet, uint32_t len)
 	{
@@ -234,6 +239,12 @@ namespace Loxone
 		_uuid = getUuidFromPacket(packet);
 		_uuidIcon = getUuidFromPacket(packet+16);
 		_text = std::string(packet + 36, packet + len);
+
+        _rawPacketStruct = std::make_shared<Variable>(VariableType::tStruct);
+        _rawPacketStruct->structValue->operator[]("packetType") = PVariable(new Variable("Text States Packet"));
+        _rawPacketStruct->structValue->operator[]("uuid") = PVariable(new Variable(_uuid));
+        _rawPacketStruct->structValue->operator[]("uuidIcon") = PVariable(new Variable(_uuidIcon));
+        _rawPacketStruct->structValue->operator[]("text") = PVariable(new Variable(_text));
 	}
 	LoxoneDaytimerStatesPacket::LoxoneTimeEntry::LoxoneTimeEntry(std::vector<uint8_t> data)
 	{
@@ -243,12 +254,25 @@ namespace Loxone
 		_needActivate = data.at(12) | data.at(13) << 8 | data.at(14) << 16 | data.at(15) << 24;
 		unsigned char ptr[]{ data.at(16), data.at(17), data.at(18), data.at(19), data.at(20) , data.at(21) , data.at(22) , data.at(23) };
 		_value = *reinterpret_cast<double*>(ptr);
+
+        _rawPacketStruct = std::make_shared<Variable>(VariableType::tStruct);
+        _rawPacketStruct->structValue->operator[]("mode") = PVariable(new Variable(_mode));
+        _rawPacketStruct->structValue->operator[]("from") = PVariable(new Variable(_from));
+        _rawPacketStruct->structValue->operator[]("to") = PVariable(new Variable(_to));
+        _rawPacketStruct->structValue->operator[]("needActivate") = PVariable(new Variable(_needActivate));
+        _rawPacketStruct->structValue->operator[]("value") = PVariable(new Variable(_value));
 	}
 	LoxoneDaytimerStatesPacket::LoxoneDaytimerStatesPacket(char* packet, uint32_t nrEntrys)
 	{
 		_packetType = LoxonePacketType::LoxoneDaytimerStatesPacket;
 		_uuid = getUuidFromPacket(packet);
 		_devValue = getValueFromPacket(packet + 16);
+
+        _rawPacketStruct = std::make_shared<Variable>(VariableType::tStruct);
+        _rawPacketStruct->structValue->operator[]("packetType") = PVariable(new Variable("Daytimer States Packet"));
+        _rawPacketStruct->structValue->operator[]("uuid") = PVariable(new Variable(_uuid));
+        _rawPacketStruct->structValue->operator[]("defaultValue") = PVariable(new Variable(_devValue));
+        _rawPacketStruct->structValue->operator[]("entrys") = PVariable(new Variable(VariableType::tArray));
 
 		for(uint32_t i = 0; i<nrEntrys; i++)
 		{
@@ -257,6 +281,7 @@ namespace Loxone
 			entry.insert(entry.begin(), packet + 28 + i*24, packet + 28 + 24 + i*24);
             std::shared_ptr<LoxoneTimeEntry> myTimeEntry = std::make_shared<LoxoneTimeEntry>(entry);
 			_entrys.insert(std::pair<uint32_t, std::shared_ptr<LoxoneTimeEntry>>(i, myTimeEntry));
+			_rawPacketStruct->structValue->at("entrys")->arrayValue->push_back(myTimeEntry->_rawPacketStruct);
 		}
 	}
 	LoxoneWeatherStatesPacket::LoxoneWeatherEntry::LoxoneWeatherEntry(std::vector<uint8_t> data)
@@ -296,6 +321,19 @@ namespace Loxone
 			unsigned char ptr[]{ data.at(20 + offset), data.at(21 + offset), data.at(22 + offset), data.at(23 + offset), data.at(24 + offset) , data.at(25 + offset) , data.at(26 + offset) , data.at(27 + offset) };
 			_barometicPressure = *reinterpret_cast<double*>(ptr);
 		}
+
+        _rawPacketStruct = std::make_shared<Variable>(VariableType::tStruct);
+        _rawPacketStruct->structValue->operator[]("timestamp") = PVariable(new Variable(_timestamp));
+        _rawPacketStruct->structValue->operator[]("weatherType") = PVariable(new Variable(_weatherType));
+        _rawPacketStruct->structValue->operator[]("windDirection") = PVariable(new Variable(_windDirection));
+        _rawPacketStruct->structValue->operator[]("solarRadiation") = PVariable(new Variable(_solarRadiation));
+        _rawPacketStruct->structValue->operator[]("relativeHumidity") = PVariable(new Variable(_relativeHumidity));
+        _rawPacketStruct->structValue->operator[]("temperature") = PVariable(new Variable(_temperature));
+        _rawPacketStruct->structValue->operator[]("perceivedTemperature") = PVariable(new Variable(_perceivedTemperature));
+        _rawPacketStruct->structValue->operator[]("dewPoint") = PVariable(new Variable(_dewPoint));
+        _rawPacketStruct->structValue->operator[]("precipitation") = PVariable(new Variable(_precipitation));
+        _rawPacketStruct->structValue->operator[]("windSpeed") = PVariable(new Variable(_windSpeed));
+        _rawPacketStruct->structValue->operator[]("barometicPressure") = PVariable(new Variable(_barometicPressure));
 	}
 	LoxoneWeatherStatesPacket::LoxoneWeatherStatesPacket(char* packet, uint32_t nrEntrys)
 	{
@@ -307,12 +345,22 @@ namespace Loxone
 			value.insert(value.begin(), packet + 16, packet + 20);
 			_lastUpdate = value.at(0) | value.at(1) << 8 | value.at(2) << 16 | value.at(3) << 24;
 		}
+
+        _rawPacketStruct = std::make_shared<Variable>(VariableType::tStruct);
+        _rawPacketStruct->structValue->operator[]("packetType") = PVariable(new Variable("Weather States Packet"));
+        _rawPacketStruct->structValue->operator[]("uuid") = PVariable(new Variable(_uuid));
+        _rawPacketStruct->structValue->operator[]("lastUpdate") = PVariable(new Variable(_lastUpdate));
+        _rawPacketStruct->structValue->operator[]("entrys") = PVariable(new Variable(VariableType::tArray));
+
 		for(uint32_t i = 0; i<nrEntrys; i++)
 		{
 			std::vector<uint8_t> entry;
 			entry.reserve(68);
 			entry.insert(entry.begin(), packet + 24 + i*68, packet + 24 + 24 + i*68);
-			_entrys.insert(std::pair<uint32_t, LoxoneWeatherEntry>(i, LoxoneWeatherEntry(entry)));
+
+			std::shared_ptr<LoxoneWeatherEntry> myWeatherEntry = std::make_shared<LoxoneWeatherEntry>(entry);
+            _entrys.insert(std::pair<uint32_t, std::shared_ptr<LoxoneWeatherEntry>>(i, myWeatherEntry));
+            _rawPacketStruct->structValue->at("entrys")->arrayValue->push_back(myWeatherEntry->_rawPacketStruct);
 		}
 	}
 }

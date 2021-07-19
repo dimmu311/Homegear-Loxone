@@ -48,7 +48,7 @@ public:
 	LoxonePacketType getPacketType() { return _packetType; };
 	std::string getUuid() { return _uuid; };
 	bool needToSecure(){return _isSecured;};
-
+    PVariable getRawPacketStruct(){return _rawPacketStruct;};
 protected:
 	std::string _command;
     std::string _method;
@@ -64,6 +64,7 @@ protected:
 	std::string getUuidFromPacket(char* data);
 	double getValueFromPacket(char* data);
 	uint32_t getCodeFromPacket(PVariable& json);
+    PVariable _rawPacketStruct = std::make_shared<Variable>(VariableType::tStruct);
 };
 
 
@@ -173,6 +174,7 @@ public:
 		uint32_t _to; // 32-Bit Integer (little endian) to-time in minutes since midnight
 		uint32_t _needActivate; // 32-Bit Integer (little endian) need activate (trigger)
 		double _value; // 64-Bit Float (little endian) value (if analog daytimer)
+        PVariable _rawPacketStruct = std::make_shared<Variable>(VariableType::tStruct);
 		LoxoneTimeEntry(std::vector<uint8_t> data);
 	};
 	LoxoneDaytimerStatesPacket(char* packet, uint32_t nrEntrys);
@@ -183,6 +185,7 @@ public:
 protected:
 	std::map<uint32_t, std::shared_ptr<LoxoneTimeEntry>> _entrys;
 	double _devValue;
+
 };
 class LoxoneWeatherStatesPacket : public LoxonePacket
 {
@@ -223,14 +226,15 @@ public:
 		double _precipitation;
 		double _windSpeed;
 		double _barometicPressure;
+        PVariable _rawPacketStruct = std::make_shared<Variable>(VariableType::tStruct);
 		LoxoneWeatherEntry(std::vector<uint8_t> data);
 	};
 	LoxoneWeatherStatesPacket(char* packet, uint32_t nrEntrys);
-	LoxoneWeatherEntry getEntry(uint32_t entry){return _entrys.at(entry);};
+    std::shared_ptr<LoxoneWeatherEntry> getEntry(uint32_t entry){return _entrys.at(entry);};
 	uint32_t getNrEntrys() {return _entrys.size();};
-	std::map<uint32_t, LoxoneWeatherEntry> getEntrys() {return _entrys;};
+	std::map<uint32_t, std::shared_ptr<LoxoneWeatherEntry>> getEntrys() {return _entrys;};
 protected:
-	std::map<uint32_t, LoxoneWeatherEntry> _entrys;
+	std::map<uint32_t, std::shared_ptr<LoxoneWeatherEntry>> _entrys;
 	uint32_t _lastUpdate;
 };
 
