@@ -86,6 +86,19 @@
       </parameter>
     </variables>
     <variables id="heatmixer_valueset--1">
+      <parameter id="RAW">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalStruct/>
+        <physicalNone groupId="RAW">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
       <parameter id="TEMP_TARGET">
         <properties>
           <readable>true</readable>

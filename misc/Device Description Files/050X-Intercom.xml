@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
   <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
-    <device id="Loxone AalEmergency">
-      <description>Loxone AalEmergency</description>
-      <typeNumber>0x0400</typeNumber>
+    <device id="Loxone Intercom">
+      <description>Loxone Intercom</description>
+      <typeNumber>0x0505</typeNumber>
       <minFirmwareVersion>0</minFirmwareVersion>
     </device>
   </supportedDevices>
@@ -16,66 +16,62 @@
       <configParameters>maint_ch_master--0</configParameters>
       <variables>maint_ch_values--0</variables>
     </function>
-    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="AAL_EMERGENCY" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="INTERCOM" channelCount="1">
       <properties/>
       <configParameters>config--1</configParameters>
-      <variables>aalEmergency_valueset--1</variables>
+      <variables>intercom_valueset--1</variables>
     </function>
   </functions>
   <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
-    <packet id="on.textSet">
-      <direction>toCentral</direction>
-      <function1>on.textStatesPacket</function1>
-      <channel>1</channel>
-      <jsonPayload>
-        <element>
-          <keyPath>state\resetActive</keyPath>
-          <parameterId>RESET_ACTIVE</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
     <packet id="on.valueSet">
       <direction>toCentral</direction>
       <function1>on.valueStatesPacket</function1>
       <channel>1</channel>
       <jsonPayload>
         <element>
-          <keyPath>state\status</keyPath>
-          <parameterId>STATUS</parameterId>
+          <keyPath>state\value</keyPath>
+          <parameterId>VALUE</parameterId>
         </element>
         <element>
-          <keyPath>state\disableEndTime</keyPath>
-          <parameterId>DISABLE_END_TIME</parameterId>
+          <keyPath>state\value</keyPath>
+          <parameterId>ACTIVE</parameterId>
         </element>
-      </jsonPayload>
-    </packet>
-    <packet id="trigger">
-      <direction>fromCentral</direction>
-      <function1>activeSetOn</function1>
-      <jsonPayload>
         <element>
-          <constValueString>trigger</constValueString>
+          <keyPath>state\error</keyPath>
+          <parameterId>ERROR</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="quit">
+    <packet id="valueSet">
       <direction>fromCentral</direction>
-      <function1>activeSetOn</function1>
+      <function1>valueSet</function1>
       <jsonPayload>
         <element>
-          <constValueString>quit</constValueString>
+          <parameterId>VALUE</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="disable">
+    <packet id="stepUp">
       <direction>fromCentral</direction>
-      <function1>valueSetToPath</function1>
+      <function1>stepUp</function1>
       <jsonPayload>
         <element>
-          <constValueString>disable</constValueString>
+          <parameterId>VALUE</parameterId>
         </element>
         <element>
-          <parameterId>DISABLE_END_TIME</parameterId>
+          <parameterId>STEP</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="stepDown">
+      <direction>fromCentral</direction>
+      <function1>stepDown</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>VALUE</parameterId>
+        </element>
+        <element>
+          <parameterId>STEP</parameterId>
         </element>
       </jsonPayload>
     </packet>
@@ -112,6 +108,80 @@
           <operationType>config</operationType>
         </physicalString>
       </parameter>
+      <parameter id="DEVICE_TYPE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <value>
+            <id>Custom/Unknown</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Loxone Intercom</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Loxone Intercom XL</id>
+            <index>2</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="VIDEO_INFO">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="AUDIO_INFO">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="LAST_BELL_EVENT_IMAGES">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <booleanDecimal>
+              <falseValue>0</falseValue>
+              <trueValue>1</trueValue>
+              <threshold>1</threshold>
+            </booleanDecimal>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
     </configParameters>
     <configParameters id="maint_ch_master--0"/>
     <variables id="maint_ch_values--0">
@@ -126,7 +196,7 @@
         </physicalInteger>
       </parameter>
     </variables>
-    <variables id="aalEmergency_valueset--1">
+    <variables id="slider_valueset--1">
       <parameter id="RAW">
         <properties>
           <readable>true</readable>
@@ -140,99 +210,7 @@
           <operationType>command</operationType>
         </physicalNone>
       </parameter>
-      <parameter id="STATUS">
-        <properties>
-          <readable>true</readable>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalEnumeration>
-          <defaultValue>0</defaultValue>
-          <value>
-            <id>running, normal operation, waiting for emergency button press</id>
-            <index>0</index>
-          </value>
-          <value>
-            <id>alarm triggered</id>
-            <index>1</index>
-          </value>
-          <value>
-            <id>reset input in config asserted, control is shut down</id>
-            <index>2</index>
-          </value>
-          <value>
-            <id>app has temporarily disabled control</id>
-            <index>3</index>
-          </value>
-        </logicalEnumeration>
-        <physicalNone groupId="STATUS">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="RESET_ACTIVE">
-        <properties>
-          <readable>true</readable>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalString/>
-        <physicalNone groupId="RESET_ACTIVE">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.textSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="TRIGGER_ALARM">
-        <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction />
-        <physicalNone groupId="TRIGGER_ALARM">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="trigger">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="QUIT_ALARM">
-        <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction />
-        <physicalNone groupId="QUIT_ALARM">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="quit">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="DISABLE_END_TIME">
+      <parameter id="VALUE">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -242,20 +220,106 @@
         </properties>
         <logicalDecimal>
           <defaultValue>0</defaultValue>
-          <minimumValue>0</minimumValue>
-          <specialValues>
-            <specialValue id="Disable off">0</specialValue>
-          </specialValues>
+          <maximumValue>2147483647</maximumValue>
+          <minimumValue>-2147483647</minimumValue>
         </logicalDecimal>
-        <physicalNone groupId="DISABLE_END_TIME">
+        <physicalNone groupId="VALUE">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
           <packet id="on.valueSet">
             <type>event</type>
           </packet>
-          <packet id="disable">
+          <packet id="valueSet">
             <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ACTIVE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="ACTIVE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="STEP_UP">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="STEP_UP">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="stepUp">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="STEP_DOWN">
+        <properties>
+          <writeable>true</writeable>
+          <readable>false</readable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="STEP_DOWN">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="stepDown">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ERROR">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="ERROR">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
           </packet>
         </packets>
       </parameter>

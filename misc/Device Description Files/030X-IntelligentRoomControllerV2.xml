@@ -307,6 +307,19 @@
       </parameter>
     </variables>
     <variables id="IntelligentRoomControllerV2_valueset--1">
+      <parameter id="RAW">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalStruct/>
+        <physicalNone groupId="RAW">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
       <parameter id="ACTIVE_MODE">
         <properties>
           <readable>true</readable>

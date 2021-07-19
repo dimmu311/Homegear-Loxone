@@ -240,6 +240,19 @@
       </parameter>
     </variables>
     <variables id="colorPickerV2_valueset--1">
+      <parameter id="RAW">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalStruct/>
+        <physicalNone groupId="RAW">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
       <parameter id="COLOR">
         <properties>
           <readable>true</readable>
