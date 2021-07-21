@@ -38,6 +38,7 @@ namespace Loxone
         else if(type == "CarCharger") return std::make_shared<LoxoneControl>(control, room, cat, 0x402);
         else if(type == "FanController") return std::make_shared<LoxoneControl>(control, room, cat, 0x403);
         else if(type == "EnergyMonitor") return std::make_shared<LoxoneControl>(control, room, cat, 0x404);
+        else if(type == "Irrigation") return std::make_shared<LoxoneControl>(control, room, cat, 0x405);
         else if(type == "CentralAlarm") return std::make_shared<Central>(control, room, cat, 0x500);
         else if(type == "CentralAudioZone") return std::make_shared<Central>(control, room, cat, 0x501);
         else if(type == "CentralGate") return std::make_shared<Central>(control, room, cat, 0x502);
@@ -77,6 +78,7 @@ namespace Loxone
         else if(typeNr == 0x402) return std::make_shared<LoxoneControl>(rows, typeNr); //CarCharger
         else if(typeNr == 0x403) return std::make_shared<LoxoneControl>(rows, typeNr); //FanController
         else if(typeNr == 0x404) return std::make_shared<LoxoneControl>(rows, typeNr); //EnergyMonitor
+        else if(typeNr == 0x405) return std::make_shared<LoxoneControl>(rows, typeNr); //Irrigation
         else if(typeNr == 0x500) return std::make_shared<Central>(rows, typeNr); //CentralAlarm
         else if(typeNr == 0x501) return std::make_shared<Central>(rows, typeNr); //CentralAudioZone
         else if(typeNr == 0x502) return std::make_shared<Central>(rows, typeNr); //CentralGate
