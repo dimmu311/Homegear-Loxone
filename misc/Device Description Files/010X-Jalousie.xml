@@ -257,6 +257,29 @@
           <operationType>config</operationType>
         </physicalNone>
       </parameter>
+      <parameter id="TYPE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <id>Autojalousie</id>
+            <index>348</index>
+          </value>
+          <value>
+            <id>Roof Shade</id>
+            <index>502</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
     </configParameters>
     <configParameters id="maint_ch_master--0"/>
     <variables id="maint_ch_values--0">
