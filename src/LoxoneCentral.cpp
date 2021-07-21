@@ -511,7 +511,6 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::createPeer(uint32_t deviceType, const
         if(!uuidVariableMap) return peer;
         for(auto i = uuidVariableMap->begin(); i != uuidVariableMap->end(); ++i) {
             _uuidPeerIdMap.emplace(i->first, peer->getID());
-            //todo find out why new peers need a restart to receive states
         }
         //}}}
 		return peer;
@@ -609,15 +608,13 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
             if(cashedVersion == actualVersion) return std::make_shared<BaseLib::Variable>(0);
             GD::out.printMessage("get new Struct File from Interface:" + interface.first);
 
-            PVariable structfile = interface.second->getNewStructfile();
-            _LoxApp3.parseStructFile(structfile);
+            _LoxApp3.parseStructFile(interface.second->getNewStructfile());
             std::string lastModified = _LoxApp3.getlastModified();
 
             auto controls = _LoxApp3.getControls();
             std::vector<std::shared_ptr<LoxonePeer>>newPeers;
             std::vector<std::shared_ptr<LoxonePeer>>knownPeers;
-            for (auto peer = _peersById.begin(); peer != _peersById.end(); ++peer)
-            {
+            for (auto peer = _peersById.begin(); peer != _peersById.end(); ++peer){
                 auto loxonePeer = std::dynamic_pointer_cast<LoxonePeer>(peer->second);
                 if(!loxonePeer) continue;
                 knownPeers.push_back(loxonePeer);
