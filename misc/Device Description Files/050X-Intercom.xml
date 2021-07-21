@@ -29,49 +29,39 @@
       <channel>1</channel>
       <jsonPayload>
         <element>
-          <keyPath>state\value</keyPath>
-          <parameterId>VALUE</parameterId>
-        </element>
-        <element>
-          <keyPath>state\value</keyPath>
-          <parameterId>ACTIVE</parameterId>
-        </element>
-        <element>
-          <keyPath>state\error</keyPath>
-          <parameterId>ERROR</parameterId>
+          <keyPath>state\bell</keyPath>
+          <parameterId>BELL</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="valueSet">
-      <direction>fromCentral</direction>
-      <function1>valueSet</function1>
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
       <jsonPayload>
         <element>
-          <parameterId>VALUE</parameterId>
+          <keyPath>state\lastBellEvents</keyPath>
+          <parameterId>LAST_BELL_EVENTS</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="stepUp">
-      <direction>fromCentral</direction>
-      <function1>stepUp</function1>
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
       <jsonPayload>
         <element>
-          <parameterId>VALUE</parameterId>
-        </element>
-        <element>
-          <parameterId>STEP</parameterId>
+          <keyPath>state\version</keyPath>
+          <parameterId>VERSION</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="stepDown">
+    <packet id="answer">
       <direction>fromCentral</direction>
-      <function1>stepDown</function1>
+      <function1>activeSetOn</function1>
       <jsonPayload>
         <element>
-          <parameterId>VALUE</parameterId>
-        </element>
-        <element>
-          <parameterId>STEP</parameterId>
+          <constValueString>answer</constValueString>
         </element>
       </jsonPayload>
     </packet>
@@ -169,11 +159,6 @@
           <readable>true</readable>
           <writeable>true</writeable>
           <casts>
-            <booleanDecimal>
-              <falseValue>0</falseValue>
-              <trueValue>1</trueValue>
-              <threshold>1</threshold>
-            </booleanDecimal>
             <rpcBinary />
           </casts>
         </properties>
@@ -196,7 +181,7 @@
         </physicalInteger>
       </parameter>
     </variables>
-    <variables id="slider_valueset--1">
+    <variables id="intercom_valueset--1">
       <parameter id="RAW">
         <properties>
           <readable>true</readable>
@@ -210,32 +195,7 @@
           <operationType>command</operationType>
         </physicalNone>
       </parameter>
-      <parameter id="VALUE">
-        <properties>
-          <readable>true</readable>
-          <writeable>true</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalDecimal>
-          <defaultValue>0</defaultValue>
-          <maximumValue>2147483647</maximumValue>
-          <minimumValue>-2147483647</minimumValue>
-        </logicalDecimal>
-        <physicalNone groupId="VALUE">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-          <packet id="valueSet">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ACTIVE">
+      <parameter id="BELL">
         <properties>
           <readable>true</readable>
           <writeable>false</writeable>
@@ -251,7 +211,7 @@
         <logicalBoolean>
           <defaultValue>false</defaultValue>
         </logicalBoolean>
-        <physicalNone groupId="ACTIVE">
+        <physicalNone groupId="BELL">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
@@ -260,66 +220,58 @@
           </packet>
         </packets>
       </parameter>
-      <parameter id="STEP_UP">
-        <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction />
-        <physicalNone groupId="STEP_UP">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="stepUp">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="STEP_DOWN">
-        <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction />
-        <physicalNone groupId="STEP_DOWN">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="stepDown">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ERROR">
+      <parameter id="LAST_BELL_EVENTS">
         <properties>
           <readable>true</readable>
           <writeable>false</writeable>
           <casts>
-            <booleanDecimal>
-              <trueValue>1.0</trueValue>
-              <falseValue>0.0</falseValue>
-              <threshold>1.0</threshold>
-            </booleanDecimal>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalBoolean>
-          <defaultValue>false</defaultValue>
-        </logicalBoolean>
-        <physicalNone groupId="ERROR">
+        <logicalString/>
+        <physicalNone groupId="LAST_BELL_EVENTS">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="on.valueSet">
+          <packet id="on.textSet">
             <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="VERSION">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="VERSION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ANSWER">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction/>
+        <physicalNone groupId="ANSWER">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="answer">
+            <type>set</type>
           </packet>
         </packets>
       </parameter>
