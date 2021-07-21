@@ -36,6 +36,7 @@ public:
 	std::shared_ptr<Miniserver>& getPhysicalInterface() { return _physicalInterface; }
 
 	virtual std::string handleCliCommand(std::string command);
+    std::string printConfig();
 
 	virtual bool load(BaseLib::Systems::ICentral* central);
 	virtual void save(bool savePeer, bool saveVariables, bool saveCentralConfig);

@@ -1,3 +1,4 @@
+#include <iomanip>
 #include "LoxonePeer.h"
 #include "LoxoneCentral.h"
 #include "Loxone.h"
@@ -43,20 +44,125 @@ std::string LoxonePeer::handleCliCommand(std::string command)
 	{
 		std::ostringstream stringStream;
 
-		if(command == "help")
-		{
+		if(command == "help"){
 			stringStream << "List of commands:" << std::endl << std::endl;
 			stringStream << "For more information about the individual command type: COMMAND help" << std::endl << std::endl;
 			stringStream << "unselect\t\tUnselect this peer" << std::endl;
+            stringStream << "channel count\t\tPrint the number of channels of this peer" << std::endl;
+            stringStream << "config print\t\tPrints all configuration parameters and their values" << std::endl;
 			return stringStream.str();
 		}
-		return "Unknown command.\n";
+        if(command.compare(0, 13, "channel count") == 0)
+        {
+            std::stringstream stream(command);
+            std::string element;
+            int32_t index = 0;
+            while(std::getline(stream, element, ' '))
+            {
+                if(index < 2)
+                {
+                    index++;
+                    continue;
+                }
+                else if(index == 2)
+                {
+                    if(element == "help")
+                    {
+                        stringStream << "Description: This command prints this peer's number of channels." << std::endl;
+                        stringStream << "Usage: channel count" << std::endl << std::endl;
+                        stringStream << "Parameters:" << std::endl;
+                        stringStream << "  There are no parameters." << std::endl;
+                        return stringStream.str();
+                    }
+                }
+                index++;
+            }
+
+            stringStream << "Peer has " << _rpcDevice->functions.size() << " channels." << std::endl;
+            return stringStream.str();
+        }
+        else if(command.compare(0, 12, "config print") == 0) {
+            std::stringstream stream(command);
+            std::string element;
+            int32_t index = 0;
+            while (std::getline(stream, element, ' ')) {
+                if (index < 2) {
+                    index++;
+                    continue;
+                } else if (index == 2) {
+                    if (element == "help") {
+                        stringStream
+                                << "Description: This command prints all configuration parameters of this peer. The values are in BidCoS packet format."
+                                << std::endl;
+                        stringStream << "Usage: config print" << std::endl << std::endl;
+                        stringStream << "Parameters:" << std::endl;
+                        stringStream << "  There are no parameters." << std::endl;
+                        return stringStream.str();
+                    }
+                }
+                index++;
+            }
+            return printConfig();
+        }
+        return "Unknown command.\n";
 	}
 	catch(const std::exception& ex)
     {
         GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
     return "Error executing command. See log file for more details.\n";
+}
+std::string LoxonePeer::printConfig() {
+    try {
+        std::ostringstream stringStream;
+        stringStream << "MASTER" << std::endl;
+        stringStream << "{" << std::endl;
+        for (std::unordered_map<uint32_t, std::unordered_map<std::string, BaseLib::Systems::RpcConfigurationParameter>>::iterator i = configCentral.begin();
+             i != configCentral.end(); ++i) {
+            stringStream << "\t" << "Channel: " << std::dec << i->first << std::endl;
+            stringStream << "\t{" << std::endl;
+            for (std::unordered_map<std::string, BaseLib::Systems::RpcConfigurationParameter>::iterator j = i->second.begin();
+                 j != i->second.end(); ++j) {
+                stringStream << "\t\t[" << j->first << "]: ";
+                if (!j->second.rpcParameter) stringStream << "(No RPC parameter) ";
+                std::vector<uint8_t> parameterData = j->second.getBinaryData();
+                for (std::vector<uint8_t>::const_iterator k = parameterData.begin();
+                     k != parameterData.end(); ++k) {
+                    stringStream << std::hex << std::setfill('0') << std::setw(2) << (int32_t) *k << " ";
+                }
+                stringStream << std::endl;
+            }
+            stringStream << "\t}" << std::endl;
+        }
+        stringStream << "}" << std::endl << std::endl;
+
+        stringStream << "VALUES" << std::endl;
+        stringStream << "{" << std::endl;
+        for (std::unordered_map<uint32_t, std::unordered_map<std::string, BaseLib::Systems::RpcConfigurationParameter>>::iterator i = valuesCentral.begin();
+             i != valuesCentral.end(); ++i) {
+            stringStream << "\t" << "Channel: " << std::dec << i->first << std::endl;
+            stringStream << "\t{" << std::endl;
+            for (std::unordered_map<std::string, BaseLib::Systems::RpcConfigurationParameter>::iterator j = i->second.begin();
+                 j != i->second.end(); ++j) {
+                stringStream << "\t\t[" << j->first << "]: ";
+                if (!j->second.rpcParameter) stringStream << "(No RPC parameter) ";
+                std::vector<uint8_t> parameterData = j->second.getBinaryData();
+                for (std::vector<uint8_t>::const_iterator k = parameterData.begin();
+                     k != parameterData.end(); ++k) {
+                    stringStream << std::hex << std::setfill('0') << std::setw(2) << (int32_t) *k << " ";
+                }
+                stringStream << std::endl;
+            }
+            stringStream << "\t}" << std::endl;
+        }
+        stringStream << "}" << std::endl << std::endl;
+
+        return stringStream.str();
+    }
+    catch (const std::exception &ex) {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    return "";
 }
 
 void LoxonePeer::save(bool savePeer, bool variables, bool centralConfig)
@@ -501,13 +607,16 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
                 }
             }
         }
-
+        //todo: Mybe this is not needed anymore when a device description file for every control exists.
+        //for now this helps to understand the packets that are transmitted per control.
+        //{{{
         if(_uuidVariableMap.find(packet->getUuid()) == _uuidVariableMap.end()) return;
         std::string variable = _uuidVariableMap.at(packet->getUuid());
         {
             PVariable rawPacket = std::make_shared<Variable>(VariableType::tStruct);
             rawPacket->structValue->operator[]("variable") = PVariable(new Variable(variable));
             rawPacket->structValue->operator[]("values") = packet->getRawPacketStruct();
+            rawPacket->structValue->operator[]("type") = PVariable (new Variable(_control->getTypeString()));
 
             BaseLib::Systems::RpcConfigurationParameter &parameter = valuesCentral[1]["RAW"];
             if(parameter.rpcParameter){
@@ -528,7 +637,7 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
                 rpcValues[1]->push_back(rawPacket);
             }
         }
-
+        //}}}
         if(!rpcValues.empty())
         {
             for(std::map<uint32_t, std::shared_ptr<std::vector<std::string>>>::iterator j = valueKeys.begin(); j != valueKeys.end(); ++j)
@@ -770,7 +879,7 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 			return PVariable(new Variable(VariableType::tVoid));
 		}
 		else if (rpcParameter->physical->operationType != IPhysical::OperationType::Enum::command) return Variable::createError(-6, "Parameter is not settable.");
-//{{{
+        //{{{
         if(channel > 2) {
             std::string command;
             bool isSecured;
