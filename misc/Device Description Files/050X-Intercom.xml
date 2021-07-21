@@ -43,17 +43,10 @@
           <keyPath>state\lastBellEvents</keyPath>
           <parameterId>LAST_BELL_EVENTS</parameterId>
         </element>
-      </jsonPayload>
-    </packet>
-    <packet id="on.textSet">
-      <direction>toCentral</direction>
-      <function1>on.textStatesPacket</function1>
-      <channel>1</channel>
-      <jsonPayload>
         <element>
-          <keyPath>state\version</keyPath>
-          <parameterId>VERSION</parameterId>
-        </element>
+        <keyPath>state\version</keyPath>
+        <parameterId>VERSION</parameterId>
+      </element>
       </jsonPayload>
     </packet>
     <packet id="answer">
