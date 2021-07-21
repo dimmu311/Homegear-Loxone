@@ -98,32 +98,6 @@ namespace Loxone
         return -1;
     }
 
-	PVariable LoxonePacket::getJson(std::string& jsonString)
-	{
-		try
-		{
-		    _jsonDecoder.reset(new BaseLib::Rpc::JsonDecoder(GD::bl));
-            return _jsonDecoder->decode(jsonString);
-		}
-		catch (const BaseLib::Rpc::JsonDecoderException& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, "Error parsing json: " + std::string(ex.what()) + ". Data was: " + jsonString);
-		}
-		catch (BaseLib::Exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		catch (const std::exception& ex)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-		}
-		catch (...)
-		{
-			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
-		}
-		return PVariable();
-	}
-
 	LoxoneHttpPacket::LoxoneHttpPacket(BaseLib::Http& http)
     {
         _packetType = LoxonePacketType::LoxoneHttpPacket;

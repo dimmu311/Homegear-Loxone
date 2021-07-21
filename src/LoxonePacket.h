@@ -50,21 +50,19 @@ public:
 	bool needToSecure(){return _isSecured;};
     PVariable getRawPacketStruct(){return _rawPacketStruct;};
 protected:
-	std::string _command;
+    LoxonePacketType _packetType;
+
+    std::string _command;
     std::string _method;
-
+    std::string _uuid;
 	PVariable _json;
-	std::unique_ptr<BaseLib::Rpc::JsonDecoder> _jsonDecoder;
-	PVariable getJson(std::string& jsonString);
+    PVariable _rawPacketStruct = std::make_shared<Variable>(VariableType::tStruct);
 
-	std::string _uuid;
-	LoxonePacketType _packetType;
     bool _isSecured = false;
 
 	std::string getUuidFromPacket(char* data);
 	double getValueFromPacket(char* data);
 	uint32_t getCodeFromPacket(PVariable& json);
-    PVariable _rawPacketStruct = std::make_shared<Variable>(VariableType::tStruct);
 };
 
 
@@ -150,21 +148,21 @@ class LoxoneDaytimerStatesPacket : public LoxonePacket
 {
 public:
 	/*
-	typedef struct ​{​
-		​PUUID ​uuid; // 128-Bit uuid
-	​	double ​dDefValue; // 64-Bit Float (little endian) default value
-	​	int ​nrEntries; // 32-Bit Integer (little endian)
-	​	// entries (EvDataDaytimerEntry) follows here
-	} ​PACKED ​EvDataDaytimer;
+	typedef struct {
+		PUUID uuid; // 128-Bit uuid
+		double DefValue; // 64-Bit Float (little endian) default value
+		int nrEntries; // 32-Bit Integer (little endian)
+		// entries (EvDataDaytimerEntry) follows here
+	} PACKED EvDataDaytimer;
 	*/
 	/*
-	typedef struct ​{
-	​	int ​nMode; ​// 32-Bit Integer (little endian) number of mode
-	​	int ​nFrom;​ ​// 32-Bit Integer (little endian) from-time in minutes since midnight
-		​int ​nTo; ​// 32-Bit Integer (little endian) to-time in minutes since midnight
-	​	int ​bNeedActivate; // 32-Bit Integer (little endian) need activate (trigger)
-		​double ​dValue; // 64-Bit Float (little endian) value (if analog daytimer)
-	} ​PACKED ​EvDataDaytimerEntry;
+	typedef struct {
+    	int nMode; // 32-Bit Integer (little endian) number of mode
+		int nFrom; // 32-Bit Integer (little endian) from-time in minutes since midnight
+		int nTo; // 32-Bit Integer (little endian) to-time in minutes since midnight
+		int bNeedActivate; // 32-Bit Integer (little endian) need activate (trigger)
+		double dValue; // 64-Bit Float (little endian) value (if analog daytimer)
+	} PACKED EvDataDaytimerEntry;
 	*/
 
 	struct LoxoneTimeEntry
@@ -191,27 +189,27 @@ class LoxoneWeatherStatesPacket : public LoxonePacket
 {
 public:
 	/*
-	typedef struct ​{​
-		​PUUID ​uuid; // 128-Bit uuid
-	​	unsigned int ​lastUpdate; // 32-Bit Unsigned Integer (little endian)
-	​	int ​nrEntries; // 32-Bit Integer (little endian)
-		​// entries (EvDataWeatherEntry) follows here
-	} ​PACKED ​EvDataWeather;
+	typedef struct {
+		PUUID uuid; // 128-Bit uuid
+		unsigned int lastUpdate; // 32-Bit Unsigned Integer (little endian)
+		int nrEntries; // 32-Bit Integer (little endian)
+		// entries (EvDataWeatherEntry) follows here
+	} PACKED EvDataWeather;
 	*/
 	/*
-	typedef struct ​{
-	​	int ​timestamp; //32-Bit Integer (little endian)
-	​	int ​weatherType; //32-Bit Integer (little endian)
-		​int ​windDirection; //32-Bit Integer (little endian)
-	​	int ​solarRadiation; //32-Bit Integer (little endian)
-	​	int ​relativeHumidity; //32-Bit Integer (little endian)
-	​	double ​temperature; //64-Bit Float (little endian)
-	​	double ​perceivedTemperature; //64-Bit Float (little endian)
-		​double ​dewPoint; //64-Bit Float (little endian)
-		​double ​precipitation; //64-Bit Float (little endian)
-	​	double ​windSpeed; //64-Bit Float (little endian)
-		double ​barometicPressure; //64-Bit Float (little endian)
-	} ​PACKED ​EvDataWeatherEntry;
+	typedef struct {
+		int timestamp; //32-Bit Integer (little endian)
+		int weatherType; //32-Bit Integer (little endian)
+	    int windDirection; //32-Bit Integer (little endian)
+		int solarRadiation; //32-Bit Integer (little endian)
+		int relativeHumidity; //32-Bit Integer (little endian)
+		double temperature; //64-Bit Float (little endian)
+		double perceivedTemperature; //64-Bit Float (little endian)
+		double dewPoint; //64-Bit Float (little endian)
+		double precipitation; //64-Bit Float (little endian)
+		double windSpeed; //64-Bit Float (little endian)
+		double barometicPressure; //64-Bit Float (little endian)
+	} PACKED EvDataWeatherEntry;
 	 */
 	struct LoxoneWeatherEntry
 	{
