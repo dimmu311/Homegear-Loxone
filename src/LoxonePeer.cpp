@@ -210,48 +210,51 @@ void LoxonePeer::saveConfig()
     //If you want to add a room or role then do this in homegear.
     { //Set the Roomname wich is configured in Loxone Config
         BaseLib::Systems::RpcConfigurationParameter &parameter = configCentral[1]["ROOM"];
-        std::vector<uint8_t> parameterData;
-        parameter.rpcParameter->convertToPacket(_control->getRoom(), parameter.mainRole(), parameterData);
-        parameter.setBinaryData(parameterData);
-        if (parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
-        else saveParameter(0, ParameterGroup::Type::Enum::config, 1, "ROOM", parameterData);
-        GD::out.printInfo("Info: Parameter ROOM of peer " + std::to_string(_peerID) + " and channel " + std::to_string(1) +" was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
-        raiseRPCUpdateDevice(_peerID, 1, _serialNumber + ":" + std::to_string(1), 0);
+        if(parameter.rpcParameter){
+            std::vector<uint8_t> parameterData;
+            parameter.rpcParameter->convertToPacket(_control->getRoom(), parameter.mainRole(), parameterData);
+            parameter.setBinaryData(parameterData);
+            if (parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
+            else saveParameter(0, ParameterGroup::Type::Enum::config, 1, "ROOM", parameterData);
+            GD::out.printInfo("Info: Parameter ROOM of peer " + std::to_string(_peerID) + " and channel " + std::to_string(1) +" was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
+            raiseRPCUpdateDevice(_peerID, 1, _serialNumber + ":" + std::to_string(1), 0);
+        }
     }
-    { //Set the Categorie wich is configured in Loxone Config
-        BaseLib::Systems::RpcConfigurationParameter &parameter = configCentral[1]["CATEGORY"];
-        std::vector<uint8_t> parameterData;
-        parameter.rpcParameter->convertToPacket(_control->getCat(), parameter.mainRole(), parameterData);
-        parameter.setBinaryData(parameterData);
-        if (parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
-        else saveParameter(0, ParameterGroup::Type::Enum::config, 1, "CATEGORY", parameterData);
-        GD::out.printInfo("Info: Parameter CATEGORY of peer " + std::to_string(_peerID) + " and channel " + std::to_string(1) + " was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
-        raiseRPCUpdateDevice(_peerID, 1, _serialNumber + ":" + std::to_string(1), 0);
-    }
-    { //Set ExtraData  from this peer
-        std::list<extraData> data;
-        if(_control->getExtraData(data) == 0){
-            for(auto i = data.begin(); i != data.end(); ++i){
-                if(configCentral.find(i->channel) == configCentral.end()) continue;
-                if(configCentral[i->channel].find(i->variable) == configCentral[i->channel].end()) continue;
-
-                BaseLib::Systems::RpcConfigurationParameter &parameter = configCentral[i->channel][i->variable];
+        { //Set the Categorie wich is configured in Loxone Config
+            BaseLib::Systems::RpcConfigurationParameter &parameter = configCentral[1]["CATEGORY"];
+            if (parameter.rpcParameter) {
                 std::vector<uint8_t> parameterData;
-
-                if(i->value->type == VariableType::tStruct){
-                    std::string val;
-                    BaseLib::Rpc::JsonEncoder::encode(i->value, val);
-                    i->value->stringValue = val;
-                    i->value->type = VariableType::tString;
-                }
-
-                parameter.rpcParameter->convertToPacket(i->value, parameter.mainRole(), parameterData);
+                parameter.rpcParameter->convertToPacket(_control->getCat(), parameter.mainRole(), parameterData);
                 parameter.setBinaryData(parameterData);
                 if (parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
-                else saveParameter(0, ParameterGroup::Type::Enum::config, i->channel, i->variable, parameterData);
-                GD::out.printInfo("Info: Parameter "+ i->variable +" of peer " + std::to_string(_peerID) + " and channel " + std::to_string(i->channel) +" was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
-                raiseRPCUpdateDevice(_peerID, i->channel, _serialNumber + ":" + std::to_string(1), 0);
+                else saveParameter(0, ParameterGroup::Type::Enum::config, 1, "CATEGORY", parameterData);
+                GD::out.printInfo("Info: Parameter CATEGORY of peer " + std::to_string(_peerID) + " and channel " +std::to_string(1) + " was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
+                raiseRPCUpdateDevice(_peerID, 1, _serialNumber + ":" + std::to_string(1), 0);
             }
+        }
+    { //Set ExtraData  from this peer
+        std::list<extraData> data;
+        if(_control->getExtraData(data) != 0) return;
+        for(auto i = data.begin(); i != data.end(); ++i){
+            if(configCentral.find(i->channel) == configCentral.end()) continue;
+            if(configCentral[i->channel].find(i->variable) == configCentral[i->channel].end()) continue;
+
+            BaseLib::Systems::RpcConfigurationParameter &parameter = configCentral[i->channel][i->variable];
+            std::vector<uint8_t> parameterData;
+
+            if(i->value->type == VariableType::tStruct){
+                std::string val;
+                BaseLib::Rpc::JsonEncoder::encode(i->value, val);
+                i->value->stringValue = val;
+                i->value->type = VariableType::tString;
+            }
+
+            parameter.rpcParameter->convertToPacket(i->value, parameter.mainRole(), parameterData);
+            parameter.setBinaryData(parameterData);
+            if (parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
+            else saveParameter(0, ParameterGroup::Type::Enum::config, i->channel, i->variable, parameterData);
+            GD::out.printInfo("Info: Parameter "+ i->variable +" of peer " + std::to_string(_peerID) + " and channel " + std::to_string(i->channel) +" was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
+            raiseRPCUpdateDevice(_peerID, i->channel, _serialNumber + ":" + std::to_string(1), 0);
         }
     }
     }
