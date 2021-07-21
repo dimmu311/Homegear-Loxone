@@ -24,12 +24,13 @@ namespace Loxone
     };
 	class MandatoryFields
 	{
-		public:
+	public:
 		MandatoryFields(PVariable mandatoryFields, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
 		explicit MandatoryFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
 		void overwriteName(const std::string& name);
 		std::string getName() { return _name; };
 		std::string getUuidAction() {return _uuidAction;};
+        std::string getTypeString() {return _typeString;};
 		virtual uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 	protected:
         std::string _name;
@@ -90,7 +91,6 @@ namespace Loxone
         virtual uint32_t getExtraData(std::list<extraData> &extraData);
 	protected:
 		uint32_t _type;
-		//std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> _uuidVariable_PeerIdMap;
 		std::unordered_map<std::string, std::string> _uuidVariableMap;
 		PVariable _json;
 
