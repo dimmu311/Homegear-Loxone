@@ -61,6 +61,11 @@ protected:
 
 	LoxoneLoxApp3 _LoxApp3;
 	std::unordered_map<std::string, uint64_t> _uuidPeerIdMap;
+
+    #if DEBUG
+        //todo:: maybe remove sometimes
+        std::ofstream _rawPacketLog;
+    #endif
 };
 
 }

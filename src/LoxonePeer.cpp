@@ -685,7 +685,7 @@ PVariable LoxonePeer::getDeviceDescription(PRpcClientInfo clientInfo, int32_t ch
         PVariable description(Peer::getDeviceDescription(clientInfo, channel, fields));
         if(description->errorStruct || description->structValue->empty()) return description;
 
-        //todo: find a way to display the additional information in the admin ui. till now it looks like the admin ui needs to be changed to diseplay the additional infoarmtions
+        //todo: find a way to display the additional information in the admin ui. till now it looks like the admin ui needs to be changed to display the additional informations
         description->structValue->emplace("ROOMNAME", std::make_shared<Variable>(_control->getRoom()));
         description->structValue->emplace("CATEGORIES", std::make_shared<Variable>(_control->getCat()));
         description->structValue->emplace("LOXONE_UUID", std::make_shared<Variable>(_control->getUuidAction()));

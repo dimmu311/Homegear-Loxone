@@ -46,6 +46,7 @@ namespace Loxone
         else if(type == "CentralLightController") return std::make_shared<Central>(control, room, cat, 0x504);
         else if(type == "Intercom") return std::make_shared<LoxoneControl>(control, room, cat, 0x505);
         else if(type == "IntercomV2") return std::make_shared<LoxoneControl>(control, room, cat, 0x506);
+        else if(type == "NFCCodeTouch") return std::make_shared<LoxoneControl>(control, room, cat, 0x507);
         else return std::make_shared<LoxoneControl>(control, room, cat, 0x001);
         //Alarm Sequence, this in in Doku, but not shown in struct file. don't know if this is a Loxone issu
 
@@ -86,6 +87,7 @@ namespace Loxone
         else if(typeNr == 0x504) return std::make_shared<Central>(rows, typeNr); //CentralLightController
         else if(typeNr == 0x505) return std::make_shared<LoxoneControl>(rows, typeNr); //Intercom
         else if(typeNr == 0x506) return std::make_shared<LoxoneControl>(rows, typeNr); //IntercomV2
+        else if(typeNr == 0x507) return std::make_shared<LoxoneControl>(rows, typeNr); //NFC Code Touch
         else return std::make_shared<LoxoneControl>(rows, typeNr);
         //Alarm Sequence, this in in Doku, but not shown in struct file. don't know if this is a Loxone issu
 

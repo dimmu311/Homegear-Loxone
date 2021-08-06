@@ -3,6 +3,7 @@
 #include "Loxone.h"
 
 #include <iomanip>
+#include <iostream>
 
 namespace Loxone
 {
@@ -45,6 +46,10 @@ void LoxoneCentral::dispose(bool wait)
             //Just to make sure cycle through all physical devices. If event handler is not removed => segfault
             physicalInterface.second->removeEventHandler(_physicalInterfaceEventhandlers[physicalInterface.first]);
         }
+
+        #if DEBUG
+            if(_rawPacketLog.is_open()) _rawPacketLog.close();
+        #endif
 	}
     catch(const std::exception& ex)
     {
@@ -54,31 +59,29 @@ void LoxoneCentral::dispose(bool wait)
 
 bool LoxoneCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib::Systems::Packet> packet)
 {
-	try
-    {
+	try{
         if(_disposing) return false;
         PLoxonePacket loxonePacket(std::dynamic_pointer_cast<LoxonePacket>(packet));
         if(!loxonePacket) return false;
 
-		GD::out.printDebug("Loxone Central: onPacketReceived-> " + loxonePacket->getUuid());
+        #if DEBUG
+            auto rawPacket = BaseLib::Rpc::JsonEncoder::encode(loxonePacket->getRawPacketStruct());
+            if(!_rawPacketLog.is_open()) _rawPacketLog.open("/var/log/homegear/loxoneRawPacket.log", std::ios_base::app);
+            if(_rawPacketLog.is_open()) _rawPacketLog << rawPacket << std::endl;
+        #endif
 
-		if(loxonePacket->getPacketType() == LoxonePacketType::LoxoneValueStatesPacket)
-        {
-            auto cPacket = std::dynamic_pointer_cast<LoxoneValueStatesPacket>(packet);
-            GD::out.printDebug("Loxone Central: onPacketReceived-> " + std::to_string(cPacket->getDValue()));
+		if(_uuidPeerIdMap.find(loxonePacket->getUuid()) == _uuidPeerIdMap.end()) {
+            GD::out.printDebug("Loxone Central: onPacketReceived, Peer not known -> " + loxonePacket->getUuid());
+            return false;
         }
-
-        if(_uuidPeerIdMap.find(loxonePacket->getUuid()) == _uuidPeerIdMap.end()) return false;
         uint64_t peerId = _uuidPeerIdMap.at(loxonePacket->getUuid());
-
 		auto peer = getPeer(peerId);
 		if (peer){
 			peer->packetReceived(loxonePacket);
 			return true;
 		}
     }
-    catch(const std::exception& ex)
-    {
+    catch(const std::exception& ex){
         GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
     return false;
@@ -86,11 +89,9 @@ bool LoxoneCentral::onPacketReceived(std::string& senderId, std::shared_ptr<Base
 
 void LoxoneCentral::loadPeers()
 {
-	try
-	{
+	try{
 		std::shared_ptr<BaseLib::Database::DataTable> rows = _bl->db->getPeers(_deviceId);
-		for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
-		{
+		for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row){
 			int32_t peerId = row->second.at(0)->intValue;
 			GD::out.printMessage("Loading peer " + std::to_string(peerId));
 			
@@ -143,14 +144,12 @@ void LoxoneCentral::savePeers(bool full)
 
 std::shared_ptr<LoxonePeer> LoxoneCentral::getPeer(uint64_t id)
 {
-	try
-	{
+	try{
 		std::lock_guard<std::mutex> peersGuard(_peersMutex);
 		auto peersByIdIterator = _peersById.find(id);
 		if(peersByIdIterator != _peersById.end()) return std::dynamic_pointer_cast<LoxonePeer>(peersByIdIterator->second);
 	}
-	catch(const std::exception& ex)
-    {
+	catch(const std::exception& ex){
         GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
     return std::shared_ptr<LoxonePeer>();
@@ -158,14 +157,12 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::getPeer(uint64_t id)
 
 std::shared_ptr<LoxonePeer> LoxoneCentral::getPeer(const std::string& serialNumber)
 {
-	try
-	{
+	try{
 		std::lock_guard<std::mutex> peersGuard(_peersMutex);
 		auto peersBySerialIterator = _peersBySerial.find(serialNumber);
 		if(peersBySerialIterator != _peersBySerial.end()) return std::dynamic_pointer_cast<LoxonePeer>(peersBySerialIterator->second);
 	}
-	catch(const std::exception& ex)
-    {
+	catch(const std::exception& ex){
         GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
     return std::shared_ptr<LoxonePeer>();
@@ -173,8 +170,7 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::getPeer(const std::string& serialNumb
 
 void LoxoneCentral::deletePeer(uint64_t id)
 {
-	try
-	{
+	try{
 		std::shared_ptr<LoxonePeer> peer(getPeer(id));
 		if(!peer) return;
 
@@ -188,15 +184,13 @@ void LoxoneCentral::deletePeer(uint64_t id)
 		deviceInfo->structValue->insert(StructElement("CHANNELS", channels));
 
 		std::shared_ptr<HomegearDevice> rpcDevice = peer->getRpcDevice();
-		for(Functions::iterator i = rpcDevice->functions.begin(); i != rpcDevice->functions.end(); ++i)
-		{
+		for(Functions::iterator i = rpcDevice->functions.begin(); i != rpcDevice->functions.end(); ++i){
 			deviceAddresses->arrayValue->push_back(PVariable(new Variable(peer->getSerialNumber() + ":" + std::to_string(i->first))));
 			channels->arrayValue->push_back(PVariable(new Variable(i->first)));
 		}
 
         std::vector<uint64_t> deletedIds{ id };
 		raiseRPCDeleteDevices(deletedIds, deviceAddresses, deviceInfo);
-
 		{
 			std::lock_guard<std::mutex> peersGuard(_peersMutex);
 			_peersBySerial.erase(peer->getSerialNumber());
@@ -204,8 +198,7 @@ void LoxoneCentral::deletePeer(uint64_t id)
 		}
 
         int32_t i = 0;
-        while(peer.use_count() > 1 && i < 600)
-        {
+        while(peer.use_count() > 1 && i < 600){
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             i++;
         }
@@ -222,8 +215,7 @@ void LoxoneCentral::deletePeer(uint64_t id)
 
 std::string LoxoneCentral::handleCliCommand(std::string command)
 {
-    try
-	{
+    try{
 		std::ostringstream stringStream;
 		std::vector<std::string> arguments;
 
@@ -538,22 +530,13 @@ void LoxoneCentral::homegearShuttingDown()
 //RPC functions
 PVariable LoxoneCentral::deleteDevice(BaseLib::PRpcClientInfo clientInfo, std::string serialNumber, int32_t flags)
 {
-	try
-	{
+	try{
 		if(serialNumber.empty()) return Variable::createError(-2, "Unknown device.");
-
-        uint64_t peerId = 0;
-
-        {
-            std::shared_ptr<LoxonePeer> peer = getPeer(serialNumber);
-            if(!peer) return Variable::createError(-2, "Unknown device.");
-            peerId = peer->getID();
-        }
-
-		return deleteDevice(clientInfo, peerId, flags);
+		std::shared_ptr<LoxonePeer> peer = getPeer(serialNumber);
+		if(!peer) return Variable::createError(-2, "Unknown device.");
+		return deleteDevice(clientInfo, peer->getID(), flags);
 	}
-	catch(const std::exception& ex)
-    {
+	catch(const std::exception& ex){
         GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
     return Variable::createError(-32500, "Unknown application error.");
@@ -561,34 +544,25 @@ PVariable LoxoneCentral::deleteDevice(BaseLib::PRpcClientInfo clientInfo, std::s
 
 PVariable LoxoneCentral::deleteDevice(BaseLib::PRpcClientInfo clientInfo, uint64_t peerId, int32_t flags)
 {
-	try
-	{
+	try{
 		if(peerId == 0) return Variable::createError(-2, "Unknown device.");
 		if(peerId >= 0x40000000) return Variable::createError(-2, "Cannot delete virtual device.");
-
-        {
-            std::shared_ptr<LoxonePeer> peer = getPeer(peerId);
-            if(!peer) return Variable::createError(-2, "Unknown device.");
-        }
-
+        std::shared_ptr<LoxonePeer> peer = getPeer(peerId);
+        if(!peer) return Variable::createError(-2, "Unknown device.");
 		deletePeer(peerId);
-
 		return PVariable(new Variable(VariableType::tVoid));
 	}
-	catch(const std::exception& ex)
-    {
+	catch(const std::exception& ex){
         GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
     return Variable::createError(-32500, "Unknown application error.");
 }
 PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const std::string& interfaceId)
 {
-	try
-	{
+	try{
 		std::string cashedVersion;
 		std::shared_ptr<BaseLib::Database::DataTable> rows = _bl->db->getDeviceVariables(_deviceId);
-		for (BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
-		{
+		for (BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row){
 			_variableDatabaseIds[row->second.at(2)->intValue] = row->second.at(0)->intValue;
 			switch (row->second.at(2)->intValue)
 			{
@@ -597,8 +571,7 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
 				break;
 			}
 		}
-		for (auto& interface : GD::physicalInterfaces)
-		{
+		for (auto& interface : GD::physicalInterfaces){
             if(!interface.second->isConnected()){
                 GD::out.printDebug("could not search because the interface " + interface.first + " is not connected", 3);
                 continue;
@@ -654,29 +627,25 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
             }
 
             GD::out.printDebug("Size of knownPeers is now :" + std::to_string(knownPeers.size()));
-            if(knownPeers.size() > 0){
+            if(!knownPeers.empty()){
                 for(const auto& loxonePeer: knownPeers) {
-                    GD::out.printDebug("PeerId: " + std::to_string(loxonePeer->getID()) + " is paired but not in Loxone Struct file anymore");
+                    GD::out.printDebug("PeerId: " + std::to_string(loxonePeer->getID()) + " is paired but not in Loxone Struct file");
                     if(!loxonePeer->serviceMessages->getUnreach()) loxonePeer->serviceMessages->setUnreach(true,false);
                 }
             }
             //saveVariable(0, lastModified);
 
-            if(newPeers.size() >0)
-            {
+            if(!newPeers.empty()){
 				std::vector<uint64_t> newIds;
 				newIds.reserve(newPeers.size());
 				PVariable deviceDescriptions = std::make_shared<BaseLib::Variable>(BaseLib::VariableType::tArray);
 				deviceDescriptions->arrayValue->reserve(100);
 
-				for(auto& newPeer: newPeers)
-				{
+				for(auto& newPeer: newPeers){
 					newIds.push_back(newPeer->getID());
 					std::shared_ptr<std::vector<PVariable>> descriptions =  newPeer->getDeviceDescriptions(nullptr, true, std::map<std::string,bool>());
 					if(!descriptions) continue;
-
-					for(auto& description : *descriptions)
-					{
+					for(auto& description : *descriptions){
 						if(deviceDescriptions->arrayValue->size()+1 > deviceDescriptions->arrayValue->capacity()) deviceDescriptions->arrayValue->reserve(deviceDescriptions->arrayValue->size()+100);
 						deviceDescriptions->arrayValue->push_back(description);
 					}
