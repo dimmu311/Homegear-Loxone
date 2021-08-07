@@ -224,7 +224,7 @@ namespace Loxone
 				    }
 					case 201 ... 300:{
 						auto uuid = row->second.at(5)->binaryValue;
-						_uuidVariableMap.emplace(row->second.at(4)->textValue, std::string(uuid->begin(), uuid->end()));
+						_uuidVariableMap.emplace(std::string(uuid->begin(), uuid->end()), row->second.at(4)->textValue);
                         break;
 					}
 				}

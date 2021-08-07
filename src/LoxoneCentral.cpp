@@ -106,7 +106,7 @@ void LoxoneCentral::loadPeers()
             auto uuidVariableMap = peer->getUuidVariableMap();
             if(!uuidVariableMap) continue;
             for(auto i = uuidVariableMap->begin(); i != uuidVariableMap->end(); ++i) {
-                _uuidPeerIdMap.emplace(i->second, peer->getID());
+                _uuidPeerIdMap.emplace(i->first, peer->getID());
             }
             //}}}
 
@@ -502,7 +502,7 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::createPeer(uint32_t deviceType, const
 		auto uuidVariableMap = peer->getUuidVariableMap();
         if(!uuidVariableMap) return peer;
         for(auto i = uuidVariableMap->begin(); i != uuidVariableMap->end(); ++i) {
-            _uuidPeerIdMap.emplace(i->second, peer->getID());
+            _uuidPeerIdMap.emplace(i->first, peer->getID());
         }
         //}}}
 		return peer;
