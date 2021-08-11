@@ -498,10 +498,11 @@ void Miniserver::keepAlive()
 {
 	try{
         uint32_t keepAliveCounter = 0;
-        while (!_stopCallbackThread)
-		{
+        while (!_stopCallbackThread){
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //Sleep for 1sec
+			keepAliveCounter++;
 			if (keepAliveCounter < 60) continue;
+			_out.printDebug("keepalive", 4);
             keepAliveCounter = 0;
             auto responsePacket = getResponse("keepalive", encodeWebSocket("keepalive", WebSocket::Header::Opcode::Enum::text));
             if (!responsePacket){
@@ -517,7 +518,6 @@ void Miniserver::keepAlive()
                 _connected = false;
                 return;
             }
-            keepAliveCounter++;
 		}
 	}
 	catch (const std::exception& ex)
@@ -600,11 +600,12 @@ void Miniserver::listen()
                     }
                     else{
                         _out.printDebug("Packet is NOT type http.... it should be websocket", 6);
-                        _out.printDebug(std::string(buffer.begin() + processed, buffer.begin() + bytesRead), 7);
+                        _out.printDebug(std::string(buffer.begin() + processed, buffer.begin() + bytesRead), 8);
                         _out.printDebug(BaseLib::HelperFunctions::getHexString(buffer.data() + processed, bytesRead - processed), 7);
                         processed += websocket.process(buffer.data() + processed, bytesRead - processed);
                         _out.printDebug("Process Websocket Packet: Header says content length should be " + std::to_string(websocket.getHeader().length) + " and content length is " + std::to_string(websocket.getContentSize()), 6);
                         _out.printDebug("Process Websocket Packet: Processed Bytes are: " + std::to_string(processed), 6);
+                        _out.printDebug("Remaining Websocket Packet is: " + BaseLib::HelperFunctions::getHexString(buffer.data() + processed, bytesRead - processed), 7);
                         if (websocket.getContentSize() != websocket.getHeader().length) continue;
                         if (websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::binary){
                             _out.printDebug("Websocket Opcode is typ BINARY", 6);
