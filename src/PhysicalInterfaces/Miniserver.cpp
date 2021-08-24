@@ -418,9 +418,10 @@ void Miniserver::prepareSecuredCommand()
 void Miniserver::refreshToken()
 {
     try{
-        uint32_t refreshToken = 3600;
+        uint32_t refreshToken = 0;
         while (!_stopCallbackThread){
             std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //Sleep for 1sec
+            refreshToken++;
             if (refreshToken < 3600) continue;
             refreshToken = 0;
             _out.printDebug("Refresh Token");
@@ -486,7 +487,6 @@ void Miniserver::refreshToken()
                     return;
                 }
             }
-            refreshToken++;
         }
     }
     catch (const std::exception& ex)
