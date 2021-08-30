@@ -1,7 +1,6 @@
 #include "LoxoneLoxApp3.h"
 #include "controls/createInstance.h"
-#include <iostream>
-#include <fstream>
+#include "controls/Weather.h"
 
 namespace Loxone
 {
@@ -23,22 +22,22 @@ namespace Loxone
 				/*
 				autopilot
 					cats
-					controls
+					    controls
 				globalStates
-					lastModified
+					    lastModified
 				messageCenter
 				msInfo
 				operatingModes
 					rooms
 				times
-				weatherServer
+				        weatherServer
 				*/
 			}
 
 			loadCats();
 			loadRooms();
 			loadControls();
-			
+			loadWeatherServer();
 			return 0;
 		}
 		catch (const std::exception & ex){
@@ -119,5 +118,67 @@ namespace Loxone
 		catch (const std::exception & ex){
 			_out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 		}
+	}
+
+	void LoxoneLoxApp3::loadWeatherServer()
+	{
+	    try{
+	        _out.printDebug("Loading Weather Server from Structfile", 5);
+	        if (_structFile->structValue->find("weatherServer") == _structFile->structValue->end()) return;
+	        PVariable weatherServer = _structFile->structValue->find("weatherServer")->second;
+
+	        if (weatherServer->structValue->find("states") == weatherServer->structValue->end()) return;
+	        {
+	            PVariable states = weatherServer->structValue->find("states")->second;
+	            if(states->structValue->find("actual") == states->structValue->end()) return;
+	            _weather.uuidActual = states->structValue->find("actual")->second->stringValue;
+	            if(states->structValue->find("forecast") == states->structValue->end()) return;
+	            _weather.uuidForecast = states->structValue->find("forecast")->second->stringValue;
+	        }
+
+	        if (weatherServer->structValue->find("format") == weatherServer->structValue->end()) return;
+	        {
+	            PVariable format = weatherServer->structValue->find("format")->second;
+	            if(format->structValue->find("barometricPressure") == format->structValue->end()) return;
+	            _weather.format.barometricPressure = format->structValue->find("barometricPressure")->second->stringValue;
+	            if(format->structValue->find("precipitation") == format->structValue->end()) return;
+	            _weather.format.precipitation = format->structValue->find("precipitation")->second->stringValue;
+	            if(format->structValue->find("relativeHumidity") == format->structValue->end()) return;
+	            _weather.format.relativeHumidity = format->structValue->find("relativeHumidity")->second->stringValue;
+	            if(format->structValue->find("temperature") == format->structValue->end()) return;
+	            _weather.format.temperature = format->structValue->find("temperature")->second->stringValue;
+	            if(format->structValue->find("windSpeed") == format->structValue->end()) return;
+	            _weather.format.windSpeed = format->structValue->find("windSpeed")->second->stringValue;
+	        }
+
+	        if (weatherServer->structValue->find("weatherTypeTexts") == weatherServer->structValue->end()) return;
+	        {
+	            PVariable weatherTypeTexts = weatherServer->structValue->find("weatherTypeTexts")->second;
+	            _weather.weatherTypeTexts.empty();
+	            for(auto i = weatherTypeTexts->structValue->begin(); i != weatherTypeTexts->structValue->end(); ++i){
+	                _weather.weatherTypeTexts.emplace((uint8_t)Math::getNumber(i->first), i->second->stringValue);
+	            }
+	        }
+	        if (weatherServer->structValue->find("weatherFieldTypes") == weatherServer->structValue->end()) return;
+	        {
+	            PVariable weatherFieldTypes = weatherServer->structValue->find("weatherFieldTypes")->second;
+	            for(auto i = weatherFieldTypes->structValue->begin(); i != weatherFieldTypes->structValue->end(); ++i){
+	                weather::sWeatherFieldTypes sWeatherFieldTypes;
+	                if(i->second->structValue->find("id") != i->second->structValue->end()) sWeatherFieldTypes.id = i->second->structValue->find("id")->second->integerValue;
+	                if(i->second->structValue->find("name") != i->second->structValue->end()) sWeatherFieldTypes.name = i->second->structValue->find("name")->second->stringValue;
+	                if(i->second->structValue->find("analog") != i->second->structValue->end()) sWeatherFieldTypes.analog = i->second->structValue->find("analog")->second->booleanValue;
+	                if(i->second->structValue->find("unit") != i->second->structValue->end()) sWeatherFieldTypes.unit = i->second->structValue->find("unit")->second->stringValue;
+	                if(i->second->structValue->find("format") != i->second->structValue->end()) sWeatherFieldTypes.format = i->second->structValue->find("format")->second->stringValue;
+	                _weather.weatherFieldTypes.emplace((uint8_t)Math::getNumber(i->first), sWeatherFieldTypes);
+	            }
+	        }
+
+	        std::shared_ptr<LoxoneControl> control = std::make_shared<Weather>(_weather);
+	        if(!control) return;
+	        _controls.push_back(control);
+	    }
+        catch (const std::exception & ex){
+            _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+        }
 	}
 }

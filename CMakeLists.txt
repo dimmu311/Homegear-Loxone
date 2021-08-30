@@ -41,7 +41,11 @@ set(SOURCE_FILES
 		src/helper/KelvinRgb.cpp
 		src/helper/KelvinRgb.h
 		src/controls/Central.cpp
-		src/controls/Central.h src/controls/Daytimer.cpp src/controls/Daytimer.h)
+		src/controls/Central.h
+		src/controls/Daytimer.cpp
+		src/controls/Daytimer.h
+		src/controls/Weather.cpp
+		src/controls/Weather.h)
 
 # These are the corresponding output paths
 set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/output)

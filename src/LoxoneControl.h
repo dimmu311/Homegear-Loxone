@@ -25,8 +25,9 @@ namespace Loxone
 	class MandatoryFields
 	{
 	public:
+	    MandatoryFields(){};
 		MandatoryFields(PVariable mandatoryFields, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
-		explicit MandatoryFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
+		MandatoryFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
 		void overwriteName(const std::string& name);
 		std::string getName() { return _name; };
 		std::string getUuidAction() {return _uuidAction;};
@@ -43,10 +44,10 @@ namespace Loxone
 	};
 	class OptionalFields
 	{
-		public:
-
+	public:
+	    OptionalFields(){};
 		OptionalFields(PVariable optionalFields, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
-		explicit OptionalFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
+		OptionalFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
         void overwrite(const std::string& room, const std::string& cat);
 		std::string getRoom() { return _room; };
 		std::string getCat() { return _cat; };
@@ -67,12 +68,12 @@ namespace Loxone
 	class LoxoneControl : public MandatoryFields, public OptionalFields
 	{
 	public:
+	    LoxoneControl(){};
         LoxoneControl(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat, uint32_t typeNr);
 		LoxoneControl(std::shared_ptr<BaseLib::Database::DataTable> rows, uint32_t typeNr);
 
         uint32_t getType() { return _type; };
-		
-		//std::unordered_map <std::string, std::shared_ptr<variable_PeerId>> getVariables() { return _uuidVariable_PeerIdMap; };
+
         std::unordered_map<std::string, std::string> getUuidVariableMap(){return _uuidVariableMap;};
 
 		virtual bool processPacket(PLoxoneBinaryFilePacket loxonePacket);

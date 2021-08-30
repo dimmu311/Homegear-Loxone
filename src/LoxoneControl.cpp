@@ -283,6 +283,7 @@ namespace Loxone
 	bool LoxoneControl::processPacket(PLoxoneBinaryFilePacket loxonePacket)
 	{
 		try{
+		    //todo
 			return false;
 		}
 		catch (const std::exception& ex){
@@ -293,6 +294,7 @@ namespace Loxone
 	bool LoxoneControl::processPacket(PLoxoneTextmessagePacket loxonePacket)
 	{
 		try{
+		    //todo
 			return false;
 		}
 		catch (const std::exception& ex){
@@ -324,8 +326,7 @@ namespace Loxone
                 data->structValue->operator[]("needActivate") = PVariable(new Variable(entry->second->_needActivate));
                 data->structValue->operator[]("value") = PVariable(new Variable(entry->second->_value));
 
-                _json->structValue->at("state")->structValue->at("entrys")->arrayValue->push_back(
-                        static_cast<const std::shared_ptr<Variable>>(data));
+                _json->structValue->at("state")->structValue->at("entrys")->arrayValue->push_back(static_cast<const std::shared_ptr<Variable>>(data));
             }
             loxonePacket->setJsonString(_json);
             loxonePacket->setMethod("on.daytimerStatesPacket");
@@ -339,7 +340,37 @@ namespace Loxone
 	bool LoxoneControl::processPacket(PLoxoneWeatherStatesPacket loxonePacket)
 	{
 		try{
-			return false;
+		    if(_uuidVariableMap.find(loxonePacket->getUuid()) == _uuidVariableMap.end()) return false;
+		    std::string variable = _uuidVariableMap.at(loxonePacket->getUuid());
+		    GD::out.printDebug("LoxoneControl::LoxoneWeatherStatesPacket at " + variable + " of control " + _name);
+		    _json = std::make_shared<Variable>(VariableType::tStruct);
+		    _json->structValue->operator[]("state") = PVariable(new Variable(VariableType::tStruct));
+
+		    _json->structValue->at("state")->structValue->operator[]("entrys") = PVariable(new Variable(VariableType::tStruct));
+		    _json->structValue->at("state")->structValue->at("entrys") = PVariable(new Variable(VariableType::tArray));
+
+		    auto entrys = loxonePacket->getEntrys();
+		    for(auto entry = entrys.begin(); entry != entrys.end(); ++entry){
+		        auto data = new Variable(VariableType::tStruct);
+
+		        data->structValue->operator[]("id") = PVariable(new Variable(entry->first));
+		        data->structValue->operator[]("timestamp") = PVariable(new Variable(entry->second->_timestamp));
+		        data->structValue->operator[]("weatherType") = PVariable(new Variable(entry->second->_weatherType));
+		        data->structValue->operator[]("windDirection") = PVariable(new Variable(entry->second->_windDirection));
+		        data->structValue->operator[]("solarRadiation") = PVariable(new Variable(entry->second->_solarRadiation));
+		        data->structValue->operator[]("relativeHumidity") = PVariable(new Variable(entry->second->_relativeHumidity));
+		        data->structValue->operator[]("temperature") = PVariable(new Variable(entry->second->_temperature));
+		        data->structValue->operator[]("perceivedTemperature") = PVariable(new Variable(entry->second->_perceivedTemperature));
+		        data->structValue->operator[]("dewPoint") = PVariable(new Variable(entry->second->_dewPoint));
+		        data->structValue->operator[]("precipitation") = PVariable(new Variable(entry->second->_precipitation));
+		        data->structValue->operator[]("windSpeed") = PVariable(new Variable(entry->second->_windSpeed));
+		        data->structValue->operator[]("barometicPressure") = PVariable(new Variable(entry->second->_barometicPressure));
+
+		        _json->structValue->at("state")->structValue->at("entrys")->arrayValue->push_back(static_cast<const std::shared_ptr<Variable>>(data));
+		    }
+		    loxonePacket->setJsonString(_json);
+		    loxonePacket->setMethod("on.weatherStatesPacket");
+		    return true;
 		}
 		catch (const std::exception& ex){
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
@@ -353,6 +384,9 @@ namespace Loxone
             for(char c : i->first){
                 if(islower(c)){
                     data.variable.push_back(toupper(c));
+                }
+                else if(c == '.'){
+                    data.variable.push_back(c);
                 }
                 else{
                     data.variable.push_back('_');
