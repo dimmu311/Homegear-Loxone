@@ -55,7 +55,7 @@ namespace Loxone
         //getBinaryValueFromDataTable(109, _defaultIcon);
     }
 
-    bool Daytimer::packetReceived(uint32_t peerID, PLoxoneDaytimerStatesPacket loxonePacket, std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> &valuesCentral)
+    bool Weather::packetReceived(uint32_t peerID, PLoxoneWeatherStatesPacket loxonePacket, std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> &valuesCentral)
     {
         try {
             auto entrys = loxonePacket->getEntrys();

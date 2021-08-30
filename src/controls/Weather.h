@@ -14,7 +14,7 @@ class Weather : public LoxoneControl
 
         //bool setValue(PPacket frame, PVariable parameters, uint32_t channel, std::string &command, bool &isSecured);
         //bool setValue(uint32_t channel, std::string valueKey, PVariable value, std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> &valuesCentral, std::string &command, bool &isSecured);
-        bool packetReceived(uint32_t peerID, PLoxoneDaytimerStatesPacket loxonePacket, std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> &valuesCentral);
+        bool packetReceived(uint32_t peerID, PLoxoneWeatherStatesPacket loxonePacket, std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> &valuesCentral);
 
     protected:
 };
