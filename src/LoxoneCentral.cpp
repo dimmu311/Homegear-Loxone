@@ -513,7 +513,6 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::createPeer(uint32_t deviceType, const
     }
     return std::shared_ptr<LoxonePeer>();
 }
-
 void LoxoneCentral::homegearShuttingDown()
 {
     try{
@@ -595,7 +594,7 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
 
             for(const auto& control: controls) {
                 bool found = false;
-                for(auto loxonePeer = knownPeers.begin(); loxonePeer != knownPeers.end(); ++ loxonePeer) {
+                for(auto loxonePeer = knownPeers.begin(); loxonePeer != knownPeers.end(); ++loxonePeer) {
                     if (loxonePeer.operator*()->getControl()->getUuidAction() == control->getUuidAction()) {
                         found = true;
                         loxonePeer.operator*()->serviceMessages->endUnreach();
@@ -625,7 +624,6 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
                 newPeers.push_back(peer);
                 GD::out.printMessage("Added peer " + std::to_string(peer->getID()) + ".");
             }
-
             GD::out.printDebug("Size of knownPeers is now :" + std::to_string(knownPeers.size()));
             if(!knownPeers.empty()){
                 for(const auto& loxonePeer: knownPeers) {
