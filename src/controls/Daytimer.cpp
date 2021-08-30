@@ -20,17 +20,15 @@ namespace Loxone
                 if (parameters->arrayValue->at(0)->type != VariableType::tFloat) return false;
                 if (parameters->arrayValue->at(1)->type != VariableType::tFloat) return false;
 
-                if((bool)parameters->arrayValue->at(0)->floatValue)
-                {
-                command += "startOverride/" + std::to_string(parameters->arrayValue->at(1)->floatValue);
-                return true;
+                if((bool)parameters->arrayValue->at(0)->floatValue){
+                    command += "startOverride/" + std::to_string(parameters->arrayValue->at(1)->floatValue);
+                    return true;
                 }
                 command += "stopOverride";
                 return true;
             }
         }
-        catch (const std::exception& ex)
-        {
+        catch (const std::exception& ex){
             GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
         }
         return false;
