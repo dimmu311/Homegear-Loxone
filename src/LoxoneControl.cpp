@@ -514,6 +514,18 @@ namespace Loxone
             else if(frame->function1 == "valueSet"){
                 return getValueFromVariable(parameters->arrayValue->at(0), command);
             }
+            else if(frame->function1 == "2valueSet"){
+                if (!getValueFromVariable(parameters->arrayValue->at(0), command)) return false;
+                command += "/";
+                return getValueFromVariable(parameters->arrayValue->at(1), command);
+            }
+            else if(frame->function1 == "3valueSet"){
+                if (!getValueFromVariable(parameters->arrayValue->at(0), command)) return false;
+                command += "/";
+                if (!getValueFromVariable(parameters->arrayValue->at(1), command)) return false;
+                command += "/";
+                return getValueFromVariable(parameters->arrayValue->at(2), command);
+            }
             else if(frame->function1 == "valueSetToPath"){
                 if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
                 command += parameters->arrayValue->at(0)->stringValue + "/";

@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+  <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+  <device id="Loxone LightController">
+      <description>Loxone LightController</description>
+      <typeNumber>0x0110</typeNumber>
+      <minFirmwareVersion>0</minFirmwareVersion>
+    </device>
+  </supportedDevices>
+  <properties/>
+  <functions>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="0" type="MAINTENANCE" channelCount="1">
+      <properties>
+        <internal>true</internal>
+      </properties>
+      <configParameters>maint_ch_master--0</configParameters>
+      <variables>maint_ch_values--0</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="LIGHT_CONTROLLER_V2" channelCount="1">
+      <properties/>
+      <configParameters>config--1</configParameters>
+      <variables>lightControler_valueset--1</variables>
+    </function>
+  </functions>
+  <packets>
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\activeScene</keyPath>
+          <parameterId>ACTIVE_SCENE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\activeScene</keyPath>
+          <parameterId>STATE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\sceneList</keyPath>
+          <parameterId>SCENE_LIST</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="activeSet">
+      <direction>fromCentral</direction>
+      <function1>activeSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>STATE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="sceneNumber">
+      <direction>fromCentral</direction>
+      <function1>valueSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>ACTIVE_SCENE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="sceneNumberLearn">
+      <direction>fromCentral</direction>
+      <function1>3valueSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>ACTIVE_SCENE</parameterId>
+        </element>
+        <element>
+          <constValueString>learn</constValueString>
+        </element>
+        <element>
+          <parameterId>NAME</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="delete">
+      <direction>fromCentral</direction>
+      <function1>2valueSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>DELETE_SCENE</parameterId>
+        </element>
+      	<element>
+          <constValueString>delete</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setPlus">
+      <direction>fromCentral</direction>
+      <function1>setNext</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>plus</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="setMinus">
+      <direction>fromCentral</direction>
+      <function1>setPrevious</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>minus</constValueString>
+        </element>
+      </jsonPayload>
+    </packet>
+  </packets>
+  <parameterGroups>
+    <configParameters id="config--1">
+      <parameter id="ROOM">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="CATEGORY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="MASTER_COLOR">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="MASTER_VALUE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="MOVEMENT_SCENE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalDecimal/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+    </configParameters>
+    <configParameters id="maint_ch_master--0"/>
+    <variables id="maint_ch_values--0">
+      <parameter id="UNREACH">
+        <properties>
+          <writeable>false</writeable>
+          <service>true</service>
+        </properties>
+        <logicalBoolean/>
+        <physicalInteger groupId="UNREACH">
+          <operationType>internal</operationType>
+        </physicalInteger>
+      </parameter>
+    </variables>
+    <variables id="lightControler_valueset--1">
+      <parameter id="RAW">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalStruct/>
+        <physicalNone groupId="RAW">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="ACTIVE_SCENE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="ACTIVE_SCENE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="sceneNumber">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="STATE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="ACTIVE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="activeSet">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SCENE_LIST">
+        <properties>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalStruct/>
+        <physicalNone groupId="SCENE_LIST">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+   	  <parameter id="LEARN_SCENE_ID">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>9</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="LEARN_SCENE_ID">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="sceneNumberLearn">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+   	  <parameter id="NAME">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString>
+          <defaultValue>0</defaultValue>
+        </logicalString>
+        <physicalString groupId="NAME">
+          <operationType>store</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="DELETE_SCENE">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>9</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="DELETE_SCENE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="delete">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+   	  <parameter id="SET_NEXT">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SET_NEXT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="setPlus">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SET_PREVIOUS">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SET_PREVIOUS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="setMinus">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+    </variables>
+  </parameterGroups>
+</homegearDevice>

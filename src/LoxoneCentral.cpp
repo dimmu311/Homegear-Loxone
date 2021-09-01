@@ -171,6 +171,7 @@ std::shared_ptr<LoxonePeer> LoxoneCentral::getPeer(const std::string& serialNumb
 void LoxoneCentral::deletePeer(uint64_t id)
 {
 	try{
+
 		std::shared_ptr<LoxonePeer> peer(getPeer(id));
 		if(!peer) return;
 
@@ -189,6 +190,10 @@ void LoxoneCentral::deletePeer(uint64_t id)
 			channels->arrayValue->push_back(PVariable(new Variable(i->first)));
 		}
 
+		for(auto i = _uuidPeerIdMap.begin(); i != _uuidPeerIdMap.end(); ++i) {
+		    if(i->second == id) _uuidPeerIdMap.erase(i);
+		}
+
         std::vector<uint64_t> deletedIds{ id };
 		raiseRPCDeleteDevices(deletedIds, deviceAddresses, deviceInfo);
 		{
@@ -196,8 +201,7 @@ void LoxoneCentral::deletePeer(uint64_t id)
 			_peersBySerial.erase(peer->getSerialNumber());
 			_peersById.erase(id);
 		}
-
-        int32_t i = 0;
+		int32_t i = 0;
         while(peer.use_count() > 1 && i < 600){
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             i++;
@@ -360,9 +364,8 @@ std::string LoxoneCentral::handleCliCommand(std::string command)
 						if((signed)BaseLib::HelperFunctions::toLower(name).find(filterValue) == (signed)std::string::npos) continue;
 					}
 					else if(filterType == "room"){
-                        auto myLoxonePeer = std::dynamic_pointer_cast<LoxonePeer>(i->second);
-                        if(!myLoxonePeer) continue;
-                        if(myLoxonePeer->getControl()->getRoom() != filterValue) continue;
+                        if(!peer) continue;
+                        if(peer->getControl()->getRoom() != filterValue) continue;
 					}
 					else if(filterType == "serial"){
 						if(i->second->getSerialNumber() != filterValue) continue;
@@ -597,6 +600,11 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
                 for(auto loxonePeer = knownPeers.begin(); loxonePeer != knownPeers.end(); ++loxonePeer) {
                     if (loxonePeer.operator*()->getControl()->getUuidAction() == control->getUuidAction()) {
                         found = true;
+                        //todo update the control of the knownPeer
+                        //todo doing
+                        //{{{
+                            if(loxonePeer.operator*()->getName() != control->getName()) loxonePeer.operator*()->setName(control->getName());
+                        //}}}
                         loxonePeer.operator*()->serviceMessages->endUnreach();
                         knownPeers.erase(loxonePeer);
                         break;

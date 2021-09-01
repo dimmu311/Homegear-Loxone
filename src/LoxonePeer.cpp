@@ -31,6 +31,9 @@ LoxonePeer::LoxonePeer(int32_t id, int32_t address, std::string serialNumber, ui
 {
 	_binaryEncoder.reset(new BaseLib::Rpc::RpcEncoder(GD::bl));
 	_binaryDecoder.reset(new BaseLib::Rpc::RpcDecoder(GD::bl));
+
+	auto rows = _bl->db->getPeerVariables(_peerID);
+	_control = createInstance::createInstanceFromTypeNr(_deviceType, rows);
 }
 
 LoxonePeer::~LoxonePeer()
@@ -232,7 +235,7 @@ void LoxonePeer::saveConfig()
                 raiseRPCUpdateDevice(_peerID, 1, _serialNumber + ":" + std::to_string(1), 0);
             }
         }
-    { //Set ExtraData  from this peer
+    { //Set ExtraData from this peer
         std::list<extraData> data;
         if(_control->getExtraData(data) != 0) return;
         for(auto i = data.begin(); i != data.end(); ++i){
@@ -309,10 +312,6 @@ void LoxonePeer::loadVariables(BaseLib::Systems::ICentral* central, std::shared_
 			GD::out.printError("Error: Could not find correct physical interface for peer " + std::to_string(_peerID) + ". The peer might not work correctly. The expected interface ID is: " + _physicalInterfaceId);
             _physicalInterface = GD::defaultPhysicalInterface;
 		}
-
-        _control = createInstance::createInstanceFromTypeNr(_deviceType, rows);
-        if(!_control) return;
-        _uuidVariableMap = _control->getUuidVariableMap();
 	}
 	catch(const std::exception& ex)
     {
@@ -613,8 +612,10 @@ void LoxonePeer::packetReceived(std::shared_ptr<LoxonePacket> packet)
         //todo: Mybe this is not needed anymore when a device description file for every control exists.
         //for now this helps to understand the packets that are transmitted per control.
         //{{{
-        if(_uuidVariableMap.find(packet->getUuid()) == _uuidVariableMap.end()) return;
-        std::string variable = _uuidVariableMap.at(packet->getUuid());
+        if(!_control) return;
+        auto uuidVariableMap =  _control->getUuidVariableMap();
+        if(uuidVariableMap.find(packet->getUuid()) == uuidVariableMap.end()) return;
+        std::string variable = uuidVariableMap.at(packet->getUuid());
         {
             PVariable rawPacket = std::make_shared<Variable>(VariableType::tStruct);
             rawPacket->structValue->operator[]("variable") = PVariable(new Variable(variable));

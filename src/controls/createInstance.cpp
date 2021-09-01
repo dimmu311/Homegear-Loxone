@@ -23,6 +23,7 @@ namespace Loxone
         else if(type == "Gate") return std::make_shared<LoxoneControl>(control, room, cat, 0x107);
         else if(type == "InfoOnlyAnalog") return std::make_shared<LoxoneControl>(control, room, cat, 0x108);
         else if(type == "InfoOnlyDigital") return std::make_shared<LoxoneControl>(control, room, cat, 0x109);
+        else if(type == "LightController") return std::make_shared<LoxoneControl>(control, room, cat, 0x110);
         else if(type == "Alarm") return std::make_shared<LoxoneControl>(control, room, cat, 0x200);
         else if(type == "MediaClient") return std::make_shared<LoxoneControl>(control, room, cat, 0x201);
         else if(type == "AlarmClock") return std::make_shared<LoxoneControl>(control, room, cat, 0x202);
@@ -66,6 +67,7 @@ namespace Loxone
         else if(typeNr == 0x107) return std::make_shared<LoxoneControl>(rows, typeNr); //Gate
         else if(typeNr == 0x108) return std::make_shared<LoxoneControl>(rows, typeNr); //InfoOnlyAnalog
         else if(typeNr == 0x109) return std::make_shared<LoxoneControl>(rows, typeNr); //InfoOnlyDigital
+        else if(typeNr == 0x110) return std::make_shared<LoxoneControl>(rows, typeNr); //LightController
         else if(typeNr == 0x200) return std::make_shared<LoxoneControl>(rows, typeNr); //Alarm
         else if(typeNr == 0x201) return std::make_shared<LoxoneControl>(rows, typeNr); //MediaClient
         else if(typeNr == 0x202) return std::make_shared<LoxoneControl>(rows, typeNr); //AlarmClock

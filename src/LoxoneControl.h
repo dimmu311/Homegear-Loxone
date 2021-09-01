@@ -63,6 +63,7 @@ namespace Loxone
         //statistic
         //restrictions
         //hasControlNotes
+        //jLockable
 	};
 
 	class LoxoneControl : public MandatoryFields, public OptionalFields
@@ -101,7 +102,7 @@ namespace Loxone
 		uint32_t getStatesToSave(std::list<Database::DataRow> &list, uint32_t peerID);
         uint32_t getDetailsToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 
-		PVariable _control;
+		PVariable _control; //todo: Find better name for this variable. Maybe StuctFile
 		bool getValueFromStructFile(const std::string& variableId, const std::string& path, bool& value);
 		bool getValueFromStructFile(const std::string& variableId, const std::string& path, uint32_t& value);
 		bool getValueFromStructFile(const std::string& variableId, const std::string& path, float& value);
