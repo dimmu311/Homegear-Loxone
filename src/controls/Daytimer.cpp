@@ -34,7 +34,7 @@ namespace Loxone
         return false;
     }
 
-    bool Daytimer:: setValue(uint32_t channel, std::string valueKey, PVariable value, std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> &valuesCentral, std::string &command, bool &isSecured)
+    bool Daytimer::setValue(uint32_t channel, std::string valueKey, PVariable value, std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> &valuesCentral, std::string &command, bool &isSecured)
     {
         isSecured = _isSecured;
         command = "jdev/sps/io/" + _uuidAction + "/";

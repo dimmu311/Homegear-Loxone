@@ -464,7 +464,7 @@ namespace Loxone
                 command += parameters->arrayValue->at(0)->stringValue;
                 return true;
             }
-            if(frame->function1 == "setNext" || frame->function1 == "setPrevious"){
+            else if(frame->function1 == "setNext" || frame->function1 == "setPrevious"){
                 if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
                 command += parameters->arrayValue->at(0)->stringValue;
                 return true;
