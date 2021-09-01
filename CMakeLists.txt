@@ -45,7 +45,9 @@ set(SOURCE_FILES
 		src/controls/Daytimer.cpp
 		src/controls/Daytimer.h
 		src/controls/Weather.cpp
-		src/controls/Weather.h)
+		src/controls/Weather.h
+		src/controls/NFCCodeTouch.cpp
+		src/controls/NFCCodeTouch.h)
 
 # These are the corresponding output paths
 set (EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/output)
