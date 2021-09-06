@@ -600,10 +600,9 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
                 for(auto loxonePeer = knownPeers.begin(); loxonePeer != knownPeers.end(); ++loxonePeer) {
                     if (loxonePeer.operator*()->getControl()->getUuidAction() == control->getUuidAction()) {
                         found = true;
-                        //todo update the control of the knownPeer
-                        //todo doing
-                        //{{{
-                            if(loxonePeer.operator*()->getName() != control->getName()) loxonePeer.operator*()->setName(control->getName());
+                        //{{{ Update the existing peer
+                        if(loxonePeer.operator*()->getName() != control->getName()) loxonePeer.operator*()->setName(control->getName());
+                        loxonePeer.operator*()->updatePeer(control);
                         //}}}
                         loxonePeer.operator*()->serviceMessages->endUnreach();
                         knownPeers.erase(loxonePeer);

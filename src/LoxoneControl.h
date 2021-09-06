@@ -26,7 +26,7 @@ namespace Loxone
 	{
 	public:
 	    MandatoryFields(){};
-		MandatoryFields(PVariable mandatoryFields, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
+	    MandatoryFields(PVariable structFile, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
 		MandatoryFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
 		void overwriteName(const std::string& name);
 		std::string getName() { return _name; };
@@ -46,7 +46,7 @@ namespace Loxone
 	{
 	public:
 	    OptionalFields(){};
-		OptionalFields(PVariable optionalFields, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
+	    OptionalFields(PVariable structFile, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat);
 		OptionalFields(std::shared_ptr<BaseLib::Database::DataTable>rows);
         void overwrite(const std::string& room, const std::string& cat);
 		std::string getRoom() { return _room; };
@@ -70,10 +70,10 @@ namespace Loxone
 	{
 	public:
 	    LoxoneControl(){};
-        LoxoneControl(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat, uint32_t typeNr);
+        LoxoneControl(PVariable structfile, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat, uint32_t typeNr);
 		LoxoneControl(std::shared_ptr<BaseLib::Database::DataTable> rows, uint32_t typeNr);
 
-        uint32_t getType() { return _type; };
+        uint64_t getType() { return _type; };
 
         std::unordered_map<std::string, std::string> getUuidVariableMap(){return _uuidVariableMap;};
 
@@ -92,7 +92,7 @@ namespace Loxone
         virtual uint32_t getDataToSave(std::list<Database::DataRow> &list, uint32_t peerID);
         virtual uint32_t getExtraData(std::list<extraData> &extraData);
 	protected:
-		uint32_t _type;
+		uint64_t _type;
 		std::unordered_map<std::string, std::string> _uuidVariableMap;
 		PVariable _json;
 
@@ -102,7 +102,7 @@ namespace Loxone
 		uint32_t getStatesToSave(std::list<Database::DataRow> &list, uint32_t peerID);
         uint32_t getDetailsToSave(std::list<Database::DataRow> &list, uint32_t peerID);
 
-		PVariable _control; //todo: Find better name for this variable. Maybe StuctFile
+		PVariable _structFile;
 		bool getValueFromStructFile(const std::string& variableId, const std::string& path, bool& value);
 		bool getValueFromStructFile(const std::string& variableId, const std::string& path, uint32_t& value);
 		bool getValueFromStructFile(const std::string& variableId, const std::string& path, float& value);

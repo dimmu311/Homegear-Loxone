@@ -2,14 +2,14 @@
 
 namespace Loxone
 {
-    MandatoryFields::MandatoryFields(PVariable mandatoryFields, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat)
+    MandatoryFields::MandatoryFields(PVariable structFile, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat)
     {
-    	_name = mandatoryFields->structValue->at("name")->stringValue;
-		_typeString = mandatoryFields->structValue->at("type")->stringValue;
-		_uuidAction = mandatoryFields->structValue->at("uuidAction")->stringValue;
-		_defaultRating = mandatoryFields->structValue->at("defaultRating")->integerValue;
-		_isSecured = mandatoryFields->structValue->at("isSecured")->booleanValue;
-		_isFavorite = mandatoryFields->structValue->at("isFavorite")->booleanValue;
+        _name = structFile->structValue->at("name")->stringValue;
+        _typeString = structFile->structValue->at("type")->stringValue;
+        _uuidAction = structFile->structValue->at("uuidAction")->stringValue;
+        _defaultRating = structFile->structValue->at("defaultRating")->integerValue;
+        _isSecured = structFile->structValue->at("isSecured")->booleanValue;
+        _isFavorite = structFile->structValue->at("isFavorite")->booleanValue;
     }
     void MandatoryFields::overwriteName(const std::string& name)
     {
@@ -17,40 +17,32 @@ namespace Loxone
     }
     MandatoryFields::MandatoryFields(std::shared_ptr<BaseLib::Database::DataTable>rows)
     {
-    	for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
-		{
-			switch(row->second.at(2)->intValue)
-			{
-				case 101:
-				{
+    	for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row){
+			switch(row->second.at(2)->intValue){
+				case 101:{
 					auto name = row->second.at(5)->binaryValue;
 					_name = std::string (name->begin(), name->end());
 					break;
 				}
-				case 102:
-				{
+				case 102:{
 					auto type = row->second.at(5)->binaryValue;
 					_typeString = std::string (type->begin(), type->end());
 					break;
 				}
-				case 103:
-				{
+				case 103:{
 					auto uuidAction = row->second.at(5)->binaryValue;
 					_uuidAction = std::string (uuidAction->begin(), uuidAction->end());
 					break;
 				}
-				case 104:
-				{
+				case 104:{
 					_defaultRating = row->second.at(3)->intValue;
 					break;
 				}
-				case 105:
-				{
+				case 105:{
 					_isSecured = row->second.at(3)->intValue;
 					break;
 				}
-			    case 106:
-                {
+			    case 106:{
                     _isFavorite = row->second.at(3)->intValue;
                 }
 			}
@@ -118,33 +110,29 @@ namespace Loxone
 		return 0;
     }
 
-    OptionalFields::OptionalFields(PVariable optionalFields, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat)
+    OptionalFields::OptionalFields(PVariable structFile, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat)
     {
         _room = "noRoom";
-        if(optionalFields->structValue->find("room") != optionalFields->structValue->end()){
-            std::string uuid = optionalFields->structValue->at("room")->stringValue;
+        if(structFile->structValue->find("room") != structFile->structValue->end()){
+            std::string uuid = structFile->structValue->at("room")->stringValue;
             if(room.find(uuid) != room.end()) _room = room.at(uuid);
         }
         _cat = "noCat";
-        if(optionalFields->structValue->find("cat") != optionalFields->structValue->end()){
-            std::string uuid = optionalFields->structValue->at("cat")->stringValue;
+        if(structFile->structValue->find("cat") != structFile->structValue->end()){
+            std::string uuid = structFile->structValue->at("cat")->stringValue;
             if(cat.find(uuid) != cat.end()) _cat = cat.at(uuid);
         }
 	}
     OptionalFields::OptionalFields(std::shared_ptr<BaseLib::Database::DataTable>rows)
 	{
-		for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row)
-		{
-			switch(row->second.at(2)->intValue)
-			{
-				case 107:
-				{
+		for(BaseLib::Database::DataTable::iterator row = rows->begin(); row != rows->end(); ++row){
+			switch(row->second.at(2)->intValue){
+				case 107:{
 					auto room = row->second.at(5)->binaryValue;
 					_room = std::string (room->begin(), room->end());
 					break;
 				}
-				case 108:
-				{
+				case 108:{
 					auto cat = row->second.at(5)->binaryValue;
 					_cat = std::string (cat->begin(), cat->end());
 					break;
@@ -182,22 +170,22 @@ namespace Loxone
 		return 0;
     }
 
-	LoxoneControl::LoxoneControl(PVariable control, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat, uint32_t typeNr) : MandatoryFields(control, room, cat),	OptionalFields(control, room, cat)
+	LoxoneControl::LoxoneControl(PVariable structFile, std::unordered_map<std::string, std::string> &room, std::unordered_map<std::string, std::string> &cat, uint32_t typeNr) : MandatoryFields(structFile, room, cat),	OptionalFields(structFile, room, cat)
 	{
 		try{
             _RpcEncoder = std::make_shared<BaseLib::Rpc::RpcEncoder>();
 
             _type = typeNr;
-			_control = control;
+            _structFile = structFile;
 
-            if(control->structValue->find("states") != control->structValue->end()) {
-                for (auto i = control->structValue->at("states")->structValue->begin(); i != control->structValue->at("states")->structValue->end(); ++i) {
+            if(structFile->structValue->find("states") != structFile->structValue->end()) {
+                for (auto i = structFile->structValue->at("states")->structValue->begin(); i != structFile->structValue->at("states")->structValue->end(); ++i) {
                     _uuidVariableMap.emplace(i->second->stringValue, i->first);
                 }
             }
 
-            if(control->structValue->find("details") != control->structValue->end()) {
-                auto details = control->structValue->at("details");
+            if(structFile->structValue->find("details") != structFile->structValue->end()) {
+                auto details = structFile->structValue->at("details");
                 for(auto j = details->structValue->begin(); j != details->structValue->end(); ++j) {
                     _detailsMap.emplace(j->first, j->second);
                 }
@@ -238,8 +226,7 @@ namespace Loxone
 
 	bool LoxoneControl::processPacket(PLoxoneValueStatesPacket loxonePacket)
 	{
-		try
-		{
+		try{
 			if(_uuidVariableMap.find(loxonePacket->getUuid()) == _uuidVariableMap.end()) return false;
 			std::string variable = _uuidVariableMap.at(loxonePacket->getUuid());
             GD::out.printDebug("LoxoneControl::LoxoneValueStatesPacket at " + variable + " of control " + _name + " and value is " + std::to_string(loxonePacket->getDValue()));
@@ -250,8 +237,7 @@ namespace Loxone
 			loxonePacket->setMethod("on.valueStatesPacket");
 			return true;
 		}
-		catch (const std::exception& ex)
-		{
+		catch (const std::exception& ex){
 			GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
 			return false;
 		}
@@ -593,16 +579,16 @@ namespace Loxone
 	{
 		try{
 			if(path != ""){
-				if(_control->structValue->find(path) != _control->structValue->end()){
-					if(_control->structValue->at(path)->structValue->find(variableId) != _control->structValue->end()){
-						value = _control->structValue->at(path)->structValue->at(variableId)->booleanValue;
+			    if(_structFile->structValue->find(path) != _structFile->structValue->end()){
+			        if(_structFile->structValue->at(path)->structValue->find(variableId) != _structFile->structValue->end()){
+			            value = _structFile->structValue->at(path)->structValue->at(variableId)->booleanValue;
 						return true;
 					}
 				}
 			}
 
-			if(_control->structValue->find(variableId) != _control->structValue->end()){
-				value = _control->structValue->at(variableId)->booleanValue;
+			if(_structFile->structValue->find(variableId) != _structFile->structValue->end()){
+			    value = _structFile->structValue->at(variableId)->booleanValue;
 				return true;
 			}
 		}
@@ -617,16 +603,16 @@ namespace Loxone
 	{
 		try{
 			if(path != ""){
-				if(_control->structValue->find(path) != _control->structValue->end()){
-					if(_control->structValue->at(path)->structValue->find(variableId) != _control->structValue->end()){
-						value = _control->structValue->at(path)->structValue->at(variableId)->integerValue;
+			    if(_structFile->structValue->find(path) != _structFile->structValue->end()){
+			        if(_structFile->structValue->at(path)->structValue->find(variableId) != _structFile->structValue->end()){
+			            value = _structFile->structValue->at(path)->structValue->at(variableId)->integerValue;
 						return true;
 					}
 				}
 			}
 
-			if(_control->structValue->find(variableId) != _control->structValue->end()){
-				value = _control->structValue->at(variableId)->integerValue;
+			if(_structFile->structValue->find(variableId) != _structFile->structValue->end()){
+			    value = _structFile->structValue->at(variableId)->integerValue;
 				return true;
 			}
 		}
@@ -642,16 +628,16 @@ namespace Loxone
 		try
 		{
 			if(path != ""){
-				if(_control->structValue->find(path) != _control->structValue->end()){
-					if(_control->structValue->at(path)->structValue->find(variableId) != _control->structValue->end()){
-						value = _control->structValue->at(path)->structValue->at(variableId)->floatValue;
+			    if(_structFile->structValue->find(path) != _structFile->structValue->end()){
+			        if(_structFile->structValue->at(path)->structValue->find(variableId) != _structFile->structValue->end()){
+			            value = _structFile->structValue->at(path)->structValue->at(variableId)->floatValue;
 						return true;
 					}
 				}
 			}
 
-			if(_control->structValue->find(variableId) != _control->structValue->end()){
-				value = _control->structValue->at(variableId)->floatValue;
+			if(_structFile->structValue->find(variableId) != _structFile->structValue->end()){
+			    value = _structFile->structValue->at(variableId)->floatValue;
 				return true;
 			}
 		}
@@ -666,16 +652,16 @@ namespace Loxone
 	{
 		try{
 			if(path != ""){
-				if(_control->structValue->find(path) != _control->structValue->end()){
-					if(_control->structValue->at(path)->structValue->find(variableId) != _control->structValue->end()){
-						value = _control->structValue->at(path)->structValue->at(variableId)->stringValue;
+			    if(_structFile->structValue->find(path) != _structFile->structValue->end()){
+			        if(_structFile->structValue->at(path)->structValue->find(variableId) != _structFile->structValue->end()){
+			            value = _structFile->structValue->at(path)->structValue->at(variableId)->stringValue;
 						return true;
 					}
 				}
 			}
 
-			if(_control->structValue->find(variableId) != _control->structValue->end()){
-				value = _control->structValue->at(variableId)->stringValue;
+			if(_structFile->structValue->find(variableId) != _structFile->structValue->end()){
+			    value = _structFile->structValue->at(variableId)->stringValue;
 				return true;
 			}
 		}

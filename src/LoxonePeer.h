@@ -41,6 +41,7 @@ public:
 	virtual bool load(BaseLib::Systems::ICentral* central);
 	virtual void save(bool savePeer, bool saveVariables, bool saveCentralConfig);
     virtual void updatePeer(uint64_t oldId, uint64_t newId);
+    void updatePeer(std::shared_ptr<LoxoneControl> control);
 
     std::shared_ptr<LoxoneControl> getControl(){return _control;};
     std::shared_ptr<std::unordered_map<std::string, std::string>> getUuidVariableMap() {return std::make_shared<std::unordered_map<std::string, std::string>>(_control->getUuidVariableMap());};

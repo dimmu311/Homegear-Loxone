@@ -206,6 +206,13 @@ void LoxonePeer::updatePeer(uint64_t oldId, uint64_t newId)
     }
 }
 
+void LoxonePeer::updatePeer(std::shared_ptr<LoxoneControl> control)
+{
+    _control = control;
+    _deviceType = control->getType();
+    save(true,true,true);
+}
+
 void LoxonePeer::saveConfig()
 {
     try{
