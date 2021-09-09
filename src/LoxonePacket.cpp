@@ -16,6 +16,8 @@ namespace Loxone
         "authwithtoken/",
 		"dev/sps/enablebinstatusupdate",
 
+		"jdev/sps/io/",
+
 		"jdev/sys/enc/",
 
 		"close",
@@ -330,7 +332,7 @@ namespace Loxone
 		{
 			std::vector<uint8_t> entry;
 			entry.reserve(68);
-			entry.insert(entry.begin(), packet + 24 + i*68, packet + 24 + 24 + i*68);
+			entry.insert(entry.begin(), packet + 24 + i*68, packet + 24 + 68 + i*68);
 
 			std::shared_ptr<LoxoneWeatherEntry> myWeatherEntry = std::make_shared<LoxoneWeatherEntry>(entry);
             _entrys.insert(std::pair<uint32_t, std::shared_ptr<LoxoneWeatherEntry>>(i, myWeatherEntry));
