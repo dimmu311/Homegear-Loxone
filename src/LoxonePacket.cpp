@@ -313,7 +313,6 @@ namespace Loxone
 	}
 	LoxoneWeatherStatesPacket::LoxoneWeatherStatesPacket(char* packet, uint32_t nrEntrys)
 	{
-        return;
 		_packetType = LoxonePacketType::LoxoneWeatherStatesPacket;
 		_uuid = getUuidFromPacket(packet);
 		{

@@ -890,7 +890,7 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
 			return PVariable(new Variable(VariableType::tVoid));
 		}
 		else if (rpcParameter->physical->operationType != IPhysical::OperationType::Enum::command) return Variable::createError(-6, "Parameter is not settable.");
-        //{{{
+        //{{{ Todo: this is a experiment. to handle setValue at special Controls. find a better way and remove this!
         if(channel > 2) {
             std::string command;
             bool isSecured;
@@ -902,7 +902,6 @@ PVariable LoxonePeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t chan
             return PVariable(new Variable(VariableType::tVoid));
         }
         //}}}
-
 		if (rpcParameter->setPackets.empty()) return Variable::createError(-6, "parameter is read only");
 		std::string setRequest = rpcParameter->setPackets.front()->id;
 		PacketsById::iterator packetIterator = _rpcDevice->packetsById.find(setRequest);

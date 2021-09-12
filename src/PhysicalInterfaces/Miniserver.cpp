@@ -60,10 +60,25 @@ void Miniserver::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 		try{
             GD::out.printInfo("Info: Sending packet " + command);
 			_tcpSocket->proofwrite(encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text));
+/*
+			auto responsePacket = getResponse("jdev/sps/io/15da980c-018b-755c-ffff14b9c0f9d460/shade", encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text));
+			if(!responsePacket){
+			    _out.printError("Error: did not receive response for " + command);
+			    _stopped = true;
+			    return;
+			}
+			auto loxoneWsPacket = std::dynamic_pointer_cast<LoxoneWsPacket>(responsePacket);
+			if (!loxoneWsPacket || loxoneWsPacket->getResponseCode() != 200){
+			    _out.printError("Error: did not receive response for " + command);
+			    _stopped = true;
+			    return;
+			}
+*/
 			_lastPacketSent = BaseLib::HelperFunctions::getTime();
 		}
 		catch (const BaseLib::SocketOperationException & ex){
 			_out.printError("Error sending packet: " + std::string(ex.what()));
+			startListening();
 		}
     }
     catch(const std::exception& ex)
@@ -131,8 +146,7 @@ void Miniserver::stopListening()
 
 void Miniserver::init()
 {
-	try
-    {
+	try{
         _out.printDebug("Init Connection to Miniserver");
         _connected = false;
         {
@@ -421,6 +435,7 @@ void Miniserver::refreshToken()
         uint32_t refreshToken = 0;
         while (!_stopCallbackThread){
             std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //Sleep for 1sec
+            if(_stopCallbackThread) return;
             refreshToken++;
             if (refreshToken < 3600) continue;
             refreshToken = 0;
@@ -500,6 +515,7 @@ void Miniserver::keepAlive()
         uint32_t keepAliveCounter = 0;
         while (!_stopCallbackThread){
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //Sleep for 1sec
+			if(_stopCallbackThread) return;
 			keepAliveCounter++;
 			if (keepAliveCounter < 60) continue;
 			_out.printDebug("keepalive", 4);
@@ -550,8 +566,12 @@ void Miniserver::listen()
 				if(_stopped || !_tcpSocket->connected()){
                     if(_stopCallbackThread) return;
                     if(_stopped) _out.printWarning("Warning: Connection to device closed. Trying to reconnect...");
+                    _out.printDebug("Info: Stop Keep Alive Thread.", 4);
+                    _bl->threadManager.join(_keepAliveThread);
+                    _out.printDebug("Info: Stop Refresh Token Thread.", 4);
+                    _bl->threadManager.join(_refreshTokenThread);
                     _tcpSocket->close();
-                    for(int32_t i = 0; i < 15; i++){
+                    for(int32_t i = 0; i < 30; i++){
                         if(_stopCallbackThread) continue;
                         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                     }
@@ -606,7 +626,8 @@ void Miniserver::listen()
                         _out.printDebug("Process Websocket Packet: Header says content length should be " + std::to_string(websocket.getHeader().length) + " and content length is " + std::to_string(websocket.getContentSize()), 6);
                         _out.printDebug("Process Websocket Packet: Processed Bytes are: " + std::to_string(processed), 6);
                         _out.printDebug("Remaining Websocket Packet is: " + BaseLib::HelperFunctions::getHexString(buffer.data() + processed, bytesRead - processed), 7);
-                        if (websocket.getContentSize() != websocket.getHeader().length) continue;
+                        if (!websocket.getHeader().parsed) continue;
+                        if (!websocket.isFinished()) continue;
                         if (websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::binary){
                             _out.printDebug("Websocket Opcode is typ BINARY", 6);
                             auto content = websocket.getContent();
@@ -633,10 +654,12 @@ void Miniserver::listen()
                             else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Text_States) processEventTableOfTextStatesPacket(websocket.getContent());
                             else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Daytimer_States) processEventTableOfDaytimerStatesPacket(websocket.getContent());
                             else if (loxoneHeader->identifier == LoxoneHeader::Identifier::EventTable_of_Weather_States) processEventTableOfWeatherStatesPacket(websocket.getContent());
+                            websocket.reset();
                         }
                         else if (websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::text){
                             _out.printDebug("Websocket Opcode is typ TEXT", 6);
                             processWsPacket(websocket);
+                            websocket.reset();
                         }
                         else if(websocket.getHeader().opcode == BaseLib::WebSocket::Header::Opcode::Enum::close){
                             _out.printDebug("Websocket Opcode is typ CLOSE: " + std::string(websocket.getContent().begin(), websocket.getContent().end()), 6);
@@ -647,8 +670,8 @@ void Miniserver::listen()
                         }
                         else{
                             _out.printDebug("Websocket Opcode is typ: " + std::to_string((int)websocket.getHeader().opcode));
+                            websocket.reset();
                         }
-                        websocket.reset();
                     }
                 } while (processed < bytesRead);
             }
@@ -815,6 +838,7 @@ void Miniserver::processEventTableOfDaytimerStatesPacket(std::vector<char>& data
 
 void Miniserver::processOutOfServiceIndicatorPacket()
 {
+    //todo: wait a while until next connect retry
     _out.printDebug("processOutOfServiceIndicatorPacket");
 }
 void Miniserver::processKeepAlivePacket()
@@ -889,6 +913,7 @@ PLoxonePacket Miniserver::getResponse(const std::string& responseCommand, const 
         catch(const BaseLib::SocketOperationException& ex)
         {
             _out.printError("Error sending packet: " + std::string(ex.what()));
+            startListening();
             return PLoxonePacket();
         }
 
