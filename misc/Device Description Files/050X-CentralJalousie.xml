@@ -28,6 +28,15 @@
     </function>
   </functions>
   <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="setRaw">
+      <direction>fromCentral</direction>
+      <function1>raw</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>RAW</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
     <packet id="fullUp">
     <direction>fromCentral</direction>
     <function1>valueSet</function1>
@@ -297,6 +306,11 @@
         <physicalNone groupId="RAW">
           <operationType>command</operationType>
         </physicalNone>
+        <packets>
+          <packet id="setRaw">
+            <type>set</type>
+          </packet>
+        </packets>
       </parameter>
       <parameter id="ALL_FULL_UP">
         <properties>

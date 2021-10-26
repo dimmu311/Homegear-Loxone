@@ -130,7 +130,7 @@
       <parameter id="RAW">
         <properties>
           <readable>true</readable>
-          <writeable>true</writeable>
+          <writeable>false</writeable>
           <casts>
             <rpcBinary/>
           </casts>

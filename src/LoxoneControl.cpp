@@ -445,7 +445,36 @@ namespace Loxone
 
             if(parameters->type != VariableType::tArray) return false;
             command = "jdev/sps/io/" + _uuidAction + "/";
-            if(frame->function1 == "activeSetOn" || frame->function1 == "activeSetOff"){
+            if(frame->function1 == "raw"){
+                if (parameters->arrayValue->at(0)->type != VariableType::tStruct) return false;
+                auto myStruct = parameters->arrayValue->at(0)->structValue;
+                if(myStruct->find("packetType") == myStruct->end() || myStruct->at("packetType")->type != VariableType::tString || myStruct->at("packetType")->stringValue != "rawPacket"){
+                    GD::out.printError("packetType is not set to rawPacket");
+                    return false;
+                }
+                if(myStruct->find("url") == myStruct->end() || myStruct->at("url")->type != VariableType::tString){
+                    GD::out.printError("no valide url given in rawPacket");
+                    return false;
+                }
+                if(myStruct->find("values") == myStruct->end() || myStruct->at("values")->type != VariableType::tStruct){
+                    GD::out.printError("no valide values given in rawPacket");
+                    return false;
+                }
+                auto url = myStruct->at("url")->stringValue;
+                auto values = myStruct->at("values")->structValue;
+                for(auto value = values->begin(); value != values->end(); ++value){
+                    if(url.find(value->first) == std::string::npos){
+                        GD::out.printError("given value " + value->first + " not in given url " + url);
+                        return false;
+                    }
+                    std::string strVal = "";
+                    if(!getValueFromVariable(value->second, strVal)) return false;
+                    url.replace(url.find(value->first),value->first.size(), strVal);
+                }
+                command += url;
+                return true;
+            }
+            else if(frame->function1 == "activeSetOn" || frame->function1 == "activeSetOff"){
                 if (parameters->arrayValue->at(0)->type != VariableType::tString) return false;
                 command += parameters->arrayValue->at(0)->stringValue;
                 return true;

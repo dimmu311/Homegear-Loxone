@@ -23,6 +23,15 @@
     </function>
   </functions>
   <packets>
+    <packet id="setRaw">
+      <direction>fromCentral</direction>
+      <function1>raw</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>RAW</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
     <packet id="on.valueSet">
       <direction>toCentral</direction>
       <function1>on.valueStatesPacket</function1>
@@ -170,6 +179,11 @@
         <physicalNone groupId="RAW">
           <operationType>command</operationType>
         </physicalNone>
+        <packets>
+          <packet id="setRaw">
+            <type>set</type>
+          </packet>
+        </packets>
       </parameter>
       <parameter id="POSITION">
         <properties>
