@@ -628,6 +628,12 @@ PVariable LoxoneCentral::searchDevices(BaseLib::PRpcClientInfo clientInfo, const
                 _peersBySerial[peer->getSerialNumber()] = peer;
                 _peersById[peer->getID()] = peer;
 
+                auto uuidVariableMap = peer->getUuidVariableMap();
+                if(!uuidVariableMap) continue;
+                for(auto i = uuidVariableMap->begin(); i != uuidVariableMap->end(); ++i) {
+                    _uuidPeerIdMap.emplace(i->first, peer->getID());
+                }
+
                 newPeers.push_back(peer);
                 GD::out.printMessage("Added peer " + std::to_string(peer->getID()) + ".");
             }
