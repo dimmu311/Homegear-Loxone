@@ -60,8 +60,8 @@ void Miniserver::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 		try{
             GD::out.printInfo("Info: Sending packet " + command);
 			_tcpSocket->proofwrite(encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text));
-/*
-			auto responsePacket = getResponse("jdev/sps/io/15da980c-018b-755c-ffff14b9c0f9d460/shade", encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text));
+            /*
+			auto responsePacket = getResponse(commandToEncrypt, encodeWebSocket(command, WebSocket::Header::Opcode::Enum::text));
 			if(!responsePacket){
 			    _out.printError("Error: did not receive response for " + command);
 			    _stopped = true;
@@ -73,7 +73,7 @@ void Miniserver::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 			    _stopped = true;
 			    return;
 			}
-*/
+            */
 			_lastPacketSent = BaseLib::HelperFunctions::getTime();
 		}
 		catch (const BaseLib::SocketOperationException & ex){
@@ -435,6 +435,7 @@ void Miniserver::refreshToken()
         uint32_t refreshToken = 0;
         while (!_stopCallbackThread){
             std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //Sleep for 1sec
+            if(_stopped) return;
             if(_stopCallbackThread) return;
             refreshToken++;
             if (refreshToken < 3600) continue;
@@ -515,6 +516,7 @@ void Miniserver::keepAlive()
         uint32_t keepAliveCounter = 0;
         while (!_stopCallbackThread){
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000)); //Sleep for 1sec
+			if(_stopped) return;
 			if(_stopCallbackThread) return;
 			keepAliveCounter++;
 			if (keepAliveCounter < 60) continue;
@@ -571,6 +573,8 @@ void Miniserver::listen()
                     _out.printDebug("Info: Stop Refresh Token Thread.", 4);
                     _bl->threadManager.join(_refreshTokenThread);
                     _tcpSocket->close();
+                    http.reset();
+                    websocket.reset();
                     for(int32_t i = 0; i < 30; i++){
                         if(_stopCallbackThread) continue;
                         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
