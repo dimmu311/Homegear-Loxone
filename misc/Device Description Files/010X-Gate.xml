@@ -3,7 +3,7 @@
   <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
     <device id="Loxone Gate">
       <description>Loxone Gate</description>
-      <typeNumber>0x0101</typeNumber>
+      <typeNumber>0x0107</typeNumber>
       <minFirmwareVersion>0</minFirmwareVersion>
     </device>
   </supportedDevices>
