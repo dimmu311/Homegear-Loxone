@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
   <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
-    <device id="Loxone Hourcounter">
-      <description>Loxone Hourcounter</description>
-      <typeNumber>0x0205</typeNumber>
+    <device id="Loxone Weather">
+      <description>Loxone Weather</description>
+      <typeNumber>0x0050</typeNumber>
       <minFirmwareVersion>0</minFirmwareVersion>
     </device>
   </supportedDevices>
@@ -16,83 +16,33 @@
       <configParameters>maint_ch_master--0</configParameters>
       <variables>maint_ch_values--0</variables>
     </function>
-    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="HOURCOUNTER" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="WEATHERSERVER" channelCount="1">
       <properties/>
       <configParameters>config--1</configParameters>
-      <variables>hourcounter_valueset--1</variables>
+      <variables>raw_valueset--1</variables>
+    </function>
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="3" type="WEATHERSERVER_ENTRY" channelCount="20">
+      <properties/>
+      <configParameters>config--2</configParameters>
+      <variables>entry_valueset--1</variables>
     </function>
   </functions>
   <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
-    <packet id="setRaw">
-      <direction>fromCentral</direction>
-      <function1>raw</function1>
-      <jsonPayload>
-        <element>
-          <parameterId>RAW</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="on.valueSet">
+    <packet id="on.weatherStatesPacket">
       <direction>toCentral</direction>
-      <function1>on.valueStatesPacket</function1>
+      <function1>on.daytimerStatesPacket</function1>
       <channel>1</channel>
       <jsonPayload>
         <element>
-          <keyPath>state\total</keyPath>
-          <parameterId>TOTAL</parameterId>
-        </element>
-        <element>
-          <keyPath>state\remaining</keyPath>
-          <parameterId>REMAINING</parameterId>
-        </element>
-        <element>
-          <keyPath>state\lastActivation</keyPath>
-          <parameterId>LAST_ACTIVATION</parameterId>
-        </element>
-        <element>
-          <keyPath>state\overdue</keyPath>
-          <parameterId>OVERDUE</parameterId>
-        </element>
-        <element>
-          <keyPath>state\maintenanceInterval</keyPath>
-          <parameterId>MAINTENANCE_INTERVAL</parameterId>
-        </element>
-        <element>
-          <keyPath>state\stateUnit</keyPath>
-          <parameterId>STATE_UNIT</parameterId>
-        </element>
-        <element>
-          <keyPath>state\active</keyPath>
-          <parameterId>ACTIVE</parameterId>
-        </element>
-        <element>
-          <keyPath>state\overdueSince</keyPath>
-          <parameterId>OVERDUE_SINCE</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="reset">
-      <direction>fromCentral</direction>
-      <function1>activeSetOn</function1>
-      <jsonPayload>
-        <element>
-          <constValueString>reset</constValueString>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="restAll">
-      <direction>fromCentral</direction>
-      <function1>activeSetOn</function1>
-      <jsonPayload>
-        <element>
-          <constValueString>resetAll</constValueString>
+          <keyPath>state\default</keyPath>
+          <parameterId>DEFAULT</parameterId>
         </element>
       </jsonPayload>
     </packet>
   </packets>
   <parameterGroups xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
     <configParameters id="config--1">
-      <parameter id="ROOM">
+      <parameter id="FORMAT.BAROMETRIC_PRESSURE">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -107,7 +57,82 @@
           <operationType>config</operationType>
         </physicalString>
       </parameter>
-      <parameter id="CATEGORY">
+      <parameter id="FORMAT.PRECIPITATION">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="FORMAT.RELATIVE_HUMIDITY">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="FORMAT.TEMPERATURE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="FORMAT.WIND_SPEED">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="WEATHER_TYPE_TEXT">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="WEATHER_FIELD_TYPE">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -136,11 +161,11 @@
         </physicalInteger>
       </parameter>
     </variables>
-    <variables id="hourcounter_valueset--1">
+    <variables id="raw_valueset--1">
       <parameter id="RAW">
         <properties>
           <readable>true</readable>
-          <writeable>true</writeable>
+          <writeable>false</writeable>
           <casts>
             <rpcBinary/>
           </casts>
@@ -149,13 +174,10 @@
         <physicalNone groupId="RAW">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="setRaw">
-            <type>set</type>
-          </packet>
-        </packets>
       </parameter>
-      <parameter id="TOTAL">
+    </variables>
+    <variables id="entry_valueset--1">
+      <parameter id="ID">
         <properties>
           <readable>true</readable>
           <writeable>false</writeable>
@@ -166,16 +188,11 @@
         <logicalDecimal>
           <defaultValue>0</defaultValue>
         </logicalDecimal>
-        <physicalNone groupId="TOTAL">
+        <physicalNone groupId="ID">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
       </parameter>
-      <parameter id="REMAINING">
+      <parameter id="TIMESTAMP">
         <properties>
           <readable>true</readable>
           <writeable>false</writeable>
@@ -186,16 +203,11 @@
         <logicalDecimal>
           <defaultValue>0</defaultValue>
         </logicalDecimal>
-        <physicalNone groupId="REMAINING">
+        <physicalNone groupId="TIMESTAMP">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
       </parameter>
-      <parameter id="LAST_ACTIVATION">
+      <parameter id="WEATHER_TYPE">
         <properties>
           <readable>true</readable>
           <writeable>false</writeable>
@@ -206,16 +218,11 @@
         <logicalDecimal>
           <defaultValue>0</defaultValue>
         </logicalDecimal>
-        <physicalNone groupId="LAST_ACTIVATION">
+        <physicalNone groupId="WEATHER_TYPE">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
       </parameter>
-      <parameter id="OVERDUE">
+      <parameter id="WIND_DIRECTION">
         <properties>
           <readable>true</readable>
           <writeable>false</writeable>
@@ -226,16 +233,11 @@
         <logicalDecimal>
           <defaultValue>0</defaultValue>
         </logicalDecimal>
-        <physicalNone groupId="OVERDUE">
+        <physicalNone groupId="WIND_DIRECTION">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
       </parameter>
-      <parameter id="MAINTENANCE_INTERVAL">
+      <parameter id="SOLAR_RADIATION">
         <properties>
           <readable>true</readable>
           <writeable>false</writeable>
@@ -246,77 +248,11 @@
         <logicalDecimal>
           <defaultValue>0</defaultValue>
         </logicalDecimal>
-        <physicalNone groupId="MAINTENANCE_INTERVAL">
+        <physicalNone groupId="SOLAR_RADIATION">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
       </parameter>
-      <parameter id="STATE_UNIT">
-        <properties>
-          <readable>true</readable>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalEnumeration>
-          <defaultValue>0</defaultValue>
-          <value>
-            <index>seconds</index>
-            <id>0</id>
-          </value>
-          <value>
-            <index>minutes</index>
-            <id>1</id>
-          </value>
-          <value>
-            <index>hours</index>
-            <id>2</id>
-          </value>
-          <value>
-            <index>days</index>
-            <id>3</id>
-          </value>
-        </logicalEnumeration>
-        <physicalNone groupId="STATE_UNIT">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ACTIVE">
-        <properties>
-          <readable>true</readable>
-          <writeable>false</writeable>
-          <casts>
-            <booleanDecimal>
-              <falseValue>0</falseValue>
-              <trueValue>1</trueValue>
-              <threshold>1</threshold>
-            </booleanDecimal>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalBoolean>
-          <defaultValue>false</defaultValue>
-        </logicalBoolean>
-        <physicalNone groupId="ACTIVE">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="OVERDUE_SINCE">
+      <parameter id="RELATIVE_HUMIDITY">
         <properties>
           <readable>true</readable>
           <writeable>false</writeable>
@@ -327,52 +263,99 @@
         <logicalDecimal>
           <defaultValue>0</defaultValue>
         </logicalDecimal>
-        <physicalNone groupId="OVERDUE_SINCE">
+        <physicalNone groupId="RELATIVE_HUMIDITY">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
       </parameter>
-      <parameter id="RESET">
+      <parameter id="TEMPERATURE">
         <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
+          <readable>true</readable>
+          <writeable>false</writeable>
           <casts>
-            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalAction />
-        <physicalNone groupId="RESET">
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="TEMPERATURE">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="reset">
-            <type>set</type>
-          </packet>
-        </packets>
       </parameter>
-      <parameter id="RESET_ALL">
+      <parameter id="PERCEIVED_TEMPERATURE">
         <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
+          <readable>true</readable>
+          <writeable>false</writeable>
           <casts>
-            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalAction />
-        <physicalNone groupId="RESET_ALL">
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="PERCEIVED_TEMPERATURE">
           <operationType>command</operationType>
         </physicalNone>
-        <packets>
-          <packet id="resetAll">
-            <type>set</type>
-          </packet>
-        </packets>
+      </parameter>
+      <parameter id="DEW_POINT">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="DEW_POINT">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="PRECIPITATION">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="PRECIPITATION">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="WIND_SPEED">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="WIND_SPEED">
+          <operationType>command</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="BAROMETIC_PRESSURE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="BAROMETIC_PRESSURE">
+          <operationType>command</operationType>
+        </physicalNone>
       </parameter>
     </variables>
   </parameterGroups>

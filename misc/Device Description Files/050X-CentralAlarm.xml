@@ -28,6 +28,15 @@
     </function>
   </functions>
   <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+    <packet id="setRaw">
+      <direction>fromCentral</direction>
+      <function1>raw</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>RAW</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
     <packet id="on">
       <direction>fromCentral</direction>
       <function1>valueSet</function1>
@@ -221,6 +230,24 @@
       </parameter>
     </variables>
     <variables id="central_valueset--1">
+      <parameter id="RAW">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalStruct/>
+        <physicalNone groupId="RAW">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="setRaw">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
       <parameter id="ALL_ON">
         <properties>
           <writeable>true</writeable>

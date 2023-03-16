@@ -22,6 +22,15 @@
     </function>
   </functions>
   <packets>
+    <packet id="setRaw">
+      <direction>fromCentral</direction>
+      <function1>raw</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>RAW</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
     <packet id="on.textSet">
       <direction>toCentral</direction>
       <function1>on.textStatesPacket</function1>
@@ -216,6 +225,24 @@
       </parameter>
     </variables>
     <variables id="alarm_valueset--1">
+      <parameter id="RAW">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalStruct/>
+        <physicalNone groupId="RAW">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="setRaw">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
       <parameter id="ARMED">
         <properties>
           <readable>true</readable>

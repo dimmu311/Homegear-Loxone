@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <homegear-base/Systems/PhysicalInterfaceSettings.h>
-#include <homegear-base/Sockets/TcpSocket.h>
 #include <homegear-base/Encoding/Http.h>
 #include <homegear-base/Encoding/JsonEncoder.h>
 #include <homegear-base/Encoding/WebSocket.h>
@@ -20,11 +19,11 @@ namespace Loxone {
         BaseLib::Output _out;
         std::unique_ptr<BaseLib::Rpc::JsonEncoder> _jsonEncoder;
 
-        std::unique_ptr <BaseLib::TcpSocket> _server;
+        std::unique_ptr <C1Net::TcpServer> _server;
         BaseLib::Http _http;
         BaseLib::WebSocket _webSocket;
 
-        void packetReceived(int32_t clientId, BaseLib::TcpSocket::TcpPacket &packet);
+        void packetReceived(const C1Net::TcpServer::PTcpClientData &client_data, const C1Net::TcpPacket &packet);
         bool encodeWebsocketUpgrade(BaseLib::Http http, std::vector<char> &packet);
 
         void getAudioCfgAll(const std::string &url, std::vector<char> &packet);

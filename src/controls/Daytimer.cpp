@@ -20,23 +20,21 @@ namespace Loxone
                 if (parameters->arrayValue->at(0)->type != VariableType::tFloat) return false;
                 if (parameters->arrayValue->at(1)->type != VariableType::tFloat) return false;
 
-                if((bool)parameters->arrayValue->at(0)->floatValue)
-                {
-                command += "startOverride/" + std::to_string(parameters->arrayValue->at(1)->floatValue);
-                return true;
+                if((bool)parameters->arrayValue->at(0)->floatValue){
+                    command += "startOverride/" + std::to_string(parameters->arrayValue->at(1)->floatValue);
+                    return true;
                 }
                 command += "stopOverride";
                 return true;
             }
         }
-        catch (const std::exception& ex)
-        {
+        catch (const std::exception& ex){
             GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
         }
         return false;
     }
 
-    bool Daytimer:: setValue(uint32_t channel, std::string valueKey, PVariable value, std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> &valuesCentral, std::string &command, bool &isSecured)
+    bool Daytimer::setValue(uint32_t channel, std::string valueKey, PVariable value, std::unordered_map<uint32_t, std::unordered_map<std::string, Systems::RpcConfigurationParameter>> &valuesCentral, std::string &command, bool &isSecured)
     {
         isSecured = _isSecured;
         command = "jdev/sps/io/" + _uuidAction + "/";

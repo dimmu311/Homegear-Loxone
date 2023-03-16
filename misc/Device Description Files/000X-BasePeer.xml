@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
   <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
-    <device id="Loxone Heatmixer">
-      <description>Loxone Heatmixer</description>
-      <typeNumber>0x0204</typeNumber>
+    <device id="Loxone Base Peer">
+      <description>Loxone Base Peer</description>
+      <typeNumber>0x0001</typeNumber>
       <minFirmwareVersion>0</minFirmwareVersion>
     </device>
   </supportedDevices>
@@ -16,10 +16,10 @@
       <configParameters>maint_ch_master--0</configParameters>
       <variables>maint_ch_values--0</variables>
     </function>
-    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="SWITCH" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="RAW" channelCount="1">
       <properties/>
       <configParameters>config--1</configParameters>
-      <variables>heatmixer_valueset--1</variables>
+      <variables>raw_valueset--1</variables>
     </function>
   </functions>
   <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
@@ -29,21 +29,6 @@
       <jsonPayload>
         <element>
           <parameterId>RAW</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="on.valueSet">
-      <direction>toCentral</direction>
-      <function1>on.valueStatesPacket</function1>
-      <channel>1</channel>
-      <jsonPayload>
-        <element>
-          <keyPath>state\tempTarget</keyPath>
-          <parameterId>TEMP_TARGET</parameterId>
-        </element>
-        <element>
-          <keyPath>state\tempActual</keyPath>
-          <parameterId>TEMP_ACTUAL</parameterId>
         </element>
       </jsonPayload>
     </packet>
@@ -94,7 +79,7 @@
         </physicalInteger>
       </parameter>
     </variables>
-    <variables id="heatmixer_valueset--1">
+    <variables id="raw_valueset--1">
       <parameter id="RAW">
         <properties>
           <readable>true</readable>
@@ -110,46 +95,6 @@
         <packets>
           <packet id="setRaw">
             <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="TEMP_TARGET">
-        <properties>
-          <readable>true</readable>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalDecimal>
-          <defaultValue>0</defaultValue>
-        </logicalDecimal>
-        <physicalNone groupId="TEMP_TARGET">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="TEMP_ACTUAL">
-        <properties>
-          <readable>true</readable>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalDecimal>
-          <defaultValue>0</defaultValue>
-        </logicalDecimal>
-        <physicalNone groupId="TEMP_ACTUAL">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
           </packet>
         </packets>
       </parameter>

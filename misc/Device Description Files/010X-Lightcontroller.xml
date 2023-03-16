@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
   <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
-    <device id="Loxone Central Gate">
-      <description>Loxone Central Gate</description>
-      <typeNumber>0x0502</typeNumber>
+  <device id="Loxone LightController">
+      <description>Loxone LightController</description>
+      <typeNumber>0x0110</typeNumber>
       <minFirmwareVersion>0</minFirmwareVersion>
     </device>
   </supportedDevices>
@@ -16,18 +16,13 @@
       <configParameters>maint_ch_master--0</configParameters>
       <variables>maint_ch_values--0</variables>
     </function>
-    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="CENTRAL" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="LIGHT_CONTROLLER_V2" channelCount="1">
       <properties/>
       <configParameters>config--1</configParameters>
-      <variables>central_valueset--1</variables>
-    </function>
-    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="2" type="CONTROLS" channelCount="10">
-      <properties/>
-      <configParameters>config--2</configParameters>
-      <variables>control_valueset--1</variables>
+      <variables>lightControler_valueset--1</variables>
     </function>
   </functions>
-  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
+  <packets>
     <packet id="setRaw">
       <direction>fromCentral</direction>
       <function1>raw</function1>
@@ -37,103 +32,96 @@
         </element>
       </jsonPayload>
     </packet>
-    <packet id="open">
-    <direction>fromCentral</direction>
-    <function1>valueSet</function1>
-    <jsonPayload>
-      <element>
-        <constValueString>open</constValueString>
-      </element>
-    </jsonPayload>
-  </packet>
-    <packet id="close">
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\activeScene</keyPath>
+          <parameterId>ACTIVE_SCENE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\activeScene</keyPath>
+          <parameterId>STATE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\sceneList</keyPath>
+          <parameterId>SCENE_LIST</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="activeSet">
+      <direction>fromCentral</direction>
+      <function1>activeSet</function1>
+      <jsonPayload>
+        <element>
+          <parameterId>STATE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="sceneNumber">
       <direction>fromCentral</direction>
       <function1>valueSet</function1>
       <jsonPayload>
         <element>
-          <constValueString>colse</constValueString>
+          <parameterId>ACTIVE_SCENE</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="stop">
+    <packet id="sceneNumberLearn">
       <direction>fromCentral</direction>
-      <function1>valueSet</function1>
+      <function1>3valueSet</function1>
       <jsonPayload>
         <element>
-          <constValueString>stop</constValueString>
+          <parameterId>ACTIVE_SCENE</parameterId>
+        </element>
+        <element>
+          <constValueString>learn</constValueString>
+        </element>
+        <element>
+          <parameterId>NAME</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="controlsOpen">
+    <packet id="delete">
       <direction>fromCentral</direction>
-      <function1>special</function1>
-      <function2>setControls</function2>
+      <function1>2valueSet</function1>
       <jsonPayload>
         <element>
-          <constValueString>open</constValueString>
+          <parameterId>DELETE_SCENE</parameterId>
         </element>
-        <element>
-          <parameterId>IDS</parameterId>
+      	<element>
+          <constValueString>delete</constValueString>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="controlsClose">
+    <packet id="setPlus">
       <direction>fromCentral</direction>
-      <function1>special</function1>
-      <function2>setControls</function2>
+      <function1>setNext</function1>
       <jsonPayload>
         <element>
-          <constValueString>close</constValueString>
-        </element>
-        <element>
-          <parameterId>IDS</parameterId>
+          <constValueString>plus</constValueString>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="controlsStop">
+    <packet id="setMinus">
       <direction>fromCentral</direction>
-      <function1>special</function1>
-      <function2>setControls</function2>
+      <function1>setPrevious</function1>
       <jsonPayload>
         <element>
-          <constValueString>stop</constValueString>
-        </element>
-        <element>
-          <parameterId>IDS</parameterId>
+          <constValueString>minus</constValueString>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="controlOpen">
-      <direction>fromCentral</direction>
-      <function1>special</function1>
-      <function2>setControl</function2>
-      <jsonPayload>
-        <element>
-          <constValueString>open</constValueString>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="controlClose">
-      <direction>fromCentral</direction>
-      <function1>special</function1>
-      <function2>setControl</function2>
-      <jsonPayload>
-        <element>
-          <constValueString>close</constValueString>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="controlStop">
-      <direction>fromCentral</direction>
-      <function1>special</function1>
-      <function2>setControl</function2>
-      <jsonPayload>
-        <element>
-          <constValueString>stop</constValueString>
-        </element>
-      </jsonPayload>
-    </packet>
-      </packets>
+  </packets>
   <parameterGroups>
     <configParameters id="config--1">
       <parameter id="ROOM">
@@ -166,9 +154,7 @@
           <operationType>config</operationType>
         </physicalString>
       </parameter>
-    </configParameters>
-    <configParameters id="config--2">
-      <parameter id="CONTROL">
+      <parameter id="MASTER_COLOR">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -182,6 +168,34 @@
         <physicalString>
           <operationType>config</operationType>
         </physicalString>
+      </parameter>
+      <parameter id="MASTER_VALUE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="MOVEMENT_SCENE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalDecimal/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
       </parameter>
     </configParameters>
     <configParameters id="maint_ch_master--0"/>
@@ -197,7 +211,7 @@
         </physicalInteger>
       </parameter>
     </variables>
-    <variables id="central_valueset--1">
+    <variables id="lightControler_valueset--1">
       <parameter id="RAW">
         <properties>
           <readable>true</readable>
@@ -216,121 +230,95 @@
           </packet>
         </packets>
       </parameter>
-      <parameter id="ALL_OPEN">
+      <parameter id="ACTIVE_SCENE">
         <properties>
+          <readable>true</readable>
           <writeable>true</writeable>
-          <readable>false</readable>
           <casts>
-            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalAction />
-        <physicalNone groupId="ALL_OPEN">
+        <logicalString/>
+        <physicalNone groupId="ACTIVE_SCENE">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="open">
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="sceneNumber">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="ALL_CLOSE">
+      <parameter id="STATE">
         <properties>
+          <readable>true</readable>
           <writeable>true</writeable>
-          <readable>false</readable>
           <casts>
-            <optionString/>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalAction />
-        <physicalNone groupId="ALL_CLOSE">
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="ACTIVE">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="close">
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+          <packet id="activeSet">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="ALL_STOP">
+      <parameter id="SCENE_LIST">
         <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
+          <writeable>false</writeable>
           <casts>
-            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalAction />
-        <physicalNone groupId="ALL_STOP">
+        <logicalStruct/>
+        <physicalNone groupId="SCENE_LIST">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="stop">
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+   	  <parameter id="LEARN_SCENE_ID">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>9</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="LEARN_SCENE_ID">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="sceneNumberLearn">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="SELECTED_OPEN">
-        <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction />
-        <physicalNone groupId="SELECTED_OPEN">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="controlsOpen">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="SELECTED_CLOSE">
-        <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction />
-        <physicalNone groupId="SELECTED_CLOSE">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="controlsClose">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="SELECTED_STOP">
-        <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction />
-        <physicalNone groupId="SELECTED_STOP">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="controlsStop">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="IDS">
+   	  <parameter id="NAME">
         <properties>
           <readable>false</readable>
           <writeable>true</writeable>
@@ -341,69 +329,68 @@
         <logicalString>
           <defaultValue>0</defaultValue>
         </logicalString>
-        <physicalString groupId="IDS">
+        <physicalString groupId="NAME">
           <operationType>store</operationType>
         </physicalString>
       </parameter>
+      <parameter id="DELETE_SCENE">
+        <properties>
+          <readable>false</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalInteger>
+          <defaultValue>0</defaultValue>
+          <minimumValue>0</minimumValue>
+          <maximumValue>9</maximumValue>
+        </logicalInteger>
+        <physicalNone groupId="DELETE_SCENE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="delete">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+   	  <parameter id="SET_NEXT">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SET_NEXT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="setPlus">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="SET_PREVIOUS">
+        <properties>
+          <writeable>true</writeable>
+          <casts>
+            <optionString/>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalAction />
+        <physicalNone groupId="SET_PREVIOUS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="setMinus">
+            <type>set</type>
+          </packet>
+        </packets>
+      </parameter>
     </variables>
-  <variables id="control_valueset--1">
-    <parameter id="OPEN">
-      <properties>
-        <writeable>true</writeable>
-        <readable>false</readable>
-        <casts>
-          <optionString/>
-          <rpcBinary/>
-        </casts>
-      </properties>
-      <logicalAction />
-      <physicalNone groupId="OPEN">
-        <operationType>command</operationType>
-      </physicalNone>
-      <packets>
-        <packet id="controlOpen">
-          <type>set</type>
-        </packet>
-      </packets>
-    </parameter>
-    <parameter id="CLOSE">
-      <properties>
-        <writeable>true</writeable>
-        <readable>false</readable>
-        <casts>
-          <optionString/>
-          <rpcBinary/>
-        </casts>
-      </properties>
-      <logicalAction />
-      <physicalNone groupId="CLOSE">
-        <operationType>command</operationType>
-      </physicalNone>
-      <packets>
-        <packet id="controlClose">
-          <type>set</type>
-        </packet>
-      </packets>
-    </parameter>
-    <parameter id="STOP">
-      <properties>
-        <writeable>true</writeable>
-        <readable>false</readable>
-        <casts>
-          <optionString/>
-          <rpcBinary/>
-        </casts>
-      </properties>
-      <logicalAction />
-      <physicalNone groupId="STOP">
-        <operationType>command</operationType>
-      </physicalNone>
-      <packets>
-        <packet id="controlStop">
-          <type>set</type>
-        </packet>
-      </packets>
-    </parameter>
-  </variables>
-</parameterGroups>
+  </parameterGroups>
 </homegearDevice>
