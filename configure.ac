@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT(homegear-loxone, m4_esyscmd_s([./getVersion.sh]), timo@renner.solutions)
+AC_INIT(homegear-loxone, m4_esyscmd_s([/bin/sh getVersion.sh]), timo@renner.solutions)
 AC_CONFIG_AUX_DIR(cfg)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/Loxone.h])

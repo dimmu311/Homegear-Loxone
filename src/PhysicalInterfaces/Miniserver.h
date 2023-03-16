@@ -68,7 +68,7 @@ protected:
     int32_t _port = 80;
 	std::string _user;
 	uint32_t _msVersion = 11;
-    std::shared_ptr<BaseLib::TcpSocket> _tcpSocket;
+    std::shared_ptr<C1Net::TcpSocket> _tcpSocket;
     std::shared_ptr<LoxoneEncryption> _loxoneEncryption;
 
     std::shared_ptr<Musicserver> _musicserver;
