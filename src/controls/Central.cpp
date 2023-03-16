@@ -12,9 +12,8 @@ namespace Loxone
 
     uint32_t Central::getExtraData(std::list<extraData> &extraData)
     {
-        //if(LoxoneControl::getExtraData(extraData) != 0) return -1;
-        if(_control->structValue->find("details") == _control->structValue->end()) return -1;
-        auto details = _control->structValue->at("details");
+        if(_structFile->structValue->find("details") == _structFile->structValue->end()) return -1;
+        auto details = _structFile->structValue->at("details");
         if(details->structValue->find("controls") == details->structValue->end()) return -1;
         auto controls = details->structValue->at("controls");
 

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
   <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
-    <device id="Loxone Central Audio Zone">
-      <description>Loxone Central Audio Zone</description>
-      <typeNumber>0x0501</typeNumber>
+    <device id="Loxone Intercom">
+      <description>Loxone Intercom</description>
+      <typeNumber>0x0505</typeNumber>
       <minFirmwareVersion>0</minFirmwareVersion>
     </device>
   </supportedDevices>
@@ -16,15 +16,10 @@
       <configParameters>maint_ch_master--0</configParameters>
       <variables>maint_ch_values--0</variables>
     </function>
-    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="CENTRAL" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="INTERCOM" channelCount="1">
       <properties/>
       <configParameters>config--1</configParameters>
-      <variables>central_valueset--1</variables>
-    </function>
-    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="2" type="CONTROLS" channelCount="10">
-      <properties/>
-      <configParameters>config--2</configParameters>
-      <variables>control_valueset--1</variables>
+      <variables>intercom_valueset--1</variables>
     </function>
   </functions>
   <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
@@ -37,71 +32,42 @@
         </element>
       </jsonPayload>
     </packet>
-    <packet id="play">
-      <direction>fromCentral</direction>
-      <function1>valueSet</function1>
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
+      <channel>1</channel>
       <jsonPayload>
         <element>
-          <constValueString>play</constValueString>
+          <keyPath>state\bell</keyPath>
+          <parameterId>BELL</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="pause">
-      <direction>fromCentral</direction>
-      <function1>valueSet</function1>
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
       <jsonPayload>
         <element>
-          <constValueString>pause</constValueString>
+          <keyPath>state\lastBellEvents</keyPath>
+          <parameterId>LAST_BELL_EVENTS</parameterId>
+        </element>
+        <element>
+        <keyPath>state\version</keyPath>
+        <parameterId>VERSION</parameterId>
+      </element>
+      </jsonPayload>
+    </packet>
+    <packet id="answer">
+      <direction>fromCentral</direction>
+      <function1>activeSetOn</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>answer</constValueString>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="controlsPlay">
-      <direction>fromCentral</direction>
-      <function1>special</function1>
-      <function2>setControls</function2>
-      <jsonPayload>
-        <element>
-          <constValueString>play</constValueString>
-        </element>
-        <element>
-          <parameterId>IDS</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="controlsPause">
-      <direction>fromCentral</direction>
-      <function1>special</function1>
-      <function2>setControls</function2>
-      <jsonPayload>
-        <element>
-          <constValueString>pause</constValueString>
-        </element>
-        <element>
-          <parameterId>IDS</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="controlPlay">
-      <direction>fromCentral</direction>
-      <function1>special</function1>
-      <function2>setControl</function2>
-      <jsonPayload>
-        <element>
-          <constValueString>play</constValueString>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="controlPause">
-      <direction>fromCentral</direction>
-      <function1>special</function1>
-      <function2>setControl</function2>
-      <jsonPayload>
-        <element>
-          <constValueString>pause</constValueString>
-        </element>
-      </jsonPayload>
-    </packet>
-      </packets>
+  </packets>
   <parameterGroups>
     <configParameters id="config--1">
       <parameter id="ROOM">
@@ -134,9 +100,33 @@
           <operationType>config</operationType>
         </physicalString>
       </parameter>
-    </configParameters>
-    <configParameters id="config--2">
-      <parameter id="CONTROL">
+      <parameter id="DEVICE_TYPE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <value>
+            <id>Custom/Unknown</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Loxone Intercom</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>Loxone Intercom XL</id>
+            <index>2</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="VIDEO_INFO">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -150,6 +140,34 @@
         <physicalString>
           <operationType>config</operationType>
         </physicalString>
+      </parameter>
+      <parameter id="AUDIO_INFO">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <formFieldType>text</formFieldType>
+          <formPosition>1</formPosition>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalString>
+          <operationType>config</operationType>
+        </physicalString>
+      </parameter>
+      <parameter id="LAST_BELL_EVENT_IMAGES">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalBoolean/>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
       </parameter>
     </configParameters>
     <configParameters id="maint_ch_master--0"/>
@@ -165,7 +183,7 @@
         </physicalInteger>
       </parameter>
     </variables>
-    <variables id="central_valueset--1">
+    <variables id="intercom_valueset--1">
       <parameter id="RAW">
         <properties>
           <readable>true</readable>
@@ -184,137 +202,86 @@
           </packet>
         </packets>
       </parameter>
-      <parameter id="ALL_PLAY">
+      <parameter id="BELL">
         <properties>
-          <writeable>true</writeable>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="BELL">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="LAST_BELL_EVENTS">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="LAST_BELL_EVENTS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="VERSION">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="VERSION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ANSWER">
+        <properties>
           <readable>false</readable>
+          <writeable>true</writeable>
           <casts>
             <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalAction />
-        <physicalNone groupId="ALL_PLAY">
+        <logicalAction/>
+        <physicalNone groupId="ANSWER">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="play">
+          <packet id="answer">
             <type>set</type>
           </packet>
         </packets>
-      </parameter>
-      <parameter id="ALL_PAUSE">
-        <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction />
-        <physicalNone groupId="ALL_PAUSE">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="pause">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="SELECTED_PLAY">
-        <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction />
-        <physicalNone groupId="SELECTED_PLAY">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="controlsPlay">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="SELECTED_PAUSE">
-        <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction />
-        <physicalNone groupId="SELECTED_PAUSE">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="controlsPause">
-            <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="IDS">
-        <properties>
-          <readable>false</readable>
-          <writeable>true</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalString>
-          <defaultValue>0</defaultValue>
-        </logicalString>
-        <physicalString groupId="IDS">
-          <operationType>store</operationType>
-        </physicalString>
       </parameter>
     </variables>
-  <variables id="control_valueset--1">
-    <parameter id="PLAY">
-      <properties>
-        <writeable>true</writeable>
-        <readable>false</readable>
-        <casts>
-          <optionString/>
-          <rpcBinary/>
-        </casts>
-      </properties>
-      <logicalAction />
-      <physicalNone groupId="PLAY">
-        <operationType>command</operationType>
-      </physicalNone>
-      <packets>
-        <packet id="controlPlay">
-          <type>set</type>
-        </packet>
-      </packets>
-    </parameter>
-    <parameter id="PAUSE">
-      <properties>
-        <writeable>true</writeable>
-        <readable>false</readable>
-        <casts>
-          <optionString/>
-          <rpcBinary/>
-        </casts>
-      </properties>
-      <logicalAction />
-      <physicalNone groupId="PAUSE">
-        <operationType>command</operationType>
-      </physicalNone>
-      <packets>
-        <packet id="controlPause">
-          <type>set</type>
-        </packet>
-      </packets>
-    </parameter>
-  </variables>
-</parameterGroups>
+  </parameterGroups>
 </homegearDevice>

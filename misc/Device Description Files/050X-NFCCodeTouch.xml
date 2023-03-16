@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
   <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
-  <device id="Loxone LightControllerV2">
-      <description>Loxone LightControllerV2</description>
-      <typeNumber>0x0103</typeNumber>
+    <device id="Loxone NFC Code Touch">
+      <description>Loxone NFC Code TOuch</description>
+      <typeNumber>0x0506</typeNumber>
       <minFirmwareVersion>0</minFirmwareVersion>
     </device>
   </supportedDevices>
@@ -16,13 +16,13 @@
       <configParameters>maint_ch_master--0</configParameters>
       <variables>maint_ch_values--0</variables>
     </function>
-    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="LIGHT_CONTROLLER_V2" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="NFC_CDOE_TOUCH" channelCount="1">
       <properties/>
       <configParameters>config--1</configParameters>
-      <variables>lightControler_valueset--1</variables>
+      <variables>nfc_valueset--1</variables>
     </function>
   </functions>
-  <packets>
+  <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
     <packet id="setRaw">
       <direction>fromCentral</direction>
       <function1>raw</function1>
@@ -32,176 +32,192 @@
         </element>
       </jsonPayload>
     </packet>
+    <packet id="on.valueSet">
+      <direction>toCentral</direction>
+      <function1>on.valueStatesPacket</function1>
+      <channel>1</channel>
+      <jsonPayload>
+        <element>
+          <keyPath>state\historyDate</keyPath>
+          <parameterId>HISTORY_DATE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\codeDate</keyPath>
+          <parameterId>CODE_DATE</parameterId>
+        </element>
+        <element>
+          <keyPath>state\deviceState</keyPath>
+          <parameterId>DEVICE_STATE</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
     <packet id="on.textSet">
       <direction>toCentral</direction>
       <function1>on.textStatesPacket</function1>
       <channel>1</channel>
       <jsonPayload>
         <element>
-          <keyPath>state\activeMoods</keyPath>
-          <parameterId>ACTIVE_MOODS</parameterId>
-        </element>
-        <element>
-          <keyPath>state\moodList</keyPath>
-          <parameterId>MOOD_LIST</parameterId>
-        </element>
-        <element>
-          <keyPath>state\favoriteMoods</keyPath>
-          <parameterId>FAVORITE_MOODS</parameterId>
-        </element>
-        <element>
-          <keyPath>state\additionalMoods</keyPath>
-          <parameterId>ADDITIONAL_MOODS</parameterId>
+          <keyPath>state\nfcLearnResult</keyPath>
+          <parameterId>NFC_LEARN_RESULT</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="changeTo">
+    <packet id="pulseOutput">
       <direction>fromCentral</direction>
       <function1>valueSetToPath</function1>
       <jsonPayload>
         <element>
-          <constValueString>changeTo</constValueString>
+          <constValueString>output</constValueString>
         </element>
         <element>
-          <parameterId>SET_MOOD</parameterId>
+          <parameterId>PULSE_OUTPUT</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="addMood">
+    <packet id="getHistory">
       <direction>fromCentral</direction>
-      <function1>valueSetToPath</function1>
+      <function1>activeSetOn</function1>
       <jsonPayload>
         <element>
-          <constValueString>addMood</constValueString>
-        </element>
-        <element>
-          <parameterId>ADD_MOOD</parameterId>
+          <constValueString>history</constValueString>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="removeMood">
+    <packet id="getCodes">
       <direction>fromCentral</direction>
-      <function1>valueSetToPath</function1>
+      <function1>activeSetOn</function1>
       <jsonPayload>
         <element>
-          <constValueString>removeMood</constValueString>
-        </element>
-        <element>
-          <parameterId>REMOVE_MOOD</parameterId>
+          <constValueString>codes</constValueString>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="moveFavoriteMood">
+    <packet id="createCode">
       <direction>fromCentral</direction>
-      <function1>2valueSetToPath</function1>
+      <function1>setStruct</function1>
       <jsonPayload>
-      	<element>
-          <constValueString>moveFavoriteMood</constValueString>
+        <element>
+          <constValueString>code</constValueString>
         </element>
         <element>
-          <parameterId>MOOD_TO_MOVE_ID</parameterId>
+          <constValueString>create</constValueString>
         </element>
         <element>
-          <parameterId>NEW_FAVORITE_MOOD_ID</parameterId>
+          <parameterId>CODE_STRUCT</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="moveAdditionalMood">
+    <packet id="createCodeTime">
       <direction>fromCentral</direction>
-      <function1>2valueSetToPath</function1>
+      <function1>setStruct</function1>
       <jsonPayload>
-      	<element>
-          <constValueString>moveAdditionalMood</constValueString>
+        <element>
+          <constValueString>code</constValueString>
         </element>
         <element>
-          <parameterId>MOOD_TO_MOVE_ID</parameterId>
+          <constValueString>create</constValueString>
         </element>
         <element>
-          <parameterId>NEW_ADDITIONAL_MOOD_ID</parameterId>
+          <parameterId>CODE_STRUCT</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="moveMood">
+    <packet id="updateCode">
       <direction>fromCentral</direction>
-      <function1>2valueSetToPath</function1>
+      <function1>setStruct</function1>
       <jsonPayload>
-      	<element>
-          <constValueString>moveMood</constValueString>
+        <element>
+          <constValueString>code</constValueString>
         </element>
         <element>
-          <parameterId>MOOD_TO_MOVE_ID</parameterId>
+          <constValueString>update</constValueString>
         </element>
         <element>
-          <parameterId>NEW_MOOD_ID</parameterId>
+          <parameterId>CODE_STRUCT</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="addToFavoriteMood">
+    <packet id="updateCodeTime">
       <direction>fromCentral</direction>
-      <function1>valueSetToPath</function1>
+      <function1>setStruct</function1>
       <jsonPayload>
-      	<element>
-          <constValueString>addToFavoriteMood</constValueString>
+        <element>
+          <constValueString>code</constValueString>
         </element>
         <element>
-          <parameterId>ADD_TO_FAVORITE_MOOD_ID</parameterId>
+          <constValueString>update</constValueString>
+        </element>
+        <element>
+          <parameterId>CODE_STRUCT</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="removeFromFavoriteMood">
+    <packet id="activate">
       <direction>fromCentral</direction>
-      <function1>valueSetToPath</function1>
+      <function1>setStruct</function1>
       <jsonPayload>
-      	<element>
-          <constValueString>removeFromFavoriteMood</constValueString>
+        <element>
+          <constValueString>code</constValueString>
         </element>
         <element>
-          <parameterId>REMOVE_FROM_FAVORITE_MOOD_ID</parameterId>
+          <constValueString>activate</constValueString>
+        </element>
+        <element>
+          <parameterId>CODE_STRUCT</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="learnMood">
+    <packet id="deactivate">
       <direction>fromCentral</direction>
-      <function1>valueStringSetToPath</function1>
+      <function1>setStruct</function1>
       <jsonPayload>
         <element>
-          <constValueString>learn</constValueString>
+          <constValueString>code</constValueString>
         </element>
         <element>
-          <parameterId>LEARN_MOOD_ID</parameterId>
+          <constValueString>deactivate</constValueString>
         </element>
         <element>
-          <parameterId>MOOD_NAME</parameterId>
+          <parameterId>CODE_STRUCT</parameterId>
         </element>
       </jsonPayload>
     </packet>
     <packet id="delete">
       <direction>fromCentral</direction>
-      <function1>valueSetToPath</function1>
+      <function1>setStruct</function1>
       <jsonPayload>
-      	<element>
+        <element>
+          <constValueString>code</constValueString>
+        </element>
+        <element>
           <constValueString>delete</constValueString>
         </element>
         <element>
-          <parameterId>DELETE_MOOD_ID</parameterId>
+          <parameterId>CODE_STRUCT</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="setPlus">
+    <packet id="nfcStartLearn">
       <direction>fromCentral</direction>
-      <function1>setNext</function1>
+      <function1>stringSetToPath</function1>
       <jsonPayload>
         <element>
-          <constValueString>plus</constValueString>
+          <constValueString>nfc</constValueString>
+        </element>
+        <element>
+          <constValueString>startlearn</constValueString>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="setMinus">
+    <packet id="nfcStopLearn">
       <direction>fromCentral</direction>
-      <function1>setPrevious</function1>
+      <function1>stringSetToPath</function1>
       <jsonPayload>
         <element>
-          <constValueString>minus</constValueString>
+          <constValueString>nfc</constValueString>
+        </element>
+        <element>
+          <constValueString>stoplearn</constValueString>
         </element>
       </jsonPayload>
     </packet>
@@ -238,7 +254,7 @@
           <operationType>config</operationType>
         </physicalString>
       </parameter>
-      <parameter id="MASTER_COLOR">
+      <parameter id="ACCESS_OUTPUTS">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -253,7 +269,7 @@
           <operationType>config</operationType>
         </physicalString>
       </parameter>
-      <parameter id="MASTER_VALUE">
+      <parameter id="PLACE">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -268,7 +284,7 @@
           <operationType>config</operationType>
         </physicalString>
       </parameter>
-      <parameter id="MOVEMENT_SCENE">
+      <parameter id="TWO_FACTOR_AUTH">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -276,7 +292,7 @@
             <rpcBinary />
           </casts>
         </properties>
-        <logicalDecimal/>
+        <logicalBoolean/>
         <physicalNone>
           <operationType>config</operationType>
         </physicalNone>
@@ -295,7 +311,7 @@
         </physicalInteger>
       </parameter>
     </variables>
-    <variables id="lightControler_valueset--1">
+    <variables id="nfc_valueset--1">
       <parameter id="RAW">
         <properties>
           <readable>true</readable>
@@ -314,7 +330,97 @@
           </packet>
         </packets>
       </parameter>
-      <parameter id="SET_MOOD">
+      <parameter id="HISTORY_DATE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="HISTORY_DATE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="CODE_DATE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalDecimal>
+          <defaultValue>0</defaultValue>
+        </logicalDecimal>
+        <physicalNone groupId="CODE_DATE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="DEVICE_STATE">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <defaultValue>0</defaultValue>
+          <value>
+            <id>Offline</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Dummy</id>
+            <index>1</index>
+          </value>
+          <value>
+            <id>nfc unavailable (battery powered air device)</id>
+            <index>2</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="DEVICE_STATE">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="NFC_LEARN_RESULT">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalStruct/>
+        <physicalNone groupId="NFC_LEARN_RESULT">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="PULSE_OUTPUT">
         <properties>
           <readable>false</readable>
           <writeable>true</writeable>
@@ -324,256 +430,195 @@
         </properties>
         <logicalInteger>
           <defaultValue>0</defaultValue>
-          <minimumValue>0</minimumValue>
-          <maximumValue>89</maximumValue>
-          <specialValues>
-            <specialValue id="Viel Licht">777</specialValue>
-            <specialValue id="Aus">778</specialValue>
-          </specialValues>
+          <minimumValue>1</minimumValue>
+          <maximumValue>6</maximumValue>
         </logicalInteger>
-        <physicalNone groupId="SET_MOOD">
+        <physicalNone groupId="PULSE_OUTPUT">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="changeTo">
+          <packet id="pulseOutput">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="ADD_MOOD">
+      <parameter id="GET_HISTORY">
         <properties>
-          <readable>false</readable>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
+            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalInteger>
-          <defaultValue>0</defaultValue>
-          <minimumValue>0</minimumValue>
-          <maximumValue>89</maximumValue>
-          <specialValues>
-            <specialValue id="Viel Licht">777</specialValue>
-            <specialValue id="Aus">778</specialValue>
-          </specialValues>
-        </logicalInteger>
-        <physicalNone groupId="ADD_MOOD">
+        <logicalAction />
+        <physicalNone groupId="GET_HISTORY">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="addMood">
+          <packet id="getHistory">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="REMOVE_MOOD">
+      <parameter id="GET_CODES">
         <properties>
-          <readable>false</readable>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
+            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalInteger>
-          <defaultValue>0</defaultValue>
-          <minimumValue>0</minimumValue>
-          <maximumValue>89</maximumValue>
-          <specialValues>
-            <specialValue id="Viel Licht">777</specialValue>
-            <specialValue id="Aus">778</specialValue>
-          </specialValues>
-        </logicalInteger>
-        <physicalNone groupId="REMOVE_MOOD">
+        <logicalAction />
+        <physicalNone groupId="GET_CODES">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="removeMood">
+          <packet id="getCodes">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="MOOD_TO_MOVE_ID">
+      <parameter id="CODE_STRUCT">
         <properties>
-          <readable>false</readable>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalInteger>
-          <defaultValue>0</defaultValue>
-          <minimumValue>0</minimumValue>
-          <maximumValue>89</maximumValue>
-          <specialValues>
-            <specialValue id="Viel Licht">777</specialValue>
-            <specialValue id="Aus">778</specialValue>
-          </specialValues>
-        </logicalInteger>
-        <physicalNone groupId="MOOD_TO_MOVE_ID">
-          <operationType>store</operationType>
+        <logicalStruct />
+        <physicalNone groupId="CODE_STRUCT">
+          <operationType>command</operationType>
         </physicalNone>
+        <packets/>
       </parameter>
-      <parameter id="NEW_FAVORITE_MOOD_ID">
+      <parameter id="CREATE_CODE">
         <properties>
-          <readable>false</readable>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
+            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalInteger>
-          <defaultValue>0</defaultValue>
-          <minimumValue>0</minimumValue>
-          <maximumValue>89</maximumValue>
-        </logicalInteger>
-        <physicalNone groupId="NEW_FAVORITE_MOOD_ID">
+        <logicalAction />
+        <physicalNone groupId="CREATE_CODE">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="moveFavoriteMood">
+          <packet id="createCode">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="NEW_ADDITIONAL_MOOD_ID">
+      <parameter id="CREATE_CODE_TIME">
         <properties>
-          <readable>false</readable>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
+            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalInteger>
-          <defaultValue>0</defaultValue>
-          <minimumValue>0</minimumValue>
-          <maximumValue>89</maximumValue>
-        </logicalInteger>
-        <physicalNone groupId="NEW_ADDITIONAL_MOOD_ID">
+        <logicalAction />
+        <physicalNone groupId="CREATE_CODE_TIME">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="moveAdditionalMood">
+          <packet id="createCodeTime">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="NEW_MOOD_ID">
+      <parameter id="UPDATE_CODE">
         <properties>
-          <readable>false</readable>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
+            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalInteger>
-          <defaultValue>0</defaultValue>
-          <minimumValue>0</minimumValue>
-          <maximumValue>89</maximumValue>
-        </logicalInteger>
-        <physicalNone groupId="NEW_MOOD_ID">
+        <logicalAction />
+        <physicalNone groupId="UPDATE_CODE">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="moveMood">
+          <packet id="updateCode">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="ADD_TO_FAVORITE_MOOD_ID">
+      <parameter id="UPDATE_CODE_TIME">
         <properties>
-          <readable>false</readable>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
+            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalInteger>
-          <defaultValue>0</defaultValue>
-          <minimumValue>0</minimumValue>
-          <maximumValue>89</maximumValue>
-        </logicalInteger>
-        <physicalNone groupId="ADD_TO_FAVORITE_MOOD_ID">
+        <logicalAction />
+        <physicalNone groupId="UPDATE_CODE_TIME">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="addToFavoriteMood">
+          <packet id="updateCodeTime">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="REMOVE_FROM_FAVORITE_MOOD_ID">
+      <parameter id="ACTIVATE_CODE">
         <properties>
-          <readable>false</readable>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
+            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalInteger>
-          <defaultValue>0</defaultValue>
-          <minimumValue>0</minimumValue>
-          <maximumValue>89</maximumValue>
-        </logicalInteger>
-        <physicalNone groupId="REMOVE_FROM_FAVORITE_MOOD_ID">
+        <logicalAction />
+        <physicalNone groupId="ACTIVATE_CODE">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="removeFromFavoriteMood">
+          <packet id="activate">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-   	  <parameter id="LEARN_MOOD_ID">
+      <parameter id="DEACTIVATE_CODE">
         <properties>
-          <readable>false</readable>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
+            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalInteger>
-          <defaultValue>0</defaultValue>
-          <minimumValue>0</minimumValue>
-          <maximumValue>89</maximumValue>
-        </logicalInteger>
-        <physicalNone groupId="LEARN_MOOD_ID">
+        <logicalAction />
+        <physicalNone groupId="DEACTIVATE_CODE">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="learnMood">
+          <packet id="deactivate">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-   	  <parameter id="MOOD_NAME">
+      <parameter id="DELETE_CODE">
         <properties>
-          <readable>false</readable>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
+            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalString>
-          <defaultValue>0</defaultValue>
-        </logicalString>
-        <physicalString groupId="MOOD_NAME">
-          <operationType>store</operationType>
-        </physicalString>
-      </parameter>
-      <parameter id="DELETE_MOOD_ID">
-        <properties>
-          <readable>false</readable>
-          <writeable>true</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalInteger>
-          <defaultValue>0</defaultValue>
-          <minimumValue>0</minimumValue>
-          <maximumValue>89</maximumValue>
-        </logicalInteger>
-        <physicalNone groupId="DELETE_MOOD_ID">
+        <logicalAction />
+        <physicalNone groupId="DELETE_CODE">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
@@ -582,107 +627,41 @@
           </packet>
         </packets>
       </parameter>
-   	  <parameter id="SET_NEXT_MOOD">
+      <parameter id="NFC_START_LEARN">
         <properties>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
             <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
         <logicalAction />
-        <physicalNone groupId="SET_NEXT_MOOD">
+        <physicalNone groupId="NFC_START_LEARN">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="setPlus">
+          <packet id="nfcStartLearn">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="SET_PREVIOUS_MOOD">
+      <parameter id="NFC_STOP_LEARN">
         <properties>
           <writeable>true</writeable>
+          <readable>false</readable>
           <casts>
             <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
         <logicalAction />
-        <physicalNone groupId="SET_PREVIOUS_MOOD">
+        <physicalNone groupId="NFC_STOP_LEARN">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="setMinus">
+          <packet id="nfcStopLearn">
             <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ACTIVE_MOODS">
-        <properties>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalString/>
-        <physicalNone groupId="ACTIVE_MOODS">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.textSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="MOOD_LIST">
-        <properties>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalString/>
-        <physicalNone groupId="MOOD_LIST">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.textSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="FAVORITE_MOODS">
-        <properties>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalString/>
-        <physicalNone groupId="FAVORITE_MOODS">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.textSet">
-            <type>event</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ADDITIONAL_MOODS">
-        <properties>
-          <writeable>false</writeable>
-          <casts>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalString/>
-        <physicalNone groupId="ADDITIONAL_MOODS">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.textSet">
-            <type>event</type>
           </packet>
         </packets>
       </parameter>

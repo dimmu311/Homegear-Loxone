@@ -1,0 +1,117 @@
+[
+    {
+        "id": "171eda1.1a8be26",
+        "type": "template",
+        "z": "61fa367d.7d5238",
+        "name": "",
+        "field": "payload",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "{\n\"packetType\":\"rawPacket\",\n\"url\":\"tts/text/volume\",\n\"values\":{\n    \"tts\":\"tts\",\n    \"text\":\"{{payload}}\",\n    \"volume\":{{flow.Volume}}\n    }\n}",
+        "output": "json",
+        "x": 585,
+        "y": 310,
+        "wires": [
+            [
+                {
+                    "id": "47d8911e.08bbb",
+                    "port": 0
+                },
+                {
+                    "id": "e8556ff1.5e855",
+                    "port": 0
+                }
+            ]
+        ]
+    },
+    {
+        "id": "7c0c6d79.1497c4",
+        "type": "constant",
+        "z": "61fa367d.7d5238",
+        "name": "",
+        "payload": "ein text zum test",
+        "payloadType": "string",
+        "outputonstartup": false,
+        "x": 400,
+        "y": 310,
+        "wires": [
+            [
+                {
+                    "id": "171eda1.1a8be26",
+                    "port": 0
+                }
+            ]
+        ]
+    },
+    {
+        "id": "e99374d7.359eb8",
+        "type": "variable-out",
+        "z": "61fa367d.7d5238",
+        "variabletype": "flow",
+        "peername": null,
+        "peerid": "0",
+        "channel": "0",
+        "variable": "Volume",
+        "name": "",
+        "x": 595,
+        "y": 350,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8732ef58.91ae2",
+        "type": "constant",
+        "z": "61fa367d.7d5238",
+        "name": "",
+        "payload": "0",
+        "payloadType": "int",
+        "outputonstartup": false,
+        "x": 380,
+        "y": 350,
+        "wires": [
+            [
+                {
+                    "id": "e99374d7.359eb8",
+                    "port": 0
+                }
+            ]
+        ]
+    },
+    {
+        "id": "7d888981.e85a58",
+        "type": "constant",
+        "z": "61fa367d.7d5238",
+        "name": "",
+        "payload": "99",
+        "payloadType": "int",
+        "outputonstartup": false,
+        "x": 380,
+        "y": 390,
+        "wires": [
+            [
+                {
+                    "id": "e99374d7.359eb8",
+                    "port": 0
+                }
+            ]
+        ]
+    },
+    {
+        "id": "e8556ff1.5e855",
+        "type": "variable-out",
+        "z": "61fa367d.7d5238",
+        "variabletype": "device",
+        "family": "65",
+        "peername": "Music Server Zone",
+        "peerid": "24",
+        "channel": "1",
+        "variable": "RAW",
+        "name": "",
+        "x": 855,
+        "y": 310,
+        "wires": [
+            []
+        ]
+    }
+]

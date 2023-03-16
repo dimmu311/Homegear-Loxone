@@ -50,12 +50,10 @@ public:
     void sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet) override;
 	PVariable getNewStructfile();
 	PVariable getLoxApp3Version();
+	void disconnect();
     bool isOpen() override { return !_stopped; }
-    uint16_t getMessageCounter();
-	
-	bool httpPacket = false;
-	bool webSocketPacket = false;
-	
+    bool isConnected() {return _connected;}
+
 protected:
     struct Request
     {
@@ -65,11 +63,12 @@ protected:
         PLoxonePacket response;
     };
 
+    bool _connected;
     BaseLib::Output _out;
     int32_t _port = 80;
 	std::string _user;
 	uint32_t _msVersion = 11;
-    std::shared_ptr<BaseLib::TcpSocket> _tcpSocket;
+    std::shared_ptr<C1Net::TcpSocket> _tcpSocket;
     std::shared_ptr<LoxoneEncryption> _loxoneEncryption;
 
     std::shared_ptr<Musicserver> _musicserver;
@@ -90,7 +89,6 @@ protected:
     void init();
 	void keepAlive();
     void refreshToken();
-    void saveToken();
 
     void acquireToken();
     void authenticateUsingTokens();
@@ -99,8 +97,9 @@ protected:
     PLoxonePacket getResponse(const std::string& responseCommand, const std::string& command, int32_t waitForSeconds = 15);
     std::string encodeWebSocket(const std::string& command, WebSocket::Header::Opcode::Enum messageType);
 
-	void processHttpPacket(const std::vector<char>& data, uint32_t responseCode);
-	void processWsPacket(std::vector<char>& data);
+	void processHttpPacket(BaseLib::Http& http);
+	void processWsPacket(BaseLib::WebSocket& webSocket);
+
 	void processTextmessagePacket(std::vector<char>& data);
 	void processBinaryFilePacket(std::vector<char>& data);
 	void processEventTableOfValueStatesPacket(std::vector<char>& data);

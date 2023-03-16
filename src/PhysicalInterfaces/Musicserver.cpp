@@ -11,10 +11,10 @@ namespace Loxone {
 
         _jsonEncoder = std::unique_ptr<BaseLib::Rpc::JsonEncoder>(new BaseLib::Rpc::JsonEncoder(GD::bl));
        try {
-            BaseLib::TcpSocket::TcpServerInfo serverInfo;
-            serverInfo.packetReceivedCallback = std::bind(&Musicserver::packetReceived, this, std::placeholders::_1,
+            C1Net::TcpServer::TcpServerInfo serverInfo;
+            serverInfo.packet_received_callback = std::bind(&Musicserver::packetReceived, this, std::placeholders::_1,
                                                           std::placeholders::_2);
-            _server = std::make_unique<BaseLib::TcpSocket>(GD::bl, serverInfo);
+            _server = std::make_unique<C1Net::TcpServer>(serverInfo);
 
             std::string address = BaseLib::Net::getMyIpAddress();
             std::string listenAddress;
@@ -31,7 +31,7 @@ namespace Loxone {
         _server->waitForServerStopped();
     }
 
-    void Musicserver::packetReceived(int32_t clientId, BaseLib::TcpSocket::TcpPacket &packet) {
+    void Musicserver::packetReceived(const C1Net::TcpServer::PTcpClientData &client_data, const C1Net::TcpPacket &packet) {
 
         std::string x(packet.begin(), packet.end());
         _out.printInfo("MUSICSERVER_FAKE packetReceived-> " + x);
@@ -45,10 +45,10 @@ namespace Loxone {
                 processedBytes += _http.process((char *) packet.data(), packet.size());
                 if (_http.isFinished()) {
                     _out.printInfo("MUSICSERVER_FAKE http is ready");
-                    if (_http.getHeader().responseCode = 101) {
+                    if (_http.getHeader().responseCode == 101) {
                         std::vector<char> httpPacket;
                         if (!encodeWebsocketUpgrade(_http, httpPacket)) return;
-                        _server->sendToClient(clientId, httpPacket);
+                        _server->Send(client_data, httpPacket);
 
                         _out.printInfo("send WebsocketUpgrade");
 
@@ -56,7 +56,7 @@ namespace Loxone {
                         std::vector<char> input(in.begin(), in.end());
                         httpPacket.clear();
                         BaseLib::WebSocket::encode(input, WebSocket::Header::Opcode::Enum::text, httpPacket);
-                        _server->sendToClient(clientId, httpPacket);
+                        _server->Send(client_data, httpPacket);
                         _out.printInfo("send API");
                     }
                     _http.reset();
@@ -90,7 +90,7 @@ namespace Loxone {
                     _out.printInfo("MATCH port");
                     getEmpty(content, wsPacket);
                 }
-                if (!wsPacket.empty()) _server->sendToClient(clientId, wsPacket);
+                if (!wsPacket.empty()) _server->Send(client_data, wsPacket);
                 _webSocket.reset();
                 return;
             }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
   <supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
-    <device id="Loxone Slider">
-      <description>Loxone Slider</description>
-      <typeNumber>0x0101</typeNumber>
+    <device id="Loxone IntercomV2">
+      <description>Loxone IntercomV2</description>
+      <typeNumber>0x0506</typeNumber>
       <minFirmwareVersion>0</minFirmwareVersion>
     </device>
   </supportedDevices>
@@ -16,10 +16,10 @@
       <configParameters>maint_ch_master--0</configParameters>
       <variables>maint_ch_values--0</variables>
     </function>
-    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="SLIDER" channelCount="1">
+    <function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="INTERCOM_V2" channelCount="1">
       <properties/>
       <configParameters>config--1</configParameters>
-      <variables>slider_valueset--1</variables>
+      <variables>intercom_valueset--1</variables>
     </function>
   </functions>
   <packets xmlns="https://homegear.eu/xmlNamespaces/PacketType">
@@ -38,49 +38,59 @@
       <channel>1</channel>
       <jsonPayload>
         <element>
-          <keyPath>state\value</keyPath>
-          <parameterId>VALUE</parameterId>
+          <keyPath>state\bell</keyPath>
+          <parameterId>BELL</parameterId>
         </element>
         <element>
-          <keyPath>state\value</keyPath>
-          <parameterId>ACTIVE</parameterId>
+          <keyPath>state\health</keyPath>
+          <parameterId>HEALTH</parameterId>
         </element>
         <element>
-          <keyPath>state\error</keyPath>
-          <parameterId>ERROR</parameterId>
-        </element>
-      </jsonPayload>
-    </packet>
-    <packet id="valueSet">
-      <direction>fromCentral</direction>
-      <function1>valueSet</function1>
-      <jsonPayload>
-        <element>
-          <parameterId>VALUE</parameterId>
+          <keyPath>state\muted</keyPath>
+          <parameterId>MUTED</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="stepUp">
-      <direction>fromCentral</direction>
-      <function1>stepUp</function1>
+    <packet id="on.textSet">
+      <direction>toCentral</direction>
+      <function1>on.textStatesPacket</function1>
+      <channel>1</channel>
       <jsonPayload>
         <element>
-          <parameterId>VALUE</parameterId>
+          <keyPath>state\version</keyPath>
+          <parameterId>VERSION</parameterId>
         </element>
         <element>
-          <parameterId>STEP</parameterId>
+          <keyPath>state\address</keyPath>
+          <parameterId>ADDRESS</parameterId>
+        </element>
+        <element>
+          <keyPath>state\answers</keyPath>
+          <parameterId>ANSWERS</parameterId>
         </element>
       </jsonPayload>
     </packet>
-    <packet id="stepDown">
+    <packet id="answer">
       <direction>fromCentral</direction>
-      <function1>stepDown</function1>
+      <function1>valueSetToPath</function1>
       <jsonPayload>
         <element>
-          <parameterId>VALUE</parameterId>
+          <constValueString>setAnswers</constValueString>
         </element>
         <element>
-          <parameterId>STEP</parameterId>
+          <parameterId>ANSWER</parameterId>
+        </element>
+      </jsonPayload>
+    </packet>
+    <packet id="mute">
+      <direction>fromCentral</direction>
+      <function1>valueSetToPath</function1>
+      <jsonPayload>
+        <element>
+          <constValueString>mute</constValueString>
+        </element>
+        <element>
+          <parameterId>MUTED</parameterId>
         </element>
       </jsonPayload>
     </packet>
@@ -117,7 +127,29 @@
           <operationType>config</operationType>
         </physicalString>
       </parameter>
-      <parameter id="FORMAT">
+      <parameter id="DEVICE_TYPE">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
+          <casts>
+            <rpcBinary />
+          </casts>
+        </properties>
+        <logicalEnumeration>
+          <value>
+            <id>Custom/Unknown</id>
+            <index>0</index>
+          </value>
+          <value>
+            <id>Intercom</id>
+            <index>1</index>
+          </value>
+        </logicalEnumeration>
+        <physicalNone>
+          <operationType>config</operationType>
+        </physicalNone>
+      </parameter>
+      <parameter id="SERIAL_NR">
         <properties>
           <readable>true</readable>
           <writeable>true</writeable>
@@ -131,45 +163,6 @@
         <physicalString>
           <operationType>config</operationType>
         </physicalString>
-      </parameter>
-      <parameter id="MAX">
-        <properties>
-          <readable>true</readable>
-          <writeable>true</writeable>
-          <casts>
-            <rpcBinary />
-          </casts>
-        </properties>
-        <logicalDecimal/>
-        <physicalNone>
-          <operationType>config</operationType>
-        </physicalNone>
-      </parameter>
-      <parameter id="MIN">
-        <properties>
-          <readable>true</readable>
-          <writeable>true</writeable>
-          <casts>
-            <rpcBinary />
-          </casts>
-        </properties>
-        <logicalDecimal/>
-        <physicalNone>
-          <operationType>config</operationType>
-        </physicalNone>
-      </parameter>
-      <parameter id="STEP">
-        <properties>
-          <readable>true</readable>
-          <writeable>true</writeable>
-          <casts>
-            <rpcBinary />
-          </casts>
-        </properties>
-        <logicalDecimal/>
-        <physicalNone groupId="STEP">
-          <operationType>config</operationType>
-        </physicalNone>
       </parameter>
     </configParameters>
     <configParameters id="maint_ch_master--0"/>
@@ -185,7 +178,7 @@
         </physicalInteger>
       </parameter>
     </variables>
-    <variables id="slider_valueset--1">
+    <variables id="intercom_valueset--1">
       <parameter id="RAW">
         <properties>
           <readable>true</readable>
@@ -204,35 +197,121 @@
           </packet>
         </packets>
       </parameter>
-      <parameter id="VALUE">
+      <parameter id="BELL">
         <properties>
           <readable>true</readable>
-          <writeable>true</writeable>
+          <writeable>false</writeable>
+          <casts>
+            <booleanDecimal>
+              <trueValue>1.0</trueValue>
+              <falseValue>0.0</falseValue>
+              <threshold>1.0</threshold>
+            </booleanDecimal>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalBoolean>
+          <defaultValue>false</defaultValue>
+        </logicalBoolean>
+        <physicalNone groupId="BELL">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.valueSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="HEALTH">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
           <casts>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalDecimal>
+        <logicalEnumeration>
           <defaultValue>0</defaultValue>
-          <maximumValue>2147483647</maximumValue>
-          <minimumValue>-2147483647</minimumValue>
-        </logicalDecimal>
-        <physicalNone groupId="VALUE">
+          <value>
+            <index>0</index>
+            <id>All Ok</id>
+          </value>
+          <value>
+            <index>1</index>
+            <id>Overheated</id>
+          </value>
+          <value>
+            <index>2</index>
+            <id>Update</id>
+          </value>
+        </logicalEnumeration>
+        <physicalNone groupId="HEALTH">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
           <packet id="on.valueSet">
             <type>event</type>
           </packet>
-          <packet id="valueSet">
-            <type>set</type>
-          </packet>
         </packets>
       </parameter>
-      <parameter id="ACTIVE">
+      <parameter id="VERSION">
         <properties>
           <readable>true</readable>
           <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="VERSION">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ADDRESS">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="ADDRESS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="ANSWERS">
+        <properties>
+          <readable>true</readable>
+          <writeable>false</writeable>
+          <casts>
+            <rpcBinary/>
+          </casts>
+        </properties>
+        <logicalString/>
+        <physicalNone groupId="ANSWERS">
+          <operationType>command</operationType>
+        </physicalNone>
+        <packets>
+          <packet id="on.textSet">
+            <type>event</type>
+          </packet>
+        </packets>
+      </parameter>
+      <parameter id="MUTED">
+        <properties>
+          <readable>true</readable>
+          <writeable>true</writeable>
           <casts>
             <booleanDecimal>
               <trueValue>1.0</trueValue>
@@ -245,75 +324,33 @@
         <logicalBoolean>
           <defaultValue>false</defaultValue>
         </logicalBoolean>
-        <physicalNone groupId="ACTIVE">
+        <physicalNone groupId="MUTED">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
           <packet id="on.valueSet">
             <type>event</type>
           </packet>
-        </packets>
-      </parameter>
-      <parameter id="STEP_UP">
-        <properties>
-          <writeable>true</writeable>
-          <readable>false</readable>
-          <casts>
-            <optionString/>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalAction />
-        <physicalNone groupId="STEP_UP">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="stepUp">
+          <packet id="mute">
             <type>set</type>
           </packet>
         </packets>
       </parameter>
-      <parameter id="STEP_DOWN">
+      <parameter id="ANSWER">
         <properties>
-          <writeable>true</writeable>
           <readable>false</readable>
+          <writeable>true</writeable>
           <casts>
-            <optionString/>
             <rpcBinary/>
           </casts>
         </properties>
-        <logicalAction />
-        <physicalNone groupId="STEP_DOWN">
+        <logicalString/>
+        <physicalNone groupId="ANSWER">
           <operationType>command</operationType>
         </physicalNone>
         <packets>
-          <packet id="stepDown">
+          <packet id="answer">
             <type>set</type>
-          </packet>
-        </packets>
-      </parameter>
-      <parameter id="ERROR">
-        <properties>
-          <readable>true</readable>
-          <writeable>false</writeable>
-          <casts>
-            <booleanDecimal>
-              <trueValue>1.0</trueValue>
-              <falseValue>0.0</falseValue>
-              <threshold>1.0</threshold>
-            </booleanDecimal>
-            <rpcBinary/>
-          </casts>
-        </properties>
-        <logicalBoolean>
-          <defaultValue>false</defaultValue>
-        </logicalBoolean>
-        <physicalNone groupId="ERROR">
-          <operationType>command</operationType>
-        </physicalNone>
-        <packets>
-          <packet id="on.valueSet">
-            <type>event</type>
           </packet>
         </packets>
       </parameter>
